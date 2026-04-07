@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import MealCard from '../MealCard/MealCard';
+import MapModal from '../MapModal/MapModal';
 import './DailyPlanView.css';
 import { RefreshCcw } from 'lucide-react';
 
@@ -13,6 +14,10 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
     const [selectedDayISO, setSelectedDayISO] = useState(startDate);
+    
+    // State cho Bản đồ
+    const [mapOpen, setMapOpen] = useState(false);
+    const [selectedDish, setSelectedDish] = useState<any>(null);
 
     // Tính toán ngày thứ Hai của tuần chứa startDate
     const getMonday = (d: Date) => {
@@ -53,6 +58,11 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
         if (isInPlan) {
             setSelectedDayISO(iso);
         }
+    };
+
+    const handleShowMap = (dish: any) => {
+        setSelectedDish(dish);
+        setMapOpen(true);
     };
 
     return (
@@ -98,6 +108,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         session="SÁNG"
                         time={activePlan.meals.breakfast.time}
                         dishInfo={activePlan.meals.breakfast}
+                        onShowMap={handleShowMap}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa sáng cho ngày này</div>
@@ -108,6 +119,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         session="TRƯA"
                         time={activePlan.meals.lunch.time}
                         dishInfo={activePlan.meals.lunch}
+                        onShowMap={handleShowMap}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa trưa cho ngày này</div>
@@ -118,11 +130,19 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         session="TỐI"
                         time={activePlan.meals.dinner.time}
                         dishInfo={activePlan.meals.dinner}
+                        onShowMap={handleShowMap}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa tối cho ngày này</div>
                 )}
             </div>
+
+            {/* Modal hiển thị bản đồ */}
+            <MapModal 
+                isOpen={mapOpen} 
+                onClose={() => setMapOpen(false)} 
+                dishInfo={selectedDish} 
+            />
 
         </div>
     );

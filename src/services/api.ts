@@ -17,5 +17,10 @@ export const scheduleService = {
     generatePlan: async (payload: any) => {
         const response = await apiClient.post('/schedule/generatePlan', payload);
         return response.data;
+    },
+
+    getRoute: async (payload: any) => {
+        const response = await apiClient.post('/schedule/route', payload);
+        return response.data;
     }
 };

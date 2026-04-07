@@ -5,9 +5,10 @@ interface MealCardProps {
     session: 'SÁNG' | 'TRƯA' | 'TỐI';
     time: string;
     dishInfo: any;
+    onShowMap?: (dishInfo: any) => void;
 }
 
-const MealCard = ({ session, time, dishInfo }: MealCardProps) => {
+const MealCard = ({ session, time, dishInfo, onShowMap }: MealCardProps) => {
 
     return (
         <div className="meal-card-wrapper">
@@ -28,7 +29,11 @@ const MealCard = ({ session, time, dishInfo }: MealCardProps) => {
                      )}
                  </div>
 
-                 <button className="meal-action-btn">
+                 <button 
+                    className="meal-action-btn"
+                    onClick={() => onShowMap?.(dishInfo)}
+                    title="Xem chỉ đường"
+                 >
                      <Send size={18} />
                  </button>
              </div>
