@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MealCard from '../MealCard/MealCard';
 import MapModal from '../MapModal/MapModal';
+import RestaurantDetailModal from '../RestaurantDetailModal/RestaurantDetailModal';
 import './DailyPlanView.css';
 import { RefreshCcw } from 'lucide-react';
 
@@ -18,6 +19,10 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
     // State cho Bản đồ
     const [mapOpen, setMapOpen] = useState(false);
     const [selectedDish, setSelectedDish] = useState<any>(null);
+
+    // State cho Chi tiết nhà hàng
+    const [detailOpen, setDetailOpen] = useState(false);
+    const [selectedDetailDish, setSelectedDetailDish] = useState<any>(null);
 
     // Tính toán ngày thứ Hai của tuần chứa startDate
     const getMonday = (d: Date) => {
@@ -65,6 +70,11 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
         setMapOpen(true);
     };
 
+    const handleShowDetail = (dish: any) => {
+        setSelectedDetailDish(dish);
+        setDetailOpen(true);
+    };
+
     return (
         <div className="daily-plan-container">
             {/* Header: Dates Slider (7 days) */}
@@ -109,6 +119,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.breakfast.time}
                         dishInfo={activePlan.meals.breakfast}
                         onShowMap={handleShowMap}
+                        onShowDetail={handleShowDetail}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa sáng cho ngày này</div>
@@ -120,6 +131,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.lunch.time}
                         dishInfo={activePlan.meals.lunch}
                         onShowMap={handleShowMap}
+                        onShowDetail={handleShowDetail}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa trưa cho ngày này</div>
@@ -131,6 +143,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.dinner.time}
                         dishInfo={activePlan.meals.dinner}
                         onShowMap={handleShowMap}
+                        onShowDetail={handleShowDetail}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa tối cho ngày này</div>
@@ -142,6 +155,13 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                 isOpen={mapOpen} 
                 onClose={() => setMapOpen(false)} 
                 dishInfo={selectedDish} 
+            />
+
+            {/* Modal hiển thị chi tiết nhà hàng */}
+            <RestaurantDetailModal 
+                isOpen={detailOpen} 
+                onClose={() => setDetailOpen(false)} 
+                dishInfo={selectedDetailDish} 
             />
 
         </div>

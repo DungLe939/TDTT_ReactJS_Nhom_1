@@ -60,12 +60,17 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
 
     useEffect(() => {
         if (isOpen) {
+            document.body.style.overflow = 'hidden';
             handleGetLocation();
         } else {
+            document.body.style.overflow = 'unset';
             // Reset khi đóng modal
             setRoute([]);
             setError(null);
         }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen, dishInfo]);
 
     const handleGetLocation = () => {

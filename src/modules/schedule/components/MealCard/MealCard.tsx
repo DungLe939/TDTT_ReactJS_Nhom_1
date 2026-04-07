@@ -6,9 +6,10 @@ interface MealCardProps {
     time: string;
     dishInfo: any;
     onShowMap?: (dishInfo: any) => void;
+    onShowDetail?: (dishInfo: any) => void;
 }
 
-const MealCard = ({ session, time, dishInfo, onShowMap }: MealCardProps) => {
+const MealCard = ({ session, time, dishInfo, onShowMap, onShowDetail }: MealCardProps) => {
 
     return (
         <div className="meal-card-wrapper">
@@ -24,6 +25,16 @@ const MealCard = ({ session, time, dishInfo, onShowMap }: MealCardProps) => {
                          <span className="meal-time">{time}</span>
                      </div>
                      <h4 className="meal-name">{dishInfo.dish}</h4>
+                     
+                     <div className="meal-restaurant-info">
+                         <span 
+                            className="meal-restaurant-name"
+                            onClick={() => onShowDetail?.(dishInfo)}
+                         >
+                             {dishInfo.name}
+                         </span>
+                     </div>
+
                      {dishInfo.category && (
                          <span className="meal-category">{dishInfo.category}</span>
                      )}
