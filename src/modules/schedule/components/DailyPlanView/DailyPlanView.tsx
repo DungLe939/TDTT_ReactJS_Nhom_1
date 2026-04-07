@@ -10,43 +10,74 @@ interface DailyPlanViewProps {
 }
 
 const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps) => {
-    const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+    // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
+    const tripStart = new Date(startDate);
+    const [selectedDayISO, setSelectedDayISO] = useState(startDate);
 
-    const parseAndAddDays = (dateStr: string, days: number) => {
-        // Fallback or use standard date parsing
-        const d = dateStr ? new Date(dateStr) : new Date();
-        d.setDate(d.getDate() + days);
+    // Tính toán ngày thứ Hai của tuần chứa startDate
+    const getMonday = (d: Date) => {
+        const date = new Date(d);
+        const day = date.getDay(); // 0: CN, 1: T2...
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+        return new Date(date.setDate(diff));
+    };
+
+    const monday = getMonday(tripStart);
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
         return d;
+    });
+
+    const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+    // Tìm dữ liệu kế hoạch cho ngày đang chọn
+    // Tính khoảng cách ngày so với startDate để tìm index trong planData
+    const getActivePlan = () => {
+        const current = new Date(selectedDayISO);
+        const start = new Date(startDate);
+        const diffTime = current.getTime() - start.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        return planData.find(p => p.day === diffDays + 1);
     };
 
-    const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const activePlan = getActivePlan();
 
-    // Lấy object của ngày đang được chọn
-    const activePlanOption = planData[selectedDayIndex];
-
-    const handleDaySelect = (index: number) => {
-        setSelectedDayIndex(index);
+    const handleDaySelect = (date: Date) => {
+        const iso = date.toISOString().split('T')[0];
+        // Chỉ cho phép chọn nếu ngày đó nằm trong lịch trình (có dữ liệu trong planData)
+        const diffDays = Math.round((date.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
+        const isInPlan = diffDays >= 0 && diffDays < planData.length;
+        
+        if (isInPlan) {
+            setSelectedDayISO(iso);
+        }
     };
-
-    if (!activePlanOption) return null;
 
     return (
         <div className="daily-plan-container">
-            {/* Header: Dates Slider */}
+            {/* Header: Dates Slider (7 days) */}
             <div className="date-selector-container">
-                 {planData.map((_, index) => {
-                     const dateObj = parseAndAddDays(startDate, index);
-                     const dayOfWeek = daysOfWeek[dateObj.getDay()];
+                 {weekDays.map((dateObj, index) => {
+                     const iso = dateObj.toISOString().split('T')[0];
+                     const dayName = daysOfWeekNames[dateObj.getDay()];
                      const dateNumber = dateObj.getDate();
-                     const isActive = index === selectedDayIndex;
+                     
+                     const isActive = iso === selectedDayISO;
+                     
+                     // Kiểm tra xem ngày này có nằm trong lịch trình không
+                     const diffDays = Math.round((dateObj.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
+                     const isScheduled = diffDays >= 0 && diffDays < planData.length;
 
                      return (
                          <div 
                              key={index}
-                             className={`date-item ${isActive ? 'active' : ''}`}
-                             onClick={() => handleDaySelect(index)}
+                             className={`date-item ${isActive ? 'active' : ''} ${isScheduled && !isActive ? 'scheduled' : ''} ${!isScheduled ? 'disabled' : ''}`}
+                             onClick={() => isScheduled && handleDaySelect(dateObj)}
+                             title={!isScheduled ? "Ngày này không nằm trong lịch trình" : ""}
                          >
-                             <span className="day-name">{dayOfWeek}</span>
+                             <span className="day-name">{dayName}</span>
                              <span className="day-number">{dateNumber}</span>
                          </div>
                      );
@@ -62,34 +93,34 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
             </div>
 
             <div className="meals-list">
-                {activePlanOption.meals?.breakfast ? (
+                {activePlan?.meals?.breakfast ? (
                     <MealCard 
                         session="SÁNG"
-                        time="08:00"
-                        dishInfo={activePlanOption.meals.breakfast}
+                        time={activePlan.meals.breakfast.time}
+                        dishInfo={activePlan.meals.breakfast}
                     />
                 ) : (
-                    <div className="empty-meal">Chưa có dữ liệu bữa sáng</div>
+                    <div className="empty-meal">Chưa có dữ liệu bữa sáng cho ngày này</div>
                 )}
 
-                {activePlanOption.meals?.lunch ? (
+                {activePlan?.meals?.lunch ? (
                     <MealCard 
                         session="TRƯA"
-                        time="12:30"
-                        dishInfo={activePlanOption.meals.lunch}
+                        time={activePlan.meals.lunch.time}
+                        dishInfo={activePlan.meals.lunch}
                     />
                 ) : (
-                    <div className="empty-meal">Chưa có dữ liệu bữa trưa</div>
+                    <div className="empty-meal">Chưa có dữ liệu bữa trưa cho ngày này</div>
                 )}
 
-                {activePlanOption.meals?.dinner ? (
+                {activePlan?.meals?.dinner ? (
                     <MealCard 
                         session="TỐI"
-                        time="19:00"
-                        dishInfo={activePlanOption.meals.dinner}
+                        time={activePlan.meals.dinner.time}
+                        dishInfo={activePlan.meals.dinner}
                     />
                 ) : (
-                    <div className="empty-meal">Chưa có dữ liệu bữa tối</div>
+                    <div className="empty-meal">Chưa có dữ liệu bữa tối cho ngày này</div>
                 )}
             </div>
 

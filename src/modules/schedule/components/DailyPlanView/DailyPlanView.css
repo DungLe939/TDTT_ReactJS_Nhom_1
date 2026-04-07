@@ -32,6 +32,18 @@
     box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
 }
 
+.date-item.scheduled {
+    background-color: #f0f0f0;
+    color: #444;
+}
+
+.date-item.disabled {
+    background-color: #ffffff;
+    color: #ccc;
+    cursor: not-allowed;
+    border: 1px solid #f0f0f0;
+}
+
 .date-item .day-name {
     font-size: 13px;
     font-weight: 500;

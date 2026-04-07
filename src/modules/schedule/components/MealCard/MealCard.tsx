@@ -1,4 +1,4 @@
-import { Send, AlertTriangle } from 'lucide-react';
+import { Send } from 'lucide-react';
 import './MealCard.css';
 
 interface MealCardProps {
@@ -9,22 +9,8 @@ interface MealCardProps {
 
 const MealCard = ({ session, time, dishInfo }: MealCardProps) => {
 
-    // Hardcode hiển thị ở thẻ TRƯA để minh hoạ layout theo yêu cầu
-    const showWarning = session === 'TRƯA';
-
     return (
         <div className="meal-card-wrapper">
-             {/* Warning banner logic */}
-             {showWarning && (
-                 <div className="meal-warning-banner">
-                     <div className="warning-text">
-                         <AlertTriangle size={16} />
-                         <span>Món này hơi giống món trưa qua, bạn có muốn đổi?</span>
-                     </div>
-                     <button className="btn-change-meal">Đổi món</button>
-                 </div>
-             )}
-
              <div className="meal-card">
                  <div className="meal-image-placeholder">
                       {/* Image placeholder */}
