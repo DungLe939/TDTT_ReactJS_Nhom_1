@@ -11,18 +11,32 @@ const SchedulePage = () => {
 
     // Lưu trữ dữ liệu lấy từ API
     const [planData, setPlanData] = useState<any[] | null>(null);
-    const [scheduleInfo, setScheduleInfo] = useState({
+    const [scheduleInfo, setScheduleInfo] = useState<any>({
         location: 'Đà Nẵng',
         days: 3,
-        startDate: ''
+        startDate: '',
+        totalBudget: 0,
+        suggestedMealBudget: null
     });
 
     // 1. Load dữ liệu từ LocalStorage khi khởi tạo
     useEffect(() => {
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
-        if (savedPlan) setPlanData(JSON.parse(savedPlan));
-        if (savedInfo) setScheduleInfo(JSON.parse(savedInfo));
+        
+        if (savedPlan) {
+            setPlanData(JSON.parse(savedPlan));
+        }
+        
+        if (savedInfo) {
+            const parsedInfo = JSON.parse(savedInfo);
+            setScheduleInfo({
+                ...parsedInfo,
+                // Fallback nếu dữ liệu cũ không có các trường này
+                totalBudget: parsedInfo.totalBudget || 0,
+                days: parsedInfo.days || 3
+            });
+        }
     }, []);
 
     const handleFilterClick = () => {
@@ -61,7 +75,9 @@ const SchedulePage = () => {
             const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
-                startDate: formData.startDate || new Date().toISOString()
+                startDate: formData.startDate || new Date().toISOString(),
+                totalBudget: planRes.info.totalBudget,
+                suggestedMealBudget: planRes.info.suggestedMealBudget
             };
 
             setPlanData(newPlanData);
@@ -100,6 +116,7 @@ const SchedulePage = () => {
                         <DailyPlanView 
                             planData={planData}
                             startDate={scheduleInfo.startDate}
+                            scheduleInfo={scheduleInfo}
                             onUpdatePlan={handleUpdatePlan}
                             onRegenerate={() => {
                                 alert("Tính năng tạo lại lịch trình đang được xây dựng!");

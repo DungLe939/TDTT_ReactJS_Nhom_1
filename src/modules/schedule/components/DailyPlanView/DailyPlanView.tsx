@@ -2,20 +2,51 @@ import { useState } from 'react';
 import MealCard from '../MealCard/MealCard';
 import MapModal from '../MapModal/MapModal';
 import RestaurantDetailModal from '../RestaurantDetailModal/RestaurantDetailModal';
+import CostSummary from '../CostSummary/CostSummary';
 import './DailyPlanView.css';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DailyPlanViewProps {
     planData: any[];
     startDate: string; // YYYY-MM-DD
+    scheduleInfo: any;
     onRegenerate: () => void;
     onUpdatePlan?: (newPlan: any[]) => void;
 }
 
-const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
+const DailyPlanView = ({ planData, startDate, scheduleInfo, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
     const [selectedDayISO, setSelectedDayISO] = useState(startDate);
+    
+    // Tính toán chi phí
+    const calculateCosts = () => {
+        let grandTotal = 0;
+        planData.forEach(day => {
+            if (day.meals) {
+                Object.values(day.meals).forEach((meal: any) => {
+                    grandTotal += (meal.price || 0);
+                });
+            }
+        });
+
+        let dayTotal = 0;
+        const current = new Date(selectedDayISO);
+        const start = new Date(startDate);
+        const diffDays = Math.round((current.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        const activeDayPlan = planData.find(p => p.day === diffDays + 1);
+
+        if (activeDayPlan?.meals) {
+            Object.values(activeDayPlan.meals).forEach((meal: any) => {
+                dayTotal += (meal.price || 0);
+            });
+        }
+
+        return { dayTotal, grandTotal };
+    };
+
+    const { dayTotal, grandTotal } = calculateCosts();
+    const dailyTarget = (scheduleInfo?.totalBudget > 0) ? (scheduleInfo.totalBudget / (scheduleInfo.days || 1)) : 0;
     
     // State cho Bản đồ
     const [mapOpen, setMapOpen] = useState(false);
@@ -25,6 +56,9 @@ const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: Dail
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedDetailDish, setSelectedDetailDish] = useState<any>(null);
     const [selectedSession, setSelectedSession] = useState<string | null>(null);
+
+    // State cho Thống kê chi phí
+    const [showCostSummary, setShowCostSummary] = useState(false);
 
     // Tính toán ngày thứ Hai của tuần chứa startDate
     const getMonday = (d: Date) => {
@@ -44,7 +78,6 @@ const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: Dail
     const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
     // Tìm dữ liệu kế hoạch cho ngày đang chọn
-    // Tính khoảng cách ngày so với startDate để tìm index trong planData
     const getActivePlan = () => {
         const current = new Date(selectedDayISO);
         const start = new Date(startDate);
@@ -58,7 +91,6 @@ const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: Dail
 
     const handleDaySelect = (date: Date) => {
         const iso = date.toISOString().split('T')[0];
-        // Chỉ cho phép chọn nếu ngày đó nằm trong lịch trình (có dữ liệu trong planData)
         const diffDays = Math.round((date.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
         const isInPlan = diffDays >= 0 && diffDays < planData.length;
         
@@ -90,7 +122,6 @@ const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: Dail
         const sessionKey = sessionMap[selectedSession];
         if (!sessionKey) return;
 
-        // Tạo bản sao dữ liệu và cập nhật
         const newPlanData = [...planData];
         const dayIndex = newPlanData.findIndex(p => p.day === activePlan.day);
         
@@ -135,6 +166,28 @@ const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: Dail
                      );
                  })}
             </div>
+
+            {/* Nút toggle thống kê chi phí */}
+            <div 
+                className={`cost-summary-toggle ${showCostSummary ? 'active' : ''}`} 
+                onClick={() => setShowCostSummary(!showCostSummary)}
+            >
+                <div className="toggle-label">
+                    <BarChart3 size={18} />
+                    <span>Thống kê chi phí</span>
+                </div>
+                {showCostSummary ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </div>
+
+            {/* Thống kê chi phí (Chỉ hiển thị khi toggle) */}
+            {showCostSummary && (
+                <CostSummary 
+                    dayTotal={dayTotal}
+                    grandTotal={grandTotal}
+                    targetDailyBudget={dailyTarget}
+                    totalDays={scheduleInfo.days}
+                />
+            )}
 
             {/* Content Area */}
             <div className="daily-content-header">
