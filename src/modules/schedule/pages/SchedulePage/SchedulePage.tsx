@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import Header from '../../../../components/Header/Header';
+import { useState, useEffect } from 'react';
 import ScheduleBanner from '../../components/ScheduleBanner/ScheduleBanner';
 import ScheduleFilterModal from '../../components/ScheduleFilterModal/ScheduleFilterModal';
 import DailyPlanView from '../../components/DailyPlanView/DailyPlanView';
@@ -18,6 +17,14 @@ const SchedulePage = () => {
         startDate: ''
     });
 
+    // 1. Load dữ liệu từ LocalStorage khi khởi tạo
+    useEffect(() => {
+        const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
+        const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
+        if (savedPlan) setPlanData(JSON.parse(savedPlan));
+        if (savedInfo) setScheduleInfo(JSON.parse(savedInfo));
+    }, []);
+
     const handleFilterClick = () => {
         setIsModalOpen(true);
     };
@@ -26,7 +33,6 @@ const SchedulePage = () => {
         setIsLoading(true);
         try {
             // Bước 1: Lấy tọa độ
-            console.log('1. Đang quét danh sách quán ăn quanh khu vực:', formData.location);
             const searchRes = await scheduleService.searchLocation(formData.location);
             const coords = searchRes?.coords;
             
@@ -50,13 +56,19 @@ const SchedulePage = () => {
             
             console.log('✅ Tạo lịch trình thành công:', planRes);
             
-            // Cập nhật State
-            setPlanData(planRes.plan);
-            setScheduleInfo({
+            // Cập nhật State & Lưu LocalStorage
+            const newPlanData = planRes.plan;
+            const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
                 startDate: formData.startDate || new Date().toISOString()
-            });
+            };
+
+            setPlanData(newPlanData);
+            setScheduleInfo(newScheduleInfo);
+
+            localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
+            localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
 
             setIsModalOpen(false);
 
@@ -70,7 +82,6 @@ const SchedulePage = () => {
 
     return (
         <div className="schedule-page">
-            <Header />
             <main className="schedule-main">
                 <ScheduleBanner 
                     title="Lịch trình Food Tour" 

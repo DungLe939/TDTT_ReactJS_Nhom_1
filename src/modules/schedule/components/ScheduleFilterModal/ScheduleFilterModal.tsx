@@ -1,5 +1,5 @@
 import { X, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ScheduleFilterModal.css';
 
 interface ScheduleFilterModalProps {
@@ -18,15 +18,32 @@ const TASTE_OPTIONS = [
 ];
 
 const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleFilterModalProps) => {
+    // Helper to get initial value from localStorage
+    const getInitialData = () => {
+        const saved = localStorage.getItem('FOOD_TOUR_FORM_DATA');
+        return saved ? JSON.parse(saved) : {};
+    };
+
+    const initialData = getInitialData();
+
     // Form States
-    const [location, setLocation] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [budget, setBudget] = useState<number | ''>('');
-    const [favoriteFoods, setFavoriteFoods] = useState('');
-    const [dislikedFoods, setDislikedFoods] = useState('');
-    const [allergies, setAllergies] = useState('');
-    const [tastes, setTastes] = useState<string[]>([]);
+    const [location, setLocation] = useState(initialData.location || '');
+    const [startDate, setStartDate] = useState(initialData.startDate || '');
+    const [endDate, setEndDate] = useState(initialData.endDate || '');
+    const [budget, setBudget] = useState<number | ''>(initialData.budget || '');
+    const [favoriteFoods, setFavoriteFoods] = useState(initialData.favoriteFoods || '');
+    const [dislikedFoods, setDislikedFoods] = useState(initialData.dislikedFoods || '');
+    const [allergies, setAllergies] = useState(initialData.allergies || '');
+    const [tastes, setTastes] = useState<string[]>(initialData.tastes || []);
+
+    // Tự động lưu LocalStorage mỗi khi có thay đổi (Auto-save)
+    useEffect(() => {
+        const formData = {
+            location, startDate, endDate, budget,
+            favoriteFoods, dislikedFoods, allergies, tastes
+        };
+        localStorage.setItem('FOOD_TOUR_FORM_DATA', JSON.stringify(formData));
+    }, [location, startDate, endDate, budget, favoriteFoods, dislikedFoods, allergies, tastes]);
 
     if (!isOpen) return null;
 
