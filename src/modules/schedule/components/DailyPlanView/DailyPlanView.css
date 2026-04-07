@@ -1,0 +1,96 @@
+.daily-plan-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.date-selector-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.date-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 70px;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.date-item.active {
+    background-color: #ff6b00;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+}
+
+.date-item .day-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.date-item.active .day-name {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.date-item .day-number {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Header Action */
+.daily-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.daily-content-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.btn-regenerate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ff6b00;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-regenerate:hover {
+    opacity: 0.7;
+}
+
+.meals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.empty-meal {
+    padding: 20px;
+    text-align: center;
+    background: #f9f9f9;
+    border-radius: 16px;
+    color: #999;
+    font-style: italic;
+}

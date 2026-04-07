@@ -64,6 +64,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
             budget: Number(budget),
             location: location,
             travelDays: travelDays,
+            startDate: startDate,
             preferences: {
                 favoriteFoods: commaToArray(favoriteFoods),
                 tastes: tastes,
