@@ -1,0 +1,117 @@
+.site-header {
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 72px;
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    background-color: #FF6B00;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    color: #FF6B00;
+    letter-spacing: -0.5px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    gap: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    text-decoration: none;
+    color: #555555;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    height: 100%;
+    border-bottom: 3px solid transparent;
+}
+
+.nav-link:hover {
+    color: #FF6B00;
+    background-color: #FFF8F3;
+}
+
+.nav-link.active {
+    color: #FF6B00;
+    border-bottom-color: #FF6B00;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background-color: #FF6B00;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #e66000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(255, 107, 0, 0.2);
+}
+
+.btn-dark {
+    background-color: #222222;
+    color: white;
+}
+
+.btn-dark:hover {
+    background-color: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
