@@ -9,9 +9,10 @@ interface DailyPlanViewProps {
     planData: any[];
     startDate: string; // YYYY-MM-DD
     onRegenerate: () => void;
+    onUpdatePlan?: (newPlan: any[]) => void;
 }
 
-const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps) => {
+const DailyPlanView = ({ planData, startDate, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
     const [selectedDayISO, setSelectedDayISO] = useState(startDate);
@@ -23,6 +24,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
     // State cho Chi tiết nhà hàng
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedDetailDish, setSelectedDetailDish] = useState<any>(null);
+    const [selectedSession, setSelectedSession] = useState<string | null>(null);
 
     // Tính toán ngày thứ Hai của tuần chứa startDate
     const getMonday = (d: Date) => {
@@ -70,9 +72,39 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
         setMapOpen(true);
     };
 
-    const handleShowDetail = (dish: any) => {
+    const handleShowDetail = (dish: any, session: string) => {
         setSelectedDetailDish(dish);
+        setSelectedSession(session);
         setDetailOpen(true);
+    };
+
+    const handleDishSelect = (newDishItem: any) => {
+        if (!activePlan || !selectedSession) return;
+        
+        const sessionMap: Record<string, string> = {
+            'SÁNG': 'breakfast',
+            'TRƯA': 'lunch',
+            'TỐI': 'dinner'
+        };
+        
+        const sessionKey = sessionMap[selectedSession];
+        if (!sessionKey) return;
+
+        // Tạo bản sao dữ liệu và cập nhật
+        const newPlanData = [...planData];
+        const dayIndex = newPlanData.findIndex(p => p.day === activePlan.day);
+        
+        if (dayIndex !== -1) {
+            const currentMeal = newPlanData[dayIndex].meals[sessionKey];
+            
+            newPlanData[dayIndex].meals[sessionKey] = {
+                ...currentMeal,
+                dish: newDishItem.name,
+                price: newDishItem.price
+            };
+            
+            onUpdatePlan?.(newPlanData);
+        }
     };
 
     return (
@@ -119,7 +151,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.breakfast.time}
                         dishInfo={activePlan.meals.breakfast}
                         onShowMap={handleShowMap}
-                        onShowDetail={handleShowDetail}
+                        onShowDetail={(dish) => handleShowDetail(dish, 'SÁNG')}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa sáng cho ngày này</div>
@@ -131,7 +163,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.lunch.time}
                         dishInfo={activePlan.meals.lunch}
                         onShowMap={handleShowMap}
-                        onShowDetail={handleShowDetail}
+                        onShowDetail={(dish) => handleShowDetail(dish, 'TRƯA')}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa trưa cho ngày này</div>
@@ -143,7 +175,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                         time={activePlan.meals.dinner.time}
                         dishInfo={activePlan.meals.dinner}
                         onShowMap={handleShowMap}
-                        onShowDetail={handleShowDetail}
+                        onShowDetail={(dish) => handleShowDetail(dish, 'TỐI')}
                     />
                 ) : (
                     <div className="empty-meal">Chưa có dữ liệu bữa tối cho ngày này</div>
@@ -162,6 +194,7 @@ const DailyPlanView = ({ planData, startDate, onRegenerate }: DailyPlanViewProps
                 isOpen={detailOpen} 
                 onClose={() => setDetailOpen(false)} 
                 dishInfo={selectedDetailDish} 
+                onDishSelect={handleDishSelect}
             />
 
         </div>

@@ -80,6 +80,11 @@ const SchedulePage = () => {
         }
     };
 
+    const handleUpdatePlan = (newPlanData: any[]) => {
+        setPlanData([...newPlanData]);
+        localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
+    };
+
     return (
         <div className="schedule-page">
             <main className="schedule-main">
@@ -95,6 +100,7 @@ const SchedulePage = () => {
                         <DailyPlanView 
                             planData={planData}
                             startDate={scheduleInfo.startDate}
+                            onUpdatePlan={handleUpdatePlan}
                             onRegenerate={() => {
                                 alert("Tính năng tạo lại lịch trình đang được xây dựng!");
                             }}
