@@ -2,17 +2,18 @@ import { Send } from 'lucide-react';
 import './MealCard.css';
 
 interface MealCardProps {
-    session: 'SÁNG' | 'TRƯA' | 'TỐI';
+    session?: 'SÁNG' | 'TRƯA' | 'TỐI';
+    type?: 'main' | 'snack';
     time: string;
     dishInfo: any;
     onShowMap?: (dishInfo: any) => void;
     onShowDetail?: (dishInfo: any) => void;
 }
 
-const MealCard = ({ session, time, dishInfo, onShowMap, onShowDetail }: MealCardProps) => {
+const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDetail }: MealCardProps) => {
 
     return (
-        <div className="meal-card-wrapper">
+        <div className={`meal-card-wrapper ${type === 'snack' ? 'is-snack' : ''}`}>
              <div className="meal-card">
                  <div className="meal-image-placeholder">
                       {/* Image placeholder */}
@@ -20,8 +21,16 @@ const MealCard = ({ session, time, dishInfo, onShowMap, onShowDetail }: MealCard
                  </div>
                  
                  <div className="meal-info">
+                     <div className="meal-type-tag">
+                         {type === 'main' ? (
+                             <span className="tag-main">Bữa chính</span>
+                         ) : (
+                             <span className="tag-snack">Bữa phụ</span>
+                         )}
+                     </div>
+                     
                      <div className="meal-meta">
-                         <span className="meal-session">{session}</span>
+                         {type === 'main' && session && <span className="meal-session">{session}</span>}
                          <span className="meal-time">{time}</span>
                      </div>
                      <h4 className="meal-name">{dishInfo.dish}</h4>

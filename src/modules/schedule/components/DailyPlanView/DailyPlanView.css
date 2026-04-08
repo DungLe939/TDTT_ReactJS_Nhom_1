@@ -118,6 +118,32 @@
     margin: 0;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-add-snack {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f3f0ff;
+    color: #7048e8;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-snack:hover {
+    background: #ebe4ff;
+    transform: translateY(-1px);
+}
+
 .btn-regenerate {
     display: flex;
     align-items: center;

@@ -11,6 +11,7 @@ const SchedulePage = () => {
 
     // Lưu trữ dữ liệu lấy từ API
     const [planData, setPlanData] = useState<any[] | null>(null);
+    const [snackCandidates, setSnackCandidates] = useState<any[]>([]);
     const [scheduleInfo, setScheduleInfo] = useState<any>({
         location: 'Đà Nẵng',
         days: 3,
@@ -23,16 +24,15 @@ const SchedulePage = () => {
     useEffect(() => {
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
+        const savedSnacks = localStorage.getItem('FOOD_TOUR_SNACK_CANDIDATES');
         
-        if (savedPlan) {
-            setPlanData(JSON.parse(savedPlan));
-        }
+        if (savedPlan) setPlanData(JSON.parse(savedPlan));
+        if (savedSnacks) setSnackCandidates(JSON.parse(savedSnacks));
         
         if (savedInfo) {
             const parsedInfo = JSON.parse(savedInfo);
             setScheduleInfo({
                 ...parsedInfo,
-                // Fallback nếu dữ liệu cũ không có các trường này
                 totalBudget: parsedInfo.totalBudget || 0,
                 days: parsedInfo.days || 3
             });
@@ -46,7 +46,6 @@ const SchedulePage = () => {
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
         try {
-            // Bước 1: Lấy tọa độ
             const searchRes = await scheduleService.searchLocation(formData.location);
             const coords = searchRes?.coords;
             
@@ -58,7 +57,6 @@ const SchedulePage = () => {
 
             const { lat, lng } = coords;
 
-            // Bước 2: Tạo lịch trình
             const payload = {
                 budget: formData.budget,
                 currentLocation: { lat, lng },
@@ -68,10 +66,9 @@ const SchedulePage = () => {
 
             const planRes = await scheduleService.generatePlan(payload);
             
-            console.log('✅ Tạo lịch trình thành công:', planRes);
-            
             // Cập nhật State & Lưu LocalStorage
             const newPlanData = planRes.plan;
+            const newSnackCandidates = planRes.snackCandidates || [];
             const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
@@ -81,9 +78,11 @@ const SchedulePage = () => {
             };
 
             setPlanData(newPlanData);
+            setSnackCandidates(newSnackCandidates);
             setScheduleInfo(newScheduleInfo);
 
             localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
+            localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(newSnackCandidates));
             localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
 
             setIsModalOpen(false);
@@ -117,9 +116,10 @@ const SchedulePage = () => {
                             planData={planData}
                             startDate={scheduleInfo.startDate}
                             scheduleInfo={scheduleInfo}
+                            snackCandidates={snackCandidates}
                             onUpdatePlan={handleUpdatePlan}
                             onRegenerate={() => {
-                                alert("Tính năng tạo lại lịch trình đang được xây dựng!");
+                                alert("Tính năng tạo lại lịch trình đang thực thi lại logic lọc!");
                             }}
                         />
                     </div>
