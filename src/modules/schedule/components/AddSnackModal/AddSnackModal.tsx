@@ -40,7 +40,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
     const [selectedSnack, setSelectedSnack] = useState<any | null>(null);
 
     // State lưu trữ khoảng cách thực tế { [restaurantId]: { distance, isReal } }
-    const [realDistancesMap, setRealDistancesMap] = useState<Record<string, { distance: number, isReal: boolean }>>({});
+    const [realDistancesMap, setRealDistancesMap] = useState<Record<string, { distance: number, isReal: boolean, isFailed?: boolean }>>({});
     const [isCalculating, setIsCalculating] = useState(false);
 
     // 1. Lấy danh sách Categories duy nhất
@@ -145,8 +145,13 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
         Object.keys(dishGroups).forEach(dishName => {
             const group = dishGroups[dishName];
             
-            let winner = group[0];
-            group.forEach(item => {
+            // Lọc ra quán "vô địch" cho món này (ưu tiên quán gần nhất)
+            // NHƯNG loại bỏ quán nhắm tới đo đường thực tế mà bị lỗi
+            let validGroup = group.filter(item => !realDistancesMap[item.restaurantId]?.isFailed);
+            if (validGroup.length === 0) return; // Nếu tất cả quán cho món này đều lỗi route -> bỏ qua món này
+
+            let winner = validGroup[0];
+            validGroup.forEach(item => {
                 const itemDist = realDistancesMap[item.restaurantId]?.distance || item.distance;
                 const winnerDist = realDistancesMap[winner.restaurantId]?.distance || winner.distance;
                 
@@ -227,20 +232,39 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                 .map(id => candidatesToVerify.find(c => c.resId === id))
                 .filter(c => !realDistancesMap[c!.resId]);
 
+            // Hàm gọi API với cơ chế Retry
+            const getRouteWithRetry = async (candidate: any, retries = 2) => {
+                for (let i = 0; i <= retries; i++) {
+                    try {
+                        const route = await scheduleService.getRoute({
+                            userLat: refLoc!.lat,
+                            userLng: refLoc!.lng,
+                            destLat: candidate.loc.coordinates[1],
+                            destLng: candidate.loc.coordinates[0]
+                        });
+                        if (route.success) return route;
+                    } catch (e) {
+                        if (i === retries) throw e;
+                        // Chờ một chút trước khi thử lại (exponential backoff nhẹ)
+                        await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+                    }
+                }
+                return null;
+            };
+
             await Promise.all(uniqueCandidates.slice(0, 15).map(async (c) => {
                 if (!c) return;
                 try {
-                    const route = await scheduleService.getRoute({
-                        userLat: refLoc!.lat,
-                        userLng: refLoc!.lng,
-                        destLat: c.loc.coordinates[1],
-                        destLng: c.loc.coordinates[0]
-                    });
-                    if (route.success) {
+                    const route = await getRouteWithRetry(c);
+                    if (route && route.success) {
                         resultsMap[c.resId] = { distance: route.distance, isReal: true };
+                    } else {
+                        // Đánh dấu là thất bại để lọc bỏ
+                        resultsMap[c.resId] = { distance: 0, isReal: true, isFailed: true } as any;
                     }
                 } catch (e) {
-                    console.error("Lỗi lấy route thực tế:", e);
+                    console.error("Lỗi lấy route thực tế sau khi retry:", e);
+                    resultsMap[c.resId] = { distance: 0, isReal: true, isFailed: true } as any;
                 }
             }));
 
