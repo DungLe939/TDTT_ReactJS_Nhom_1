@@ -1,5 +1,6 @@
 import { X, Clock, Coffee, Check } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { scheduleService } from '../../../../services/api';
 import './AddSnackModal.css';
 
 interface AddSnackModalProps {
@@ -38,6 +39,10 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedSnack, setSelectedSnack] = useState<any | null>(null);
 
+    // State lưu trữ khoảng cách thực tế { [restaurantId]: { distance, isReal } }
+    const [realDistancesMap, setRealDistancesMap] = useState<Record<string, { distance: number, isReal: boolean }>>({});
+    const [isCalculating, setIsCalculating] = useState(false);
+
     // 1. Lấy danh sách Categories duy nhất
     const categories = useMemo(() => {
         const cats = new Set<string>();
@@ -50,7 +55,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
     }, [snackCandidates]);
 
     // Khởi tạo category mặc định nếu chưa có
-    useMemo(() => {
+    useEffect(() => {
         if (!selectedCategory && categories.length > 0) {
             setSelectedCategory(categories[0]);
         }
@@ -65,14 +70,12 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
         if (activePlan?.meals) {
             const meals = [
                 { time: activePlan.meals.breakfast?.time || "00:00", loc: activePlan.meals.breakfast?.location },
-                { time: activePlan.meals.lunch?.time || "00:00", loc: activePlan.meals.lunch?.location },
-                { time: activePlan.meals.dinner?.time || "00:00", loc: activePlan.meals.dinner?.location }
+                { time: activePlan.meals.lunch?.time || "12:30", loc: activePlan.meals.lunch?.location },
+                { time: activePlan.meals.dinner?.time || "19:00", loc: activePlan.meals.dinner?.location }
             ].filter(m => m.loc);
 
-            // Sắp xếp các bữa chính theo thời gian
             meals.sort((a, b) => a.time.localeCompare(b.time));
 
-            // Tìm bữa chính cuối cùng diễn ra TRƯỚC selectedTime
             const prevMeal = [...meals].reverse().find(m => m.time < selectedTime);
             if (prevMeal) {
                 refLocation = {
@@ -82,12 +85,11 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
             }
         }
 
-        const results: any[] = [];
+        const allResults: any[] = [];
         const [h, m] = selectedTime.split(':').map(Number);
         const selectedMinutes = h * 60 + m;
 
         snackCandidates.forEach(res => {
-            // Kiểm tra giờ hoạt động
             let isOpenNow = true;
             if (res.openingHours) {
                 let start, end;
@@ -113,62 +115,141 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
             }
 
             if (isOpenNow) {
-                // Tính khoảng cách
-                let distance = 0;
-                if (refLocation && res.location) {
-                    distance = calculateDistance(
-                        refLocation.lat, refLocation.lng,
-                        res.location.coordinates[1], res.location.coordinates[0]
-                    );
-                }
+                const distHaversine = refLocation 
+                    ? calculateDistance(refLocation.lat, refLocation.lng, res.location.coordinates[1], res.location.coordinates[0])
+                    : 0;
 
                 res.snacks.forEach((s: any) => {
                     if (s.category === selectedCategory) {
-                        results.push({
+                        allResults.push({
                             ...s,
                             restaurantId: res.restaurantId,
                             restaurantName: res.restaurantName,
                             location: res.location,
                             openingHours: res.openingHours,
-                            distance: distance // Thêm thông tin khoảng cách
+                            distance: distHaversine
                         });
                     }
                 });
             }
         });
 
-        // --- Logic Rút gọn (Deduplication) ---
-        const deduplicated: Record<string, any> = {};
-        results.forEach(item => {
-            // Nếu món chưa có hoặc tìm thấy quán cung cấp cùng món đó nhưng Ở GẦN HƠN
-            if (!deduplicated[item.name] || item.distance < deduplicated[item.name].distance) {
-                deduplicated[item.name] = item;
-            }
+        // --- Logic Rút gọn & Chọn quán "Vô địch" ---
+        const dishGroups: Record<string, any[]> = {};
+        allResults.forEach(item => {
+            if (!dishGroups[item.name]) dishGroups[item.name] = [];
+            dishGroups[item.name].push(item);
         });
 
-        // Chuyển kết quả về dạng Array và Sắp xếp
-        return Object.values(deduplicated).sort((a, b) => {
-            // Ưu tiên các món có khoảng cách thực tế gần (trọng số cao)
-            const scoreA = (a.score || 50) - (a.distance / 100);
-            const scoreB = (b.score || 50) - (b.distance / 100);
-            return scoreB - scoreA;
-        });
-    }, [selectedCategory, selectedTime, snackCandidates, activePlan, userLocation]);
+        const winners: any[] = [];
+        Object.keys(dishGroups).forEach(dishName => {
+            const group = dishGroups[dishName];
+            
+            let winner = group[0];
+            group.forEach(item => {
+                const itemDist = realDistancesMap[item.restaurantId]?.distance || item.distance;
+                const winnerDist = realDistancesMap[winner.restaurantId]?.distance || winner.distance;
+                
+                if (itemDist < winnerDist) {
+                    winner = item;
+                }
+            });
 
-    // Lấy vị trí GPS khi cần thiết
-    useMemo(() => {
-        if (!userLocation && isOpen) {
+            winners.push({
+                ...winner,
+                displayDistance: realDistancesMap[winner.restaurantId]?.distance || winner.distance,
+                isRealDistance: realDistancesMap[winner.restaurantId]?.isReal || false
+            });
+        });
+
+        return winners.sort((a, b) => a.displayDistance - b.displayDistance);
+    }, [selectedCategory, selectedTime, snackCandidates, activePlan, userLocation, realDistancesMap]);
+
+    // Side effect: Lấy vị trí GPS
+    useEffect(() => {
+        if (isOpen && !userLocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                     setLocationWarning(false);
                 },
-                () => {
-                    setLocationWarning(true);
-                }
+                () => setLocationWarning(true)
             );
         }
-    }, [isOpen]);
+    }, [isOpen, userLocation]);
+
+    // Side effect: Tính toán khoảng cách thực tế (OSRM) cho Top các quán tiềm năng
+    useEffect(() => {
+        if (!isOpen || !selectedCategory || !selectedTime) return;
+
+        const fetchRealRoutes = async () => {
+            let refLoc = userLocation;
+            if (activePlan?.meals) {
+                const meals = [
+                    { time: activePlan.meals.breakfast?.time || "00:00", loc: activePlan.meals.breakfast?.location },
+                    { time: activePlan.meals.lunch?.time || "12:30", loc: activePlan.meals.lunch?.location },
+                    { time: activePlan.meals.dinner?.time || "19:00", loc: activePlan.meals.dinner?.location }
+                ].filter(m => m.loc);
+                meals.sort((a, b) => a.time.localeCompare(b.time));
+                const prevMeal = [...meals].reverse().find(m => m.time < selectedTime);
+                if (prevMeal) refLoc = { lat: prevMeal.loc.coordinates[1], lng: prevMeal.loc.coordinates[0] };
+            }
+
+            if (!refLoc) return;
+
+            const dishGroups: Record<string, any[]> = {};
+            snackCandidates.forEach(res => {
+                res.snacks.forEach((s: any) => {
+                    if (s.category === selectedCategory) {
+                        if (!dishGroups[s.name]) dishGroups[s.name] = [];
+                        const d = calculateDistance(refLoc!.lat, refLoc!.lng, res.location.coordinates[1], res.location.coordinates[0]);
+                        dishGroups[s.name].push({ resId: res.restaurantId, loc: res.location, dist: d });
+                    }
+                });
+            });
+
+            const candidatesToVerify: any[] = [];
+            const sortedDishNames = Object.keys(dishGroups).sort((a, b) => {
+                const minA = Math.min(...dishGroups[a].map(x => x.dist));
+                const minB = Math.min(...dishGroups[b].map(x => x.dist));
+                return minA - minB;
+            }).slice(0, 10);
+
+            sortedDishNames.forEach(name => {
+                const top3ForDish = dishGroups[name].sort((a, b) => a.dist - b.dist).slice(0, 3);
+                candidatesToVerify.push(...top3ForDish);
+            });
+
+            setIsCalculating(true);
+            const resultsMap = { ...realDistancesMap };
+            
+            const uniqueCandidates = Array.from(new Set(candidatesToVerify.map(c => c.resId)))
+                .map(id => candidatesToVerify.find(c => c.resId === id))
+                .filter(c => !realDistancesMap[c!.resId]);
+
+            await Promise.all(uniqueCandidates.slice(0, 15).map(async (c) => {
+                if (!c) return;
+                try {
+                    const route = await scheduleService.getRoute({
+                        userLat: refLoc!.lat,
+                        userLng: refLoc!.lng,
+                        destLat: c.loc.coordinates[1],
+                        destLng: c.loc.coordinates[0]
+                    });
+                    if (route.success) {
+                        resultsMap[c.resId] = { distance: route.distance, isReal: true };
+                    }
+                } catch (e) {
+                    console.error("Lỗi lấy route thực tế:", e);
+                }
+            }));
+
+            setRealDistancesMap(resultsMap);
+            setIsCalculating(false);
+        };
+
+        fetchRealRoutes();
+    }, [selectedCategory, selectedTime, isOpen, userLocation, activePlan, snackCandidates]);
 
     if (!isOpen) return null;
 
@@ -178,12 +259,11 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                 ...selectedSnack,
                 time: selectedTime,
                 type: 'snack',
-                id: selectedSnack.restaurantId, // Đồng bộ key với MealCard
+                id: selectedSnack.restaurantId,
                 name: selectedSnack.restaurantName,
                 dish: selectedSnack.name
             });
             onClose();
-            // Reset state
             setSelectedSnack(null);
         }
     };
@@ -206,14 +286,14 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                 </div>
 
                 <div className="snack-modal-body">
-                    {/* GPS Warning */}
                     {locationWarning && (
                         <div className="location-warning">
                             📍 Để tìm quán gần bạn nhất, vui lòng bật GPS và cho phép truy cập vị trí nhé!
                         </div>
                     )}
 
-                    {/* Time Picker */}
+                    {isCalculating && <div className="calculating-overlay">Đang tối ưu đường đi...</div>}
+
                     <div className="snack-form-section">
                         <label><Clock size={16} /> Chọn khung giờ</label>
                         <div className="time-grid">
@@ -232,7 +312,6 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                         </div>
                     </div>
 
-                    {/* Category Picker */}
                     <div className="snack-form-section">
                         <label>Chọn danh mục</label>
                         <div className="category-scroll">
@@ -251,7 +330,6 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                         </div>
                     </div>
 
-                    {/* Snack List */}
                     <div className="snack-form-section">
                         <label>Chọn món ăn ({filteredSnacks.length})</label>
                         <div className="snack-list-container">
@@ -266,7 +344,11 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                                             <div className="snack-item-name">{s.name}</div>
                                             <div className="snack-item-res">
                                                 {s.restaurantName} 
-                                                {s.distance > 0 && ` • Cách ${s.distance > 1000 ? (s.distance / 1000).toFixed(1) + 'km' : Math.round(s.distance) + 'm'}`}
+                                                {s.displayDistance > 0 && (
+                                                    <span className="distance-tag">
+                                                        • {s.isRealDistance ? '🚗' : '📍'} {s.displayDistance > 1000 ? (s.displayDistance / 1000).toFixed(1) + 'km' : Math.round(s.displayDistance) + 'm'}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="snack-item-right">
