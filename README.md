@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://hcmus.edu.vn/wp-content/uploads/2022/01/logo-khtn.png" height="120" alt="HCMUS Logo"/>
+<img src="https://hcmus.edu.vn/wp-content/uploads/2023/04/Logo-chinh-e1681638380305.png" height="120" alt="HCMUS Logo"/>
 
 # 🍜 Smart Tourism System
 ### *Hương Vị Bản Địa — Gợi ý ẩm thực cá nhân hóa cho du khách*

@@ -1,0 +1,2 @@
+- [README.md] Update link logo HCMUS
+- [ADD] Tailwind css into project (Following link: https://tailwindcss.com/docs/installation/using-vite)
