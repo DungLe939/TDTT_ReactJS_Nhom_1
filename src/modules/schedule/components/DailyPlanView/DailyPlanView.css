@@ -124,24 +124,28 @@
     gap: 16px;
 }
 
-.btn-add-snack {
+.btn-add-snack-bottom {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 6px;
-    background: #f3f0ff;
-    color: #7048e8;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
+    gap: 8px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+    background-color: transparent;
+    color: #ff6b00;
+    border: 2px dashed #ffb480;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
-.btn-add-snack:hover {
-    background: #ebe4ff;
-    transform: translateY(-1px);
+.btn-add-snack-bottom:hover {
+    background-color: #fff4ed;
+    border-color: #ff6b00;
+    color: #ff6b00;
 }
 
 .btn-regenerate {

@@ -234,11 +234,6 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
             <div className="daily-content-header">
                 <h3>Hôm nay ăn gì?</h3>
                 <div className="header-actions">
-                    {(activePlan?.snacks?.length || 0) < 3 && (
-                        <button className="btn-add-snack" onClick={() => setSnackModalOpen(true)}>
-                            <Plus size={16} /> Thêm bữa phụ
-                        </button>
-                    )}
                     <button className="btn-regenerate" onClick={onRegenerate}>
                         <RefreshCcw size={16} /> Tạo lại
                     </button>
@@ -262,6 +257,12 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
                     <div className="empty-meal">Không có dữ liệu ăn uống cho ngày này</div>
                 )}
             </div>
+
+            {(activePlan?.snacks?.length || 0) < 3 && (
+                <button className="btn-add-snack-bottom" onClick={() => setSnackModalOpen(true)}>
+                    <Plus size={16} /> Thêm bữa ăn phụ
+                </button>
+            )}
 
             {/* Modals */}
             <MapModal isOpen={mapOpen} onClose={() => setMapOpen(false)} dishInfo={selectedDish} />
