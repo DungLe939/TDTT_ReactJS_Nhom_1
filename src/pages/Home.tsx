@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { ScanLine, Map } from 'lucide-react';
 
