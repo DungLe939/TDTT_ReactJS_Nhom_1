@@ -307,3 +307,38 @@
         width: 100%;
     }
 }
+
+/* ==========================================
+   PRE-FETCH STATUS INDICATOR
+   Cho user biết hệ thống đang quét quán ăn ngầm
+   ========================================== */
+.prefetch-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    animation: fadeIn 0.3s ease;
+}
+
+.prefetch-status.loading {
+    color: #CC5500;
+    background-color: #FFF8F3;
+}
+
+.prefetch-status.done {
+    color: #16a34a;
+    background-color: #f0fdf4;
+}
+
+/* Animation xoay cho loading icon */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

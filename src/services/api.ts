@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { retryRequest } from '../utils/retryRequest';
 
 /**
  * Biến toàn cục lấy từ file .env (VITE_API_URL).
@@ -19,6 +20,10 @@ export const apiClient = axios.create({
 /**
  * Object `scheduleService` đóng gói toàn bộ các hàm Async thao tác móc nối
  * với NestJS Backend liên quan đến Module tạo và duyệt Lịch Trình.
+ * 
+ * CÁC HÀM MỚI (Tối ưu hiệu năng):
+ * - preparePlan: Chạy ngầm Raw Filter + Clustering khi user chọn địa điểm
+ * - generateDayPlan: Tạo lịch trình streaming từng ngày (có retry)
  */
 export const scheduleService = {
     // Gọi AI/Google Map tìm kiếm thông tin địa danh tọa độ
@@ -27,7 +32,7 @@ export const scheduleService = {
         return response.data;
     },
     
-    // Gửi payload các mốc đã ghim để hệ thống Gen AI tự sinh lịch trình FoodTour
+    // Gửi payload các mốc đã ghim để hệ thống Gen AI tự sinh lịch trình FoodTour (API cũ, giữ lại)
     generatePlan: async (payload: any) => {
         const response = await apiClient.post('/schedule/generatePlan', payload);
         return response.data;
@@ -42,6 +47,30 @@ export const scheduleService = {
     // Gợi ý địa điểm du lịch (Autocomplete)
     autocompleteLocation: async (keyword: string) => {
         const response = await apiClient.post('/schedule/autocomplete', { keyword });
+        return response.data;
+    },
+
+    // ============================================
+    // API MỚI: TỐI ƯU HIỆU NĂNG (Streaming Mode)
+    // ============================================
+
+    // PHASE 1: Chuẩn bị dữ liệu (Raw Filter + Clustering)
+    // Gọi ngầm khi user chọn xong địa điểm, KHÔNG cần chờ user bấm nút.
+    preparePlan: async (payload: any) => {
+        const response = await retryRequest(
+            () => apiClient.post('/schedule/preparePlan', payload),
+            2 // Retry tối đa 2 lần nữa nếu thất bại
+        );
+        return response.data;
+    },
+
+    // PHASE 2: Tạo lịch trình cho 1 ngày (AI Scoring)
+    // Frontend gọi lặp lại N lần. Mỗi lần xong → render UI ngay.
+    generateDayPlan: async (dayIndex: number) => {
+        const response = await retryRequest(
+            () => apiClient.post('/schedule/generateDayPlan', { dayIndex }),
+            2 // Retry tối đa 2 lần nữa nếu thất bại
+        );
         return response.data;
     }
 };

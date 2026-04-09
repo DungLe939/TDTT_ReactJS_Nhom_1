@@ -1,5 +1,5 @@
-import { X, Calendar, MapPin } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { X, Calendar, MapPin, CheckCircle2, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { scheduleService } from '../../../../services/api';
 import './ScheduleFilterModal.css';
 
@@ -43,14 +43,21 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     // Autocomplete States
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+
+    // ==========================================
+    // PRE-FETCH STATE: Quét quán ăn ngầm khi chọn địa điểm
+    // ==========================================
+    // Khi user chọn địa điểm từ Autocomplete, ta gọi `searchLocation` ngay lập tức
+    // để quét quán ăn + lưu DB. User tiếp tục điền form bình thường,
+    // khi bấm "Tạo lịch trình" thì dữ liệu đã sẵn sàng → tiết kiệm ~18 giây.
+    const [prefetchStatus, setPrefetchStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+    const prefetchCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
     // ==========================================
     // EFFECT: AUTOCOMPLETE VỚI DEBOUNCE (300ms)
     // ==========================================
     useEffect(() => {
         if (location.trim().length > 2 && showSuggestions) {
-            setIsSearchingLocation(true);
             const delayDebounceFn = setTimeout(async () => {
                 try {
                     const res = await scheduleService.autocompleteLocation(location);
@@ -59,8 +66,6 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     }
                 } catch (err) {
                     console.error("Lỗi Autocomplete:", err);
-                } finally {
-                    setIsSearchingLocation(false);
                 }
             }, 300);
 
@@ -133,8 +138,12 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
             }
         };
 
-        // Bắn tín hiệu và truyền Cục formData giả lập lên Component Cha (SchedulePage) gọi hàm API
-        onSubmit(formData);
+        // Truyền thêm prefetchCoords cho SchedulePage để không cần gọi lại searchLocation
+        onSubmit({
+            ...formData,
+            prefetchCoords: prefetchCoordsRef.current,
+            prefetchReady: prefetchStatus === 'done'
+        });
     };
 
     return (
@@ -180,6 +189,24 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                                                 const shortName = item.name.split(',')[0];
                                                 setLocation(shortName);
                                                 setShowSuggestions(false);
+
+                                                // ==========================================
+                                                // PRE-FETCH: Gọi searchLocation NGẦM ngay khi chọn địa điểm!
+                                                // ==========================================
+                                                setPrefetchStatus('loading');
+                                                prefetchCoordsRef.current = null;
+                                                scheduleService.searchLocation(shortName)
+                                                    .then((res) => {
+                                                        if (res?.success && res?.coords) {
+                                                            prefetchCoordsRef.current = res.coords;
+                                                            setPrefetchStatus('done');
+                                                        } else {
+                                                            setPrefetchStatus('error');
+                                                        }
+                                                    })
+                                                    .catch(() => {
+                                                        setPrefetchStatus('error');
+                                                    });
                                             }}
                                         >
                                             <MapPin size={14} className="ac-icon" />
@@ -189,6 +216,20 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                                 </ul>
                             )}
                         </div>
+
+                        {/* Hiển thị trạng thái pre-fetch cho user biết hệ thống đang làm việc ngầm */}
+                        {prefetchStatus === 'loading' && (
+                            <div className="prefetch-status loading">
+                                <Loader2 size={14} className="animate-spin" />
+                                <span>Đang quét quán ăn tại {location}...</span>
+                            </div>
+                        )}
+                        {prefetchStatus === 'done' && (
+                            <div className="prefetch-status done">
+                                <CheckCircle2 size={14} />
+                                <span>Đã sẵn sàng dữ liệu quán ăn!</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Dates */}

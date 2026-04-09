@@ -14,14 +14,12 @@ const SchedulePage = () => {
     // ============================================
     
     // Lưu trữ mảng toàn bộ các ngày đi ăn (VD: Mảng 3 phần tử tương ứng 3 ngày)
-    // Mỗi ngày sẽ chứa Object thông tin: bữa sáng, trưa, tối.
     const [planData, setPlanData] = useState<any[] | null>(null);
 
-    // Lưu danh sách các món ăn vặt tiềm năng (Snacks) xung quanh khu vực chuyến đi
-    // AI dùng mảng này để cho phép user "bốc" bỏ thêm vào làm "bữa phụ"
+    // Lưu danh sách các món ăn vặt tiềm năng (Snacks)
     const [snackCandidates, setSnackCandidates] = useState<any[]>([]);
 
-    // Cấu hình cơ bản của chuyến đi (Địa điểm, Tổng ngân sách, Số ngày...)
+    // Cấu hình cơ bản của chuyến đi
     const [scheduleInfo, setScheduleInfo] = useState<any>({
         location: 'Đà Nẵng',
         days: 3,
@@ -31,11 +29,14 @@ const SchedulePage = () => {
     });
 
     // ============================================
-    // 1. LIFECYCLE - MOUNTING (Khởi tạo lần đầu)
+    // STREAMING STATE: Theo dõi tiến trình tạo lịch trình từng ngày
     // ============================================
-    // Hook này sẽ tự động chạy 1 lần duy nhất khi người dùng vào trang.
-    // Tác dụng: Phục hồi lại dữ liệu lịch trình từ LocalStorage để 
-    // lỡ người dùng có F5 (Refresh) trang thì không bị mất sạch lịch trình vừa tạo.
+    // Hiển thị cho user biết đang xử lý ngày thứ mấy / tổng bao nhiêu ngày
+    const [streamingProgress, setStreamingProgress] = useState<string>('');
+
+    // ============================================
+    // 1. LIFECYCLE - MOUNTING (Khôi phục dữ liệu từ LocalStorage)
+    // ============================================
     useEffect(() => {
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
@@ -59,63 +60,111 @@ const SchedulePage = () => {
     };
 
     // ============================================
-    // 2. NGHIỆP VỤ - GỌI API ĐỂ AI TẠO LỊCH TRÌNH
+    // 2. NGHIỆP VỤ - TỐI ƯU: STREAMING TẠO LỊCH TRÌNH
     // ============================================
-    // Kích hoạt khi người dùng nộp Form lọc ngân sách/sở thích.
+    // Luồng mới (tối ưu ~45s → ~7-10s cảm nhận):
+    //   Bước 1: Nếu pre-fetch đã xong → dùng coords có sẵn. Nếu chưa → gọi searchLocation.
+    //   Bước 2: Gọi preparePlan (Raw Filter + Clustering) → cache trên server.
+    //   Bước 3: Gọi generateDayPlan lần lượt từng ngày.
+    //           Mỗi ngày xong → render UI ngay (streaming).
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
+        setPlanData(null); // Reset giao diện cũ
+        setSnackCandidates([]);
+        setStreamingProgress('Đang chuẩn bị dữ liệu...');
+
         try {
-            const searchRes = await scheduleService.searchLocation(formData.location);
-            const coords = searchRes?.coords;
-            
-            if (!searchRes?.success || !coords) {
-                alert('Không thể tìm thấy tọa độ hoặc quét quán ăn cho địa điểm này!');
-                setIsLoading(false);
-                return;
+            // ---- BƯỚC 1: Lấy tọa độ (từ pre-fetch hoặc gọi mới) ----
+            let coords = formData.prefetchCoords;
+
+            if (!formData.prefetchReady || !coords) {
+                // Pre-fetch chưa xong hoặc lỗi → gọi searchLocation bình thường
+                setStreamingProgress('Đang quét quán ăn...');
+                const searchRes = await scheduleService.searchLocation(formData.location);
+                if (!searchRes?.success || !searchRes?.coords) {
+                    alert('Không thể tìm thấy tọa độ hoặc quét quán ăn cho địa điểm này!');
+                    setIsLoading(false);
+                    setStreamingProgress('');
+                    return;
+                }
+                coords = searchRes.coords;
             }
 
-            const { lat, lng } = coords;
-
-            const payload = {
+            // ---- BƯỚC 2: Chuẩn bị dữ liệu (Raw Filter + Clustering) ----
+            setStreamingProgress('Đang phân tích dữ liệu quán ăn...');
+            const preparePayload = {
                 budget: formData.budget,
-                currentLocation: { lat, lng },
+                currentLocation: { lat: coords.lat, lng: coords.lng },
                 preferences: formData.preferences,
                 travelDays: formData.travelDays
             };
 
-            const planRes = await scheduleService.generatePlan(payload);
+            const prepareRes = await scheduleService.preparePlan(preparePayload);
             
-            // Cập nhật State & Lưu LocalStorage
-            const newPlanData = planRes.plan;
-            const newSnackCandidates = planRes.snackCandidates || [];
+            if (!prepareRes?.success || prepareRes.count === 0) {
+                alert('Không tìm thấy quán ăn phù hợp tại khu vực này!');
+                setIsLoading(false);
+                setStreamingProgress('');
+                return;
+            }
+
+            const totalDays = prepareRes.totalDays || formData.travelDays;
+
+            // Cập nhật thông tin chuyến đi
             const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
                 startDate: formData.startDate || new Date().toISOString(),
-                totalBudget: planRes.info.totalBudget,
-                suggestedMealBudget: planRes.info.suggestedMealBudget
+                totalBudget: prepareRes.info.totalBudget,
+                suggestedMealBudget: prepareRes.info.suggestedMealBudget
             };
-
-            setPlanData(newPlanData);
-            setSnackCandidates(newSnackCandidates);
             setScheduleInfo(newScheduleInfo);
-
-            localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
-            localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(newSnackCandidates));
             localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
 
+            // ---- BƯỚC 3: STREAMING - Tạo lịch trình TỪNG NGÀY ----
+            // Mỗi ngày xong → thêm vào planData → UI render ngay lập tức!
+            const allDays: any[] = [];
+            const allSnacks: any[] = [];
+
+            for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
+                setStreamingProgress(`Đang tạo lịch trình ngày ${dayIdx + 1}/${totalDays}...`);
+
+                const dayRes = await scheduleService.generateDayPlan(dayIdx);
+
+                if (dayRes?.success) {
+                    // Thêm ngày mới vào mảng
+                    const newDay = { day: dayRes.day, meals: dayRes.meals };
+                    allDays.push(newDay);
+                    
+                    // Thu thập snack candidates từ từng ngày
+                    if (dayRes.snackCandidates) {
+                        allSnacks.push(...dayRes.snackCandidates);
+                    }
+
+                    // STREAMING RENDER: Cập nhật UI ngay sau mỗi ngày!
+                    // Spread [...allDays] tạo mảng mới để React detect thay đổi và re-render
+                    setPlanData([...allDays]);
+                    setSnackCandidates([...allSnacks]);
+                }
+            }
+
+            // Lưu kết quả cuối cùng vào LocalStorage
+            localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(allDays));
+            localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(allSnacks));
+
             setIsModalOpen(false);
+            setStreamingProgress('');
 
         } catch (error) {
             console.error('Lỗi API:', error);
             alert('Có lỗi xảy ra khi gọi API! Vui lòng thử lại hoặc kiểm tra Backend.');
         } finally {
             setIsLoading(false);
+            setStreamingProgress('');
         }
     };
 
     // Hàm Callback con dùng để component con (DailyPlanView) giao tiếp ngược lên
-    // VD: Cập nhật lại mảng sau khi người dùng Thêm Bữa Phụ hoặc Đổi Món.
     const handleUpdatePlan = (newPlanData: any[]) => {
         setPlanData([...newPlanData]);
         localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
@@ -129,6 +178,14 @@ const SchedulePage = () => {
                     subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`} 
                     onFilterClick={handleFilterClick}
                 />
+
+                {/* Hiển thị tiến trình streaming khi đang tạo lịch trình */}
+                {isLoading && streamingProgress && (
+                    <div className="streaming-progress">
+                        <div className="streaming-spinner"></div>
+                        <span>{streamingProgress}</span>
+                    </div>
+                )}
                 
                 {/* Khu vực Render Component Lịch trình */}
                 {planData && (
