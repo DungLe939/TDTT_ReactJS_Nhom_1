@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header/Header';
 import SchedulePage from './modules/schedule/pages/SchedulePage/SchedulePage';
 import PlaceholderPage from './common/components/PlaceholderPage/PlaceholderPage';
+import Navbar from './layouts/Navbar';
+import Home from './pages/Home';
 import './App.css';
 
 function App() {
@@ -37,12 +40,22 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <Header activeTab={activeTab} onTabChange={handleTabChange} />
-      <div className="main-content">
-        {renderContent()}
-      </div>
-    </div>
+    <Routes>
+      <Route path="/" element={
+        <div className="app-container">
+          <Header activeTab={activeTab} onTabChange={handleTabChange} />
+          <div className="main-content">
+            {renderContent()}
+          </div>
+        </div>
+      } />
+      <Route path="/home" element={
+        <>
+          <Navbar />
+          <Home />
+        </>
+      } />
+    </Routes>
   );
 }
 
