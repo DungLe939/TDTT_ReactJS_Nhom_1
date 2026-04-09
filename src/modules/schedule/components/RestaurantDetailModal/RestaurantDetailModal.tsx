@@ -12,13 +12,21 @@ interface RestaurantDetailModalProps {
 const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: RestaurantDetailModalProps) => {
     const [confirmingDish, setConfirmingDish] = useState<any>(null);
 
+    // ==========================================
+    // SIDE EFFECT: XỬ LÝ THANH CUỘN (SCROLL)
+    // ==========================================
+    // Khi Modal được mở (isOpen = true), ta sẽ ép `overflow = hidden` vào thuộc tính CSS của thẻ <body>.
+    // Điều này khóa cứng màn hình nền màu tối lại, người dùng cuộn chuột sẽ chỉ cuộn bên trong Modal này,
+    // chứ không bị trượt cả trang chủ (SchedulePage) ở đằng sau xuống dưới.
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
         } else {
+            // Khi đóng Modal, phải trả lại quyền cuộn cho <body> và reset lại trạng thái xác nhận món
             document.body.style.overflow = 'unset';
             setConfirmingDish(null);
         }
+        // Cleanup function: Dự phòng lỡ Component chết đột ngột (unmount) thì màn hình không bị khóa vĩnh viễn
         return () => {
             document.body.style.overflow = 'unset';
         };
@@ -26,15 +34,29 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
 
     if (!isOpen || !dishInfo) return null;
 
+    // ==========================================
+    // NGHIỆP VỤ: ĐỔI MÓN (THAY THẾ LỊCH TRÌNH 1 MÓN CỤ THỂ)
+    // ==========================================
+
+    // Xảy ra khi người dùng bấm vào 1 dòng trong "Thực đơn" của quán
     const handleItemClick = (item: any) => {
-        // Nếu món đang chọn chính là món trong lịch trình thì không làm gì
+        // Logic tối ưu: Nếu người dùng lỡ tay bấm lại vào đúng cái món đang có sẵn trong lịch trình
+        // thì return tĩnh luỗn (không làm gì cả để tránh gọi API dư thừa).
         if (item.name === dishInfo.dish) return;
+        
+        // Kích hoạt một Layer (Overlay) chui ra bắt người dùng XÁC NHẬN "Có chắc chắn muốn thay đổi không?"
         setConfirmingDish(item);
     };
 
+    // Hàm gọi khi bấm Nút Đồng Ý trong hộp thoại xác nhận (Overlay)
     const handleConfirm = () => {
         if (confirmingDish) {
+            // Bắn tín hiệu + Gửi object Món mới (confirmingDish) ngược lên Component Cha (DailyPlanView)
+            // thông qua Callback function `onDishSelect` (Props).
+            // Component Cha nhận được -> Tự update lại cục State planData tổng.
             onDishSelect?.(confirmingDish);
+            
+            // Đóng tất cả mọi thứ đi cho gọn
             setConfirmingDish(null);
             onClose();
         }

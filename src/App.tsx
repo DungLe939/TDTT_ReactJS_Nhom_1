@@ -8,6 +8,13 @@ import QuestsPage from './pages/QuestsPage';
 import GroupPage from './pages/GroupPage';
 import './App.css';
 
+/**
+ * Component App - Component gốc của toàn bộ ứng dụng phần Frontend ReactJS.
+ * 
+ * - Quản lý việc định tuyến (Routing) thông qua `react-router-dom`.
+ * - Hiển thị cố định thanh điều hướng `Navbar` ở mọi trang.
+ * - Trỏ các đường dẫn URL về đúng các Placeholder Page hoặc Component xử lý chính.
+ */
 function App() {
   return (
     <>

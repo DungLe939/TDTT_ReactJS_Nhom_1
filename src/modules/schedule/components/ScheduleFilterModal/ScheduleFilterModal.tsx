@@ -1,5 +1,6 @@
-import { X, Calendar } from 'lucide-react';
+import { X, Calendar, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { scheduleService } from '../../../../services/api';
 import './ScheduleFilterModal.css';
 
 interface ScheduleFilterModalProps {
@@ -18,7 +19,10 @@ const TASTE_OPTIONS = [
 ];
 
 const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleFilterModalProps) => {
-    // Helper to get initial value from localStorage
+    // ==========================================
+    // LOGIC: KHÔI PHỤC DỮ LIỆU CŨ TỪ LOCALSTORAGE
+    // ==========================================
+    // Giúp người dùng lỡ tắt Modal bật lại thì không phải gõ lại từ đầu.
     const getInitialData = () => {
         const saved = localStorage.getItem('FOOD_TOUR_FORM_DATA');
         return saved ? JSON.parse(saved) : {};
@@ -35,6 +39,36 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     const [dislikedFoods, setDislikedFoods] = useState(initialData.dislikedFoods || '');
     const [allergies, setAllergies] = useState(initialData.allergies || '');
     const [tastes, setTastes] = useState<string[]>(initialData.tastes || []);
+    
+    // Autocomplete States
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+
+    // ==========================================
+    // EFFECT: AUTOCOMPLETE VỚI DEBOUNCE (300ms)
+    // ==========================================
+    useEffect(() => {
+        if (location.trim().length > 2 && showSuggestions) {
+            setIsSearchingLocation(true);
+            const delayDebounceFn = setTimeout(async () => {
+                try {
+                    const res = await scheduleService.autocompleteLocation(location);
+                    if (res.success && res.data) {
+                        setSuggestions(res.data);
+                    }
+                } catch (err) {
+                    console.error("Lỗi Autocomplete:", err);
+                } finally {
+                    setIsSearchingLocation(false);
+                }
+            }, 300);
+
+            return () => clearTimeout(delayDebounceFn);
+        } else if (location.trim().length <= 2) {
+            setSuggestions([]);
+        }
+    }, [location, showSuggestions]);
 
     // Tự động lưu LocalStorage mỗi khi có thay đổi (Auto-save)
     useEffect(() => {
@@ -47,6 +81,11 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
 
     if (!isOpen) return null;
 
+    // ==========================================
+    // NGHIỆP VỤ: XỬ LÝ CHECKBOX KHẨU VỊ (TASTES)
+    // ==========================================
+    // Vì khẩu vị là Mảng (Chọn được nhiều ô), nên mỗi khi bấm ta phải:
+    // Kiểm tra xem đã có trong mảng chưa -> Nếu có gỡ ra (filter), chưa có thì thêm vào (Toán tử spread).
     const handleTasteChange = (tasteValue: string) => {
         setTastes(prev => 
             prev.includes(tasteValue) 
@@ -64,10 +103,13 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     };
 
+    // ==========================================
+    // NGHIỆP VỤ: XỬ LÝ NỘP FORM (SUBMIT ĐỂ GỌI API)
+    // ==========================================
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault(); // Chặn hành vi Reload rành trang mặc định của thẻ <form>
         
-        // Parse CSV to arrays
+        // Chuẩn hóa chuỗi text "A, B, C" thành mảng ["A", "B", "C"] chuẩn bị nộp cho Backend (NestJS yêu cầu Array)
         const commaToArray = (str: string) => str.split(',').map(s => s.trim()).filter(Boolean);
 
         const travelDays = calculateDays(startDate, endDate);
@@ -77,6 +119,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
             return;
         }
 
+        // Gom toàn bộ State rải rác lại thành 1 cục Payload duy nhất chuẩn khớp Schema Backend.
         const formData = {
             budget: Number(budget),
             location: location,
@@ -90,6 +133,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
             }
         };
 
+        // Bắn tín hiệu và truyền Cục formData giả lập lên Component Cha (SchedulePage) gọi hàm API
         onSubmit(formData);
     };
 
@@ -109,13 +153,42 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     {/* Destination */}
                     <div className="form-group">
                         <label>Địa điểm du lịch *</label>
-                        <input 
-                            type="text" 
-                            required
-                            placeholder="VD: Đà Nẵng, Phú Quốc..."
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                        />
+                        <div className="location-input-container">
+                            <input 
+                                type="text" 
+                                required
+                                placeholder="VD: Đà Nẵng, Phú Quốc..."
+                                value={location}
+                                onChange={(e) => {
+                                    setLocation(e.target.value);
+                                    setShowSuggestions(true);
+                                }}
+                                onFocus={() => {
+                                    if (location.length > 2) setShowSuggestions(true);
+                                }}
+                                onBlur={() => {
+                                    setTimeout(() => setShowSuggestions(false), 200);
+                                }}
+                            />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <ul className="autocomplete-dropdown">
+                                    {suggestions.map((item, index) => (
+                                        <li 
+                                            key={index} 
+                                            className="autocomplete-item"
+                                            onClick={() => {
+                                                const shortName = item.name.split(',')[0];
+                                                setLocation(shortName);
+                                                setShowSuggestions(false);
+                                            }}
+                                        >
+                                            <MapPin size={14} className="ac-icon" />
+                                            <span className="ac-text">{item.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                     </div>
 
                     {/* Dates */}

@@ -11,7 +11,11 @@ interface AddSnackModalProps {
     activePlan: any;
 }
 
-// Hàm tính khoảng cách Haversine (mét)
+
+// Hàm tính khoảng cách Haversine (tính bằng mét).
+// Dùng thuật toán lượng giác để tính khoảng cách đường chim bay giữa 2 điểm GPS (Latitude, Longitude)
+// trên bề mặt khối cầu (Trái đất). 
+// Rất nhẹ, chạy ngay trên Frontend mà không cần gọi API.
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371e3; // Bán kính Trái đất tính bằng mét
     const φ1 = lat1 * Math.PI / 180;
@@ -27,6 +31,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c;
 };
 
+// Dùng trong tính năng 'thêm bữa ăn phụ'
 const TIME_SLOTS = [
     '08:00', '09:00', '09:30', '10:00', '10:30', '14:00', '14:30',
     '15:00', '15:30', '16:00', '16:30', '20:30', '21:00', '21:30', '22:00'
@@ -43,7 +48,9 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
     const [realDistancesMap, setRealDistancesMap] = useState<Record<string, { distance: number, isReal: boolean, isFailed?: boolean }>>({});
     const [isCalculating, setIsCalculating] = useState(false);
 
-    // 1. Lấy danh sách Categories duy nhất
+    // 1. TỐI ƯU HÓA RENDER (useMemo) LẤY CATEGORIES
+    // Dùng useMemo để tránh việc vòng lặp tạo lại mảng lúc Component re-render.
+    // Lặp qua toàn bộ candidates từ API gửi về, Extract ra các chủ đề (Category) duy nhất bằng `Set`.
     const categories = useMemo(() => {
         const cats = new Set<string>();
         snackCandidates.forEach(res => {
@@ -61,7 +68,12 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
         }
     }, [categories, selectedCategory]);
 
-    // 2. Lọc danh sách món ăn dựa trên Category, Giờ và Tính khoảng cách
+    // 2. LOGIC LỌC MÓN ĂN VÀ QUÁN BÁN
+    // Tính toán mảng `filteredSnacks` phức tạp nhất:
+    // - Dựa vào Giờ người dùng chọn (so sánh với openingHours).
+    // - Dựa vào Vị trí (GPS hiện tại hoặc Bữa ăn liền trước đó).
+    // - Tính khoảng cách Haversine sơ bộ.
+    // - Chọn ra Quán Gần Nhất nêú có nhiều quán bán cùng 1 món.
     const filteredSnacks = useMemo(() => {
         if (!selectedCategory || !selectedTime) return [];
 
@@ -115,7 +127,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
             }
 
             if (isOpenNow) {
-                const distHaversine = refLocation 
+                const distHaversine = refLocation
                     ? calculateDistance(refLocation.lat, refLocation.lng, res.location.coordinates[1], res.location.coordinates[0])
                     : 0;
 
@@ -134,7 +146,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
             }
         });
 
-        // --- Logic Rút gọn & Chọn quán "Vô địch" ---
+        // Chọn quán ăn tìm năng nhất
         const dishGroups: Record<string, any[]> = {};
         allResults.forEach(item => {
             if (!dishGroups[item.name]) dishGroups[item.name] = [];
@@ -144,9 +156,9 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
         const winners: any[] = [];
         Object.keys(dishGroups).forEach(dishName => {
             const group = dishGroups[dishName];
-            
+
             // Lọc ra quán "vô địch" cho món này (ưu tiên quán gần nhất)
-            // NHƯNG loại bỏ quán nhắm tới đo đường thực tế mà bị lỗi
+            // Loại bỏ các quán bị lỗi trong quá trình gọi API để tìm khoảng cách ngắn nhất
             let validGroup = group.filter(item => !realDistancesMap[item.restaurantId]?.isFailed);
             if (validGroup.length === 0) return; // Nếu tất cả quán cho món này đều lỗi route -> bỏ qua món này
 
@@ -154,7 +166,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
             validGroup.forEach(item => {
                 const itemDist = realDistancesMap[item.restaurantId]?.distance || item.distance;
                 const winnerDist = realDistancesMap[winner.restaurantId]?.distance || winner.distance;
-                
+
                 if (itemDist < winnerDist) {
                     winner = item;
                 }
@@ -183,7 +195,9 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
         }
     }, [isOpen, userLocation]);
 
-    // Side effect: Tính toán khoảng cách thực tế (OSRM) cho Top các quán tiềm năng
+    // 3. EFFECT - GỌI API ĐO ĐƯỜNG THỰC TẾ (OSRM API)
+    // Lấy top các quán tiềm năng (Gần nhất theo Haversine đường chim bay) 
+    // và bắn API đo đường thực tế tránh việc xe phải đi đường vòng hoặc qua sông.
     useEffect(() => {
         if (!isOpen || !selectedCategory || !selectedTime) return;
 
@@ -227,12 +241,12 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
 
             setIsCalculating(true);
             const resultsMap = { ...realDistancesMap };
-            
+
             const uniqueCandidates = Array.from(new Set(candidatesToVerify.map(c => c.resId)))
                 .map(id => candidatesToVerify.find(c => c.resId === id))
                 .filter(c => !realDistancesMap[c!.resId]);
 
-            // Hàm gọi API với cơ chế Retry
+            // Hàm gọi API với cơ chế Retry => cho phép gọi 3 lần, nếu vẫn thất bại thì loại bỏ món ăn này 
             const getRouteWithRetry = async (candidate: any, retries = 2) => {
                 for (let i = 0; i <= retries; i++) {
                     try {
@@ -252,6 +266,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                 return null;
             };
 
+            //dùng promise.all để cùng lúc gọi nhiều api => tiết kiệm thời gian
             await Promise.all(uniqueCandidates.slice(0, 15).map(async (c) => {
                 if (!c) return;
                 try {
@@ -367,7 +382,7 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                                         <div className="snack-item-info">
                                             <div className="snack-item-name">{s.name}</div>
                                             <div className="snack-item-res">
-                                                {s.restaurantName} 
+                                                {s.restaurantName}
                                                 {s.displayDistance > 0 && (
                                                     <span className="distance-tag">
                                                         • {s.isRealDistance ? '🚗' : '📍'} {s.displayDistance > 1000 ? (s.displayDistance / 1000).toFixed(1) + 'km' : Math.round(s.displayDistance) + 'm'}

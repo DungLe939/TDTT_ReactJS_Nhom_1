@@ -212,6 +212,91 @@
     cursor: not-allowed;
 }
 
+/* ==========================================
+   AUTOCOMPLETE STYLES
+   ========================================== */
+.location-input-container {
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 1001; /* Đè lên các overlay khác */
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    margin-top: -8px; /* Kéo lên 1 chút để dính vào khớp với Input */
+}
+
+/* Tùy chỉnh thanh cuộn cho dropdown mượt mà hơn */
+.autocomplete-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* Hiệu ứng di chuột vào item gợi ý */
+.autocomplete-item:hover {
+    background-color: #FFF8F3;
+    color: #FF6B00;
+}
+
+.ac-icon {
+    color: #888;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.autocomplete-item:hover .ac-icon {
+    color: #FF6B00;
+}
+
+.ac-text {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.autocomplete-loading {
+    padding: 16px;
+    color: #888;
+    text-align: center;
+    font-size: 14px;
+    font-style: italic;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 @media (max-width: 600px) {
     .form-row {
         flex-direction: column;

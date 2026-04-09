@@ -16,12 +16,18 @@ interface DailyPlanViewProps {
     onUpdatePlan?: (newPlan: any[]) => void;
 }
 
+/**
+ * Component hiển thị chi tiết lịch trình của 1 ngày.
+ * Nhận Props từ `SchedulePage` và vẽ ra UI chuỗi các bữa ăn (Sáng, Trưa, Tối, Phụ)
+ * theo chuẩn thời gian.
+ */
 const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
     const [selectedDayISO, setSelectedDayISO] = useState(startDate);
     
-    // Tìm dữ liệu kế hoạch cho ngày đang chọn
+    // Cơ chế: So sánh ngày đang chọn trên giao diện (selectedDayISO) với ngày bắt đầu (tripStart)
+    // để trích xuất ra mảng bữa ăn của đúng 1 ngày cụ thể.
     const getActivePlan = () => {
         const current = new Date(selectedDayISO);
         const start = new Date(startDate);
@@ -33,7 +39,10 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
 
     const activePlan = getActivePlan();
 
-    // Tính toán chi phí (Bao gồm cả bữa phụ)
+    // Thuật toán: Quét qua toàn bộ mảng `planData` (các ngày),
+    // cộng dồn chi phí `price` của từng bữa chính (breakfast, lunch, dinner)
+    // cộng dồn thêm các bữa phụ (snacks).
+    // Phục vụ cho tính năng "Thống kê chi phí".
     const calculateCosts = () => {
         let grandTotal = 0;
         planData.forEach(day => {
@@ -162,7 +171,9 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
         }
     };
 
-    // Chuẩn bị danh sách hiển thị (Gộp chính + phụ và sắp xếp)
+    // Hàm trọng tâm: Gom dữ liệu Bữa chính (Object keys) và Bữa phụ (Array)
+    // Trộn chúng lại thành 1 mảng duy nhất và SẮP XẾP theo thứ tự thời gian trong ngày.
+    // Kết quả mảng `sortedMeals` giúp map ra UI Card từ trên xuống dưới mượt mà.
     const getSortedMeals = () => {
         if (!activePlan) return [];
         

@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Map, ScanLine, Languages, Ticket, Users, Menu, X } from 'lucide-react';
+import { Home as HomeIcon, Map, ScanLine, Languages, Ticket, Users, Menu, X } from 'lucide-react';
 
+/**
+ * Component Navbar - Thanh điều hướng dùng chung cho cả giao diện desktop & mobile.
+ * Lưu trữ trạng thái `isMobileMenuOpen` để điều khiển menu rút gọn khi xem trên điện thoại.
+ * `navItems` chứa mốc định tuyến tuyệt đối khớp với khai báo trong App.tsx.
+ */
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
+    { label: 'Trang chủ', icon: HomeIcon, path: '/' },
     { label: 'Lịch trình', icon: Map, path: '/schedule' },
     { label: 'Quét món', icon: ScanLine, path: '/scan' },
     { label: 'Menu AI', icon: Languages, path: '/menu' },

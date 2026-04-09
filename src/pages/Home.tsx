@@ -16,17 +16,17 @@ const Home = () => {
         <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl">
           Khám phá ẩm thực tuyệt vời, quét món ăn bằng AI, và chia sẻ cùng nhóm của bạn!
         </p>
-        
+
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link 
-            to="/scanning" 
+          <Link
+            to="/scan"
             className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-full transition-colors shadow-md hover:shadow-lg"
           >
             <ScanLine size={20} />
             Quét món ngay
           </Link>
-          <Link 
-            to="/schedule" 
+          <Link
+            to="/schedule"
             className="flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-3 px-8 rounded-full transition-colors shadow-sm hover:shadow-md"
           >
             <Map size={20} />

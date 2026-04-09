@@ -6,7 +6,12 @@ import { X, Navigation, MapPin, Loader2 } from 'lucide-react';
 import { scheduleService } from '../../../../services/api';
 import './MapModal.css';
 
-// Fix icon default của Leaflet (nếu dùng icon mặc định)
+// ==========================================
+// CẤU HÌNH FIX LỖI TÀI NGUYÊN (LEAFLET ICON)
+// ==========================================
+// Bản thân thư viện React Leaflet khi build bằng Vite hay Webpack đôi khi sẽ bị 
+// mất đường dẫn hình ảnh Marker mặc định. 
+// Do đó ta cần cấu hình lại DefaultIcon thủ công ngay tại Client.
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -14,7 +19,7 @@ let DefaultIcon = L.icon({
     iconUrl: markerIcon,
     shadowUrl: markerShadow,
     iconSize: [25, 41],
-    iconAnchor: [12, 41]
+    iconAnchor: [12, 41] // Đẩy điểm neo của Icon xuống phần mũi nhọn để chỉ chính xác toạ độ
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -24,16 +29,22 @@ interface MapModalProps {
     dishInfo: any;
 }
 
-// Component trợ giúp để tự động căn chỉnh bản đồ khi có dữ liệu đường đi
+// ==========================================
+// COMPONENT PHỤ TRỢ: RE-CENTER MAP (CĂN CHỈNH BẢN ĐỒ)
+// ==========================================
+// Hook useMap() chỉ hoạt động BÊN TRONG thẻ <MapContainer>. 
+// Component này âm thầm theo dõi mảng `coords` (mảng chứa toạ độ điểm A và điểm B).
+// Nếu `coords` thay đổi (VD tìm xong đường đi), nó tự động gọi `map.fitBounds` để
+// Zoom và Pan bản đồ sao cho vừa vặn hiển thị toàn bộ lộ trình, không bị khuất khỏi màn hình.
 const RecenterMap = ({ coords }: { coords: [number, number][] }) => {
     const map = useMap();
     useEffect(() => {
         if (coords.length > 0) {
             const bounds = L.latLngBounds(coords);
-            map.fitBounds(bounds, { padding: [50, 50] });
+            map.fitBounds(bounds, { padding: [50, 50] }); // padding 50px mép để không sát cạnh quá
         }
     }, [coords, map]);
-    return null;
+    return null; // Không cần render ra UI HTML, chỉ chạy background logic
 };
 
 const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
@@ -42,17 +53,21 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Hàm phân tích dữ liệu tọa độ từ Backend (MongoDB). 
+    // MongoDB lưu Location dưới dạng GeoJSON: [Longitude, Latitude]
+    // Nhưng Leaflet Map lại yêu cầu [Latitude, Longitude]. Do đó phải cẩn thận đảo ngược vị trí Array.
     const getDestCoords = (): [number, number] => {
-        // Hỗ trợ cấu trúc GeoJSON [Longitude, Latitude] từ backend
+        // Hỗ trợ cấu trúc GeoJSON [Longitude, Latitude] từ API chính
         if (dishInfo?.location?.coordinates) {
             const [lng, lat] = dishInfo.location.coordinates;
             return [lat, lng];
         }
-        // Fallback nếu có .lat và .lng (tùy phiên bản dữ liệu)
+        // Biện pháp phòng hờ (Fallback) nếu đổi API mà dữ liệu trả về là obj { lat, lng }
         if (dishInfo?.location?.lat && dishInfo?.location?.lng) {
             return [dishInfo.location.lat, dishInfo.location.lng];
         }
-        // Fallback mặc định: Nha Trang (thay vì HCMC để gần với ngữ cảnh người dùng đang quét)
+        // Nếu API lỗi hoàn toàn không có tọa độ quán ăn, thả ghim tạm ở trung tâm Nha Trang.
+        // Hữu ích trong Demo hoặc test tránh Crash App (Màn hình trắng).
         return [12.2458, 109.1943]; 
     };
 
@@ -73,22 +88,29 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
         };
     }, [isOpen, dishInfo]);
 
+    // Hàm kích hoạt khi Modal bật lên: Lấy GPS của thiết bị đang truy cập
     const handleGetLocation = () => {
         setLoading(true);
         setError(null);
 
+        // Kiểm tra xem Trình duyệt có cấp quyền dùng GPS không
         if (!navigator.geolocation) {
-            setError("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+            setError("Trình duyệt của bạn không hỗ trợ định vị GPS (Ví dụ: đang bật chế độ ẩn danh lỗi GPS).");
             setLoading(false);
             return;
         }
 
+        // Bắt đầu đo lấy vị trí người dùng
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
+                // Cập nhật State để thả 1 cái Marker (ghim) người dùng trên Map
                 setUserLocation([latitude, longitude]);
                 
                 try {
+                    // Gọi API (chạy qua NestJS) để tính toán đường đi
+                    // Tại sao qua Backend chứ không gọi frontend? 
+                    // => Để tránh bị lộ API Key của Map Provider, hoặc xử lý cache trên Server
                     const response = await scheduleService.getRoute({
                         userLat: latitude,
                         userLng: longitude,
@@ -97,23 +119,24 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                     });
 
                     if (response.success && response.geometry) {
-                        // OSRM trả về [lng, lat], Leaflet cần [lat, lng]
+                        // Backend (OSRM engine) thường trả Array đường đi theo chuẩn geoJSON [lng, lat].
+                        // Ta buộc phải dùng vòng lặp đảo ngược lại thành [lat, lng] cho tính năng Polyline (Vẽ nét đứt) ở front.
                         const coords = response.geometry.coordinates.map((c: any) => [c[1], c[0]]);
-                        setRoute(coords);
+                        setRoute(coords); // Lưu chuỗi tọa độ để vẽ lên bản đồ
                     } else {
-                        setError("Không tìm thấy đường đi.");
+                        setError("Không thể thiết lập lộ trình đi qua đường này (VD: khu vực cách ly, qua biển).");
                     }
                 } catch {
-                    setError("Lỗi khi lấy dữ liệu đường đi.");
+                    setError("Máy chủ API OSRM bị lỗi hoặc không phản hồi. Hãy tải lại sau.");
                 } finally {
                     setLoading(false);
                 }
             },
             () => {
-                setError("Vui lòng bật GPS và cho phép truy cập vị trí để xem chỉ đường.");
+                setError("Bạn đã từ chối quyền lấy Vị Trí. Vui lòng vào cài đặt trình duyệt để mở khóa GPS.");
                 setLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 10000 } // timeout 10 giây để tránh pending vô hạn
         );
     };
 

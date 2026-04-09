@@ -1,18 +1,29 @@
 import { Banknote, Landmark, AlertCircle, CheckCircle2 } from 'lucide-react';
 import './CostSummary.css';
 
+// ============================================
+// COMPONENT THE THEO DÕI NGÂN SÁCH (COST SUMMARY)
+// ============================================
+// Component hiển thị khung số liệu thông minh trên đầu trang 
+// để người dùng biết mình đang "Chi quá tay" hay "Vẫn còn dư tiền".
+
 interface CostSummaryProps {
-    dayTotal: number;
-    grandTotal: number;
-    targetDailyBudget: number;
-    totalDays: number;
+    dayTotal: number;          // Tiền đã chi của DUY NHẤT "ngày hôm nay" (đang click trên giao diện)
+    grandTotal: number;        // Tổng tiền dồn lại của TOÀN BỘ các ngày trong chuyến FoodTour
+    targetDailyBudget: number; // Mức tiền trung bình chia ra / 1 ngày (dựa theo budget / số ngày khai báo lúc search)
+    totalDays: number;         // Độ dài chuyến đi (VD: 3 ngày)
 }
 
 const CostSummary = ({ dayTotal, grandTotal, targetDailyBudget, totalDays }: CostSummaryProps) => {
+    // 1. Tính toán cột mốc kỳ vọng (Tổng ngân sách gốc)
     const totalTargetBudget = (targetDailyBudget || 0) * (totalDays || 1);
-    const isOverDaily = dayTotal > targetDailyBudget;
-    const isOverTotal = grandTotal > totalTargetBudget;
+    
+    // 2. Chấm điểm logic: Trả về cờ Boolean xem có vượt ngân sách không
+    const isOverDaily = dayTotal > targetDailyBudget; // Tiêu lố trong ngày?
+    const isOverTotal = grandTotal > totalTargetBudget; // Lố sạch tổng tiển cả chuyến đi?
 
+    // 3. Hàm formatter Tiền Tệ VNĐ chuẩn.
+    // Dùng API xây dựng sẵn của Javascript 'Intl' thì mã code sẽ rất sạch thay vì viết hàm dùng Regex.
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     };
