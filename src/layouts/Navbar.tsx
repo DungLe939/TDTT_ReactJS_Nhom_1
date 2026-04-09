@@ -7,10 +7,10 @@ const Navbar = () => {
 
   const navItems = [
     { label: 'Lịch trình', icon: Map, path: '/schedule' },
-    { label: 'Quét món', icon: ScanLine, path: '/scanning' },
-    { label: 'Menu AI', icon: Languages, path: '/menu-ai' },
+    { label: 'Quét món', icon: ScanLine, path: '/scan' },
+    { label: 'Menu AI', icon: Languages, path: '/menu' },
     { label: 'Nhiệm vụ', icon: Ticket, path: '/quests' },
-    { label: 'Nhóm ăn', icon: Users, path: '/group-taste' },
+    { label: 'Nhóm ăn', icon: Users, path: '/group' },
   ];
 
   return (
