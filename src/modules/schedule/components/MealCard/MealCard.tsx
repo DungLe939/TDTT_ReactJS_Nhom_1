@@ -28,17 +28,19 @@ const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDet
                  </div>
                  
                  <div className="meal-info">
-                     <div className="meal-type-tag">
-                         {type === 'main' ? (
-                             <span className="tag-main">Bữa chính</span>
-                         ) : (
-                             <span className="tag-snack">Bữa phụ</span>
-                         )}
-                     </div>
-                     
-                     <div className="meal-meta">
-                         {type === 'main' && session && <span className="meal-session">{session}</span>}
-                         <span className="meal-time">{time}</span>
+                     <div className="meal-header-row">
+                         <div className="meal-type-tag">
+                             {type === 'main' ? (
+                                 <span className="tag-main">Bữa chính</span>
+                             ) : (
+                                 <span className="tag-snack">Bữa phụ</span>
+                             )}
+                         </div>
+                         
+                         <div className="meal-meta">
+                             {type === 'main' && session && <span className="meal-session">{session}</span>}
+                             <span className="meal-time">{time}</span>
+                         </div>
                      </div>
                      <h4 className="meal-name">{dishInfo.dish}</h4>
                      

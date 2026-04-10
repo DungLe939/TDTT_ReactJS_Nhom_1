@@ -51,8 +51,15 @@
     border-top: none;
 }
 
-.meal-type-tag {
+.meal-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 4px;
+}
+
+.meal-type-tag {
+    display: flex;
 }
 
 .tag-main, .tag-snack {
