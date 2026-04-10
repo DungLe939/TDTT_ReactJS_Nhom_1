@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
-import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon } from 'lucide-react';
 import { Chatbot } from './Chatbot';
 
 export const Layout = () => {
@@ -10,7 +10,8 @@ export const Layout = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { path: '/', label: 'Lịch trình', icon: <Map className="w-5 h-5" /> },
+    { path: '/', label: 'Trang chủ', icon: <HomeIcon className="w-5 h-5" /> },
+    { path: '/itinerary', label: 'Lịch trình', icon: <Map className="w-5 h-5" /> },
     { path: '/scan', label: 'Quét món', icon: <ScanFace className="w-5 h-5" /> },
     { path: '/menu', label: 'Menu AI', icon: <Languages className="w-5 h-5" /> },
     { path: '/quests', label: 'Nhiệm vụ', icon: <Dices className="w-5 h-5" /> },
@@ -28,11 +29,11 @@ export const Layout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
-                T
+              <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-full" />
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500 hidden sm:block">
-                TasteTrekker
+                Hương Vị Bản Địa
               </span>
             </div>
 
@@ -78,7 +79,7 @@ export const Layout = () => {
                     Đăng nhập
                   </button>
                   <button
-                    onClick={() => login('admin')}
+                    onClick={() => navigate('/admin-login')}
                     className="bg-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
                   >
                     Admin
@@ -98,7 +99,10 @@ export const Layout = () => {
                     Đăng nhập
                   </button>
                   <button
-                    onClick={() => login('admin')}
+                    onClick={() => {
+                      navigate('/admin-login');
+                      setIsMobileMenuOpen(false);
+                    }}
                     className="bg-neutral-800 text-white px-3 py-1.5 rounded-full text-sm font-medium"
                   >
                     Admin
