@@ -6,27 +6,33 @@ import { scheduleService } from '../../../../services/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './SchedulePage.css';
 
+/**
+ * Component SchedulePage - Trang quản lý Lịch trình Food Tour.
+ * Đây là trung tâm điều phối của Module Lịch trình, quản lý luồng dữ liệu từ khi
+ * người dùng nhập yêu cầu đến khi AI tạo lịch trình từng ngày.
+ */
 const SchedulePage = () => {
+    // Trạng thái đóng/mở Modal bộ lọc
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // Trạng thái loading toàn trang khi đang gọi AI
     const [isLoading, setIsLoading] = useState(false);
 
-    // ============================================
     // STATE QUẢN LÝ DÀNH CHO DATE SELECTOR (LIFTED)
-    // ============================================
+    // selectedDayISO: Lưu ngày hiện tại đang được chọn ở định dạng YYYY-MM-DD
     const [selectedDayISO, setSelectedDayISO] = useState<string>('');
+    // viewStartDate: Ngày đầu tiên hiển thị trên thanh cuộn lịch (thanh 7 ngày)
     const [viewStartDate, setViewStartDate] = useState<Date | null>(null);
 
-    // ============================================
     // STATE QUẢN LÝ DỮ LIỆU CỐT LÕI CỦA ỨNG DỤNG
-    // ============================================
 
-    // Lưu trữ mảng toàn bộ các ngày đi ăn (VD: Mảng 3 phần tử tương ứng 3 ngày)
+    // planData: Lưu trữ mảng toàn bộ các ngày đi ăn (VD: Mảng 3 phần tử tương ứng 3 ngày)
+    // Mỗi phần tử chứa { day: number, meals: Meal[] }
     const [planData, setPlanData] = useState<any[] | null>(null);
 
-    // Lưu danh sách các món ăn vặt tiềm năng (Snacks)
+    // snackCandidates: Danh sách các món ăn vặt tiềm năng thu thập được khi AI phân tích
     const [snackCandidates, setSnackCandidates] = useState<any[]>([]);
 
-    // Cấu hình cơ bản của chuyến đi
+    // scheduleInfo: Cấu hình cơ bản của chuyến đi (Địa điểm, số ngày, ngân sách...)
     const [scheduleInfo, setScheduleInfo] = useState<any>({
         location: 'Đà Nẵng',
         days: 3,
@@ -35,16 +41,14 @@ const SchedulePage = () => {
         suggestedMealBudget: null
     });
 
-    // ============================================
     // STREAMING STATE: Theo dõi tiến trình tạo lịch trình từng ngày
-    // ============================================
-    // Hiển thị cho user biết đang xử lý ngày thứ mấy / tổng bao nhiêu ngày
+
+    // streamingProgress: Chuỗi thông báo trạng thái giúp người dùng bớt sốt ruột (UX)
     const [streamingProgress, setStreamingProgress] = useState<string>('');
 
-    // ============================================
     // 1. LIFECYCLE - MOUNTING (Khôi phục dữ liệu từ LocalStorage)
-    // ============================================
     useEffect(() => {
+        // Kiểm tra xem người dùng đã có lịch trình cũ trong trình duyệt chưa
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
         const savedSnacks = localStorage.getItem('FOOD_TOUR_SNACK_CANDIDATES');
@@ -60,11 +64,14 @@ const SchedulePage = () => {
                 days: parsedInfo.days || 3
             });
 
-            // Đồng bộ ngày bắt đầu và view
+            // Nếu có ngày bắt đầu, tính toán để thanh lịch cuộn về đúng vị trí
             if (parsedInfo.startDate && !selectedDayISO) {
                 setSelectedDayISO(parsedInfo.startDate.split('T')[0]);
                 const tripStart = new Date(parsedInfo.startDate);
 
+                /**
+                 * Hàm bổ trợ tìm ngày Thứ Hai của tuần chứa ngày d
+                 */
                 const getMonday = (d: Date) => {
                     const date = new Date(d);
                     const day = date.getDay();
@@ -76,30 +83,33 @@ const SchedulePage = () => {
         }
     }, [selectedDayISO]);
 
+    /**
+     * Mở modal bộ lọc khi click vào nút phễu trên Banner
+     */
     const handleFilterClick = () => {
         setIsModalOpen(true);
     };
 
-    // ============================================
     // 2. NGHIỆP VỤ - TỐI ƯU: STREAMING TẠO LỊCH TRÌNH
-    // ============================================
-    // Luồng mới (tối ưu ~45s → ~7-10s cảm nhận):
-    //   Bước 1: Nếu pre-fetch đã xong → dùng coords có sẵn. Nếu chưa → gọi searchLocation.
-    //   Bước 2: Gọi preparePlan (Raw Filter + Clustering) → cache trên server.
-    //   Bước 3: Gọi generateDayPlan lần lượt từng ngày.
-    //           Mỗi ngày xong → render UI ngay (streaming).
+    /**
+     * Xử lý khi người dùng nhấn "Tạo lịch trình" trong Modal.
+     * Cơ chế Streaming: 
+     * Bước 1: Lấy tọa độ địa điểm 
+     * Bước 2: Phân tích và nén dữ liệu quán ăn (Prepare/Clustering)
+     * Bước 3: Gọi AI tạo từng ngày một và hiển thị lên UI ngay lập tức.
+     */
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
-        setPlanData(null); // Reset giao diện cũ
+        setPlanData(null); // Reset giao diện cũ để chuẩn bị dữ liệu mới
         setSnackCandidates([]);
         setStreamingProgress('Đang chuẩn bị dữ liệu...');
 
         try {
-            // ---- BƯỚC 1: Lấy tọa độ (từ pre-fetch hoặc gọi mới) ----
+            // BƯỚC 1: Lấy tọa độ địa điểm 
             let coords = formData.prefetchCoords;
 
             if (!formData.prefetchReady || !coords) {
-                // Pre-fetch chưa xong hoặc lỗi → gọi searchLocation bình thường
+                // Nếu quy trình pre-fetch (lấy trước) chưa xong thì gọi API tìm kiếm ngay
                 setStreamingProgress('Đang quét quán ăn...');
                 const searchRes = await scheduleService.searchLocation(formData.location);
                 if (!searchRes?.success || !searchRes?.coords) {
@@ -111,7 +121,7 @@ const SchedulePage = () => {
                 coords = searchRes.coords;
             }
 
-            // ---- BƯỚC 2: Chuẩn bị dữ liệu (Raw Filter + Clustering) ----
+            // BƯỚC 2: Chuẩn bị & Phân cụm quán ăn (Raw Filter + Clustering) 
             setStreamingProgress('Đang phân tích dữ liệu quán ăn...');
             const preparePayload = {
                 budget: formData.budget,
@@ -120,6 +130,7 @@ const SchedulePage = () => {
                 travelDays: formData.travelDays
             };
 
+            // Gọi API prepare để Backend thực hiện thuật toán phân nhóm (K-Means)
             const prepareRes = await scheduleService.preparePlan(preparePayload);
 
             if (!prepareRes?.success || prepareRes.count === 0) {
@@ -131,7 +142,7 @@ const SchedulePage = () => {
 
             const totalDays = prepareRes.totalDays || formData.travelDays;
 
-            // Cập nhật thông tin chuyến đi
+            // Lưu trữ cấu hình chuyến đi vào state và LocalStorage
             const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
@@ -142,41 +153,42 @@ const SchedulePage = () => {
             setScheduleInfo(newScheduleInfo);
             localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
 
-            // ---- BƯỚC 3: STREAMING - Tạo lịch trình TỪNG NGÀY ----
-            // Mỗi ngày xong → thêm vào planData → UI render ngay lập tức!
+            // BƯỚC 3: STREAMING - Tạo lịch trình TỪNG NGÀY 
+            // Chúng ta không đợi AI tạo xong cả tuần mới hiển thị, mà render ngay khi từng ngày hoàn tất.
             const allDays: any[] = [];
             const allSnacks: any[] = [];
 
             for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
                 setStreamingProgress(`Đang tạo lịch trình ngày ${dayIdx + 1}/${totalDays}...`);
 
+                // Gọi AI xử lý lịch trình cho ngày thứ index=dayIdx
                 const dayRes = await scheduleService.generateDayPlan(dayIdx);
 
                 if (dayRes?.success) {
-                    // Thêm ngày mới vào mảng
                     const newDay = { day: dayRes.day, meals: dayRes.meals };
                     allDays.push(newDay);
 
-                    // Thu thập snack candidates từ từng ngày
+                    // Thu thập danh sách quán ăn vặt (Snacks) dự phòng
                     if (dayRes.snackCandidates) {
                         allSnacks.push(...dayRes.snackCandidates);
                     }
 
+                    // Tự động chọn xem ngày đầu tiên ngay khi có dữ liệu
                     if (dayIdx === 0 && !selectedDayISO) {
                         setSelectedDayISO(newScheduleInfo.startDate.split('T')[0]);
                     }
 
-                    // STREAMING RENDER: Cập nhật UI ngay sau mỗi ngày!
+                    // Cập nhật UI ngay lập tức sau mỗi vòng lặp ngày 
                     setPlanData([...allDays]);
                     setSnackCandidates([...allSnacks]);
                 }
             }
 
-            // Lưu kết quả cuối cùng vào LocalStorage
+            // Lưu kết quả cuối cùng hoàn thiện
             localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(allDays));
             localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(allSnacks));
 
-            setIsModalOpen(false);
+            setIsModalOpen(false); // Đóng modal và hoàn tất
             setStreamingProgress('');
 
         } catch (error) {
@@ -188,22 +200,27 @@ const SchedulePage = () => {
         }
     };
 
-    // Hàm Callback con dùng để component con (DailyPlanView) giao tiếp ngược lên
+    /**
+     * Cập nhật lại Plan toàn cục khi có thay đổi nhỏ từ component con 
+     * (Ví dụ: Đổi món, thêm bữa phụ, xóa món...)
+     */
     const handleUpdatePlan = (newPlanData: any[]) => {
         setPlanData([...newPlanData]);
         localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
     };
 
-    // Logic Date Selector (Lifted)
+    // Logic căn chỉnh thời gian cho Date Selector
     const tripStart = new Date(scheduleInfo.startDate || new Date());
     const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
+    // Tạo mảng 7 ngày để hiển thị trên thanh cuộn 
     const weekDays = viewStartDate ? Array.from({ length: 7 }, (_, i) => {
         const d = new Date(viewStartDate);
         d.setDate(viewStartDate.getDate() + i);
         return d;
     }) : [];
 
+    /** Cuộn lịch về 7 ngày trước đó */
     const handlePrevWeek = () => {
         if (!viewStartDate) return;
         const d = new Date(viewStartDate);
@@ -211,6 +228,7 @@ const SchedulePage = () => {
         setViewStartDate(d);
     };
 
+    /** Cuộn lịch tới 7 ngày tiếp theo */
     const handleNextWeek = () => {
         if (!viewStartDate) return;
         const d = new Date(viewStartDate);
@@ -218,6 +236,7 @@ const SchedulePage = () => {
         setViewStartDate(d);
     };
 
+    // Trạng thái vô hiệu hóa nút chuyển tuần
     const isPrevDisabled = !viewStartDate;
 
     const lastDayOfTrip = new Date(tripStart);
@@ -230,7 +249,7 @@ const SchedulePage = () => {
     return (
         <div className="max-w-4xl mx-auto pb-20">
             <main>
-                {/* Header & Map Overview - theo Figma */}
+                {/* Khu vực Banner và Map (Ảnh Map tĩnh kèm hiệu ứng Heatmap) */}
                 <div className="bg-white rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 mb-6">
                     <ScheduleBanner
                         title="Lịch trình Food Tour"
@@ -238,10 +257,10 @@ const SchedulePage = () => {
                         onFilterClick={handleFilterClick}
                     />
 
-                    {/* Calendar Scroll - theo Figma */}
+                    {/* Thanh cuộn Lịch có mũi tên điều hướng hai đầu */}
                     {planData && viewStartDate && (
                         <div className="flex items-center py-4 px-2">
-                            {/* Mũi tên trái - chuyển tuần trước */}
+                            {/* Mũi tên trái: Chuyển cụm 7 ngày trước */}
                             <button
                                 className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isPrevDisabled ? 'text-neutral-200 cursor-not-allowed' : 'text-neutral-500 hover:bg-orange-50 hover:text-orange-500'}`}
                                 onClick={handlePrevWeek}
@@ -250,7 +269,7 @@ const SchedulePage = () => {
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
 
-                            {/* Calendar Scroll */}
+                            {/* Danh sách 7 ngày hiển thị */}
                             <div className="flex overflow-x-auto hide-scrollbar gap-3">
                                 {weekDays.map((dateObj, index) => {
                                     const iso = dateObj.toISOString().split('T')[0];
@@ -263,13 +282,12 @@ const SchedulePage = () => {
                                             key={index}
                                             onClick={() => isScheduled && setSelectedDayISO(iso)}
                                             disabled={!isScheduled}
-                                            className={`flex flex-col items-center min-w-[3.5rem] p-2 rounded-2xl transition-all ${
-                                                isActive
+                                            className={`flex flex-col items-center min-w-[3.5rem] p-2 rounded-2xl transition-all ${isActive
                                                     ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
                                                     : isScheduled
                                                         ? 'bg-neutral-50 text-neutral-500 hover:bg-orange-50'
                                                         : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
-                                            }`}
+                                                }`}
                                         >
                                             <span className="text-xs font-semibold mb-1">{daysOfWeekNames[dateObj.getDay()]}</span>
                                             <span className={`text-lg font-bold ${isActive ? 'text-white' : 'text-neutral-800'}`}>{dateObj.getDate()}</span>
@@ -278,7 +296,7 @@ const SchedulePage = () => {
                                 })}
                             </div>
 
-                            {/* Mũi tên phải - chuyển tuần sau */}
+                            {/* Mũi tên phải: Chuyển cụm 7 ngày tiếp theo */}
                             <button
                                 className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isNextDisabled ? 'text-neutral-200 cursor-not-allowed' : 'text-neutral-500 hover:bg-orange-50 hover:text-orange-500'}`}
                                 onClick={handleNextWeek}
@@ -290,7 +308,7 @@ const SchedulePage = () => {
                     )}
                 </div>
 
-                {/* Hiển thị tiến trình streaming khi đang tạo lịch trình */}
+                {/* Phản hồi UX: Hiển thị tiến trình AI đang làm việc từng ngày */}
                 {isLoading && streamingProgress && (
                     <div className="flex items-center gap-3 px-4 py-3 mx-4 mb-4 bg-orange-50 rounded-xl text-orange-700 text-sm font-medium">
                         <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -298,7 +316,7 @@ const SchedulePage = () => {
                     </div>
                 )}
 
-                {/* Khu vực Render Component Lịch trình */}
+                {/* View chi tiết danh sách món ăn cho ngày đang được chọn */}
                 {planData && selectedDayISO && (
                     <DailyPlanView
                         planData={planData}
@@ -308,12 +326,14 @@ const SchedulePage = () => {
                         snackCandidates={snackCandidates}
                         onUpdatePlan={handleUpdatePlan}
                         onRegenerate={() => {
+                            // TODO: Implement logic thực sự cho việc tạo lại lịch trình nếu cần
                             alert("Tính năng tạo lại lịch trình đang thực thi lại logic lọc!");
                         }}
                     />
                 )}
             </main>
 
+            {/* Modal thu thập yêu cầu người dùng (Địa điểm, ngân sách, khẩu vị...) */}
             <ScheduleFilterModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

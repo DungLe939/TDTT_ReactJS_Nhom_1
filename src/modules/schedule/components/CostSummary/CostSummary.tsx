@@ -1,24 +1,30 @@
 import { Banknote, Landmark, AlertCircle, CheckCircle2 } from 'lucide-react';
 import './CostSummary.css';
 
-// ============================================
-// COMPONENT THẺ THEO DÕI NGÂN SÁCH (COST SUMMARY)
-// ============================================
-// Tính năng riêng của mình, Figma không có.
-// Giao diện được đồng bộ palette neutral/orange cho thống nhất.
-
+/**
+ * Component CostSummary - Thẻ hiển thị tóm tắt chi phí và quản lý ngân sách.
+ * giúp người dùng theo dõi mức chi tiêu thực tế so với kỳ vọng ban đầu.
+ */
 interface CostSummaryProps {
-    dayTotal: number;
-    grandTotal: number;
-    targetDailyBudget: number;
-    totalDays: number;
+    dayTotal: number;          // Tổng chi phí của ngày đang xem
+    grandTotal: number;        // Tổng chi phí của toàn bộ chuyến đi hiện tại
+    targetDailyBudget: number; // Mức ngân sách trung bình dự kiến cho 1 ngày
+    totalDays: number;         // Tổng số ngày của tour
 }
 
 const CostSummary = ({ dayTotal, grandTotal, targetDailyBudget, totalDays }: CostSummaryProps) => {
+
+    // Tính toán tổng ngân sách mục tiêu dựa trên (Ngân sách ngày) x (Số ngày)
     const totalTargetBudget = (targetDailyBudget || 0) * (totalDays || 1);
+
+    // Kiểm tra xem chi tiêu thực tế có vượt quá mục tiêu hay không
     const isOverDaily = dayTotal > targetDailyBudget;
     const isOverTotal = grandTotal > totalTargetBudget;
 
+    /** 
+     * Hàm format tiền tệ VNĐ 
+     * Sử dụng Intl.NumberFormat để tự động thêm dấu phân cách hàng nghìn và đơn vị đ.
+     */
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     };
@@ -26,7 +32,8 @@ const CostSummary = ({ dayTotal, grandTotal, targetDailyBudget, totalDays }: Cos
     return (
         <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Chi phí hôm nay */}
+
+                {/* THÔNG TIN CHI PHÍ NGÀY HIỆN TẠI */}
                 <div className="bg-white rounded-xl p-4 border border-neutral-100">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
@@ -42,7 +49,7 @@ const CostSummary = ({ dayTotal, grandTotal, targetDailyBudget, totalDays }: Cos
                     </div>
                 </div>
 
-                {/* Tổng chi phí tour */}
+                {/* TỔNG KẾT TOÀN BỘ CHUYẾN ĐI (TOUR TOTAL) */}
                 <div className="bg-white rounded-xl p-4 border border-neutral-100">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
@@ -59,14 +66,15 @@ const CostSummary = ({ dayTotal, grandTotal, targetDailyBudget, totalDays }: Cos
                 </div>
             </div>
 
-            {/* Trạng thái ngân sách */}
+            {/* THANH THÔNG BÁO TRẠNG THÁI NGÂN SÁCH (BỘ LỌC THÔNG MINH) */}
+            {/* Chỉ hiển thị nếu người dùng có nhập vào tổng ngân sách khi tạo tour */}
             {targetDailyBudget > 0 && (
                 <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${isOverTotal ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
                     {isOverTotal ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                     <span>
                         {isOverTotal
-                            ? `Vượt ${formatCurrency(Math.abs(grandTotal - totalTargetBudget))}`
-                            : `Còn dư ${formatCurrency(Math.abs(totalTargetBudget - grandTotal))}`
+                            ? `Vượt ngân sách ${formatCurrency(Math.abs(grandTotal - totalTargetBudget))} (AI khuyên bạn nên chọn các món giá rẻ hơn vào ngày mai)`
+                            : `Bạn đang chi tiêu rất ổn! Còn dư ${formatCurrency(Math.abs(totalTargetBudget - grandTotal))}`
                         }
                     </span>
                 </div>
