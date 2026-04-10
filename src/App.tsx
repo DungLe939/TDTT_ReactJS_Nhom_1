@@ -17,9 +17,9 @@ import './App.css';
  */
 function App() {
   return (
-    <>
+    <div className="min-h-screen bg-neutral-50 flex flex-col font-sans">
       <Navbar />
-      <div className="main-content">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/schedule" element={<SchedulePage />} />
@@ -28,8 +28,8 @@ function App() {
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/group" element={<GroupPage />} />
         </Routes>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
 

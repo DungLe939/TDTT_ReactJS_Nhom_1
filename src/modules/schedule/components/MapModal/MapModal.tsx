@@ -68,7 +68,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
         }
         // Nếu API lỗi hoàn toàn không có tọa độ quán ăn, thả ghim tạm ở trung tâm Nha Trang.
         // Hữu ích trong Demo hoặc test tránh Crash App (Màn hình trắng).
-        return [12.2458, 109.1943]; 
+        return [12.2458, 109.1943];
     };
 
     const destLocation = getDestCoords();
@@ -106,7 +106,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                 const { latitude, longitude } = position.coords;
                 // Cập nhật State để thả 1 cái Marker (ghim) người dùng trên Map
                 setUserLocation([latitude, longitude]);
-                
+
                 try {
                     // Gọi API (chạy qua NestJS) để tính toán đường đi
                     // Tại sao qua Backend chứ không gọi frontend? 
@@ -173,9 +173,9 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                         </div>
                     )}
 
-                    <MapContainer 
-                        center={destLocation} 
-                        zoom={15} 
+                    <MapContainer
+                        center={destLocation}
+                        zoom={15}
                         style={{ height: '100%', width: '100%' }}
                         zoomControl={false}
                     >
@@ -183,7 +183,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
-                        
+
                         {/* Marker cho quán ăn */}
                         <Marker position={destLocation}>
                             <Popup>
@@ -202,9 +202,9 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                         {/* Vẽ đường đi */}
                         {route.length > 0 && (
                             <>
-                                <Polyline 
-                                    positions={route} 
-                                    pathOptions={{ color: '#ff6b00', weight: 5, opacity: 0.7 }} 
+                                <Polyline
+                                    positions={route}
+                                    pathOptions={{ color: '#ff6b00', weight: 5, opacity: 0.7 }}
                                 />
                                 <RecenterMap coords={[...route, userLocation!, destLocation]} />
                             </>
@@ -213,10 +213,10 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                 </div>
 
                 <div className="map-modal-footer">
-                     <div className="info-item">
-                         <MapPin size={16} />
-                         <span>{dishInfo?.address || "Đang cập nhật địa chỉ"}</span>
-                     </div>
+                    <div className="info-item">
+                        <MapPin size={16} />
+                        <span>{dishInfo?.address || "Đang cập nhật địa chỉ"}</span>
+                    </div>
                 </div>
             </div>
         </div>

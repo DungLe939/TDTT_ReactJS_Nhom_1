@@ -43,7 +43,7 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
         // Logic tối ưu: Nếu người dùng lỡ tay bấm lại vào đúng cái món đang có sẵn trong lịch trình
         // thì return tĩnh luỗn (không làm gì cả để tránh gọi API dư thừa).
         if (item.name === dishInfo.dish) return;
-        
+
         // Kích hoạt một Layer (Overlay) chui ra bắt người dùng XÁC NHẬN "Có chắc chắn muốn thay đổi không?"
         setConfirmingDish(item);
     };
@@ -55,7 +55,7 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
             // thông qua Callback function `onDishSelect` (Props).
             // Component Cha nhận được -> Tự update lại cục State planData tổng.
             onDishSelect?.(confirmingDish);
-            
+
             // Đóng tất cả mọi thứ đi cho gọn
             setConfirmingDish(null);
             onClose();
@@ -70,16 +70,16 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
                         <X size={24} />
                     </button>
                     <div className="restaurant-header-meta">
-                         <h2 className="restaurant-title">{dishInfo.name}</h2>
-                         <div className="restaurant-short-info">
-                             <div className="rating-pill">
-                                 <Star size={14} fill="currentColor" />
-                                 <span>{dishInfo.rating || 4.2}</span>
-                             </div>
-                             <span className="price-range">
-                                 {Array(dishInfo.priceRange || 2).fill('$').join('')}
-                             </span>
-                         </div>
+                        <h2 className="restaurant-title">{dishInfo.name}</h2>
+                        <div className="restaurant-short-info">
+                            <div className="rating-pill">
+                                <Star size={14} fill="currentColor" />
+                                <span>{dishInfo.rating || 4.2}</span>
+                            </div>
+                            <span className="price-range">
+                                {Array(dishInfo.priceRange || 2).fill('$').join('')}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -109,8 +109,8 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
                                 {dishInfo.menu.map((item: any, idx: number) => {
                                     const isCurrent = item.name === dishInfo.dish;
                                     return (
-                                        <div 
-                                            key={idx} 
+                                        <div
+                                            key={idx}
                                             className={`menu-item ${isCurrent ? 'active' : 'selectable'}`}
                                             onClick={() => handleItemClick(item)}
                                         >

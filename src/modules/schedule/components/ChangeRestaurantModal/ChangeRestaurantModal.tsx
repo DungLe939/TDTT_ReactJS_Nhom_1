@@ -87,8 +87,8 @@ const ChangeRestaurantModal = ({ isOpen, onClose, sessionName, alternatives, onS
                             <h4>Chọn món để thêm vào lịch trình:</h4>
                             <div className="menu-grid">
                                 {selectedRes.menu?.map((dish: any, idx: number) => (
-                                    <div 
-                                        key={idx} 
+                                    <div
+                                        key={idx}
                                         className="menu-option"
                                         onClick={() => handleSelectDish(dish)}
                                     >

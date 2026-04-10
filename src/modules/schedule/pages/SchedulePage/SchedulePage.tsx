@@ -64,11 +64,11 @@ const SchedulePage = () => {
             if (parsedInfo.startDate && !selectedDayISO) {
                 setSelectedDayISO(parsedInfo.startDate.split('T')[0]);
                 const tripStart = new Date(parsedInfo.startDate);
-                
+
                 const getMonday = (d: Date) => {
                     const date = new Date(d);
-                    const day = date.getDay(); 
-                    const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+                    const day = date.getDay();
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
                     return new Date(date.setDate(diff));
                 };
                 setViewStartDate(getMonday(tripStart));
@@ -197,7 +197,7 @@ const SchedulePage = () => {
     // Logic Date Selector (Lifted)
     const tripStart = new Date(scheduleInfo.startDate || new Date());
     const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    
+
     const weekDays = viewStartDate ? Array.from({ length: 7 }, (_, i) => {
         const d = new Date(viewStartDate);
         d.setDate(viewStartDate.getDate() + i);
@@ -219,35 +219,39 @@ const SchedulePage = () => {
     };
 
     const isPrevDisabled = !viewStartDate;
-    
+
     const lastDayOfTrip = new Date(tripStart);
     if (planData) lastDayOfTrip.setDate(tripStart.getDate() + (planData.length || 1) - 1);
-    
+
     const nextWeekStart = viewStartDate ? new Date(viewStartDate) : null;
     if (nextWeekStart) nextWeekStart.setDate(nextWeekStart.getDate() + 7);
     const isNextDisabled = !nextWeekStart || nextWeekStart.getTime() > lastDayOfTrip.getTime();
 
     return (
-        <div className="schedule-page">
-            <main className="schedule-main">
-                <div className="schedule-header-card">
+        <div className="max-w-4xl mx-auto pb-20">
+            <main>
+                {/* Header & Map Overview - theo Figma */}
+                <div className="bg-white rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 mb-6">
                     <ScheduleBanner
                         title="Lịch trình Food Tour"
                         subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`}
                         onFilterClick={handleFilterClick}
                     />
 
+                    {/* Calendar Scroll - theo Figma */}
                     {planData && viewStartDate && (
-                        <div className="card-date-navigation">
-                            <button 
-                                className={`nav-btn prev ${isPrevDisabled ? 'disabled' : ''}`} 
+                        <div className="flex items-center py-4 px-2">
+                            {/* Mũi tên trái - chuyển tuần trước */}
+                            <button
+                                className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isPrevDisabled ? 'text-neutral-200 cursor-not-allowed' : 'text-neutral-500 hover:bg-orange-50 hover:text-orange-500'}`}
                                 onClick={handlePrevWeek}
                                 disabled={isPrevDisabled}
                             >
-                                <ChevronLeft size={20} />
+                                <ChevronLeft className="w-5 h-5" />
                             </button>
 
-                            <div className="card-date-selector">
+                            {/* Calendar Scroll */}
+                            <div className="flex overflow-x-auto hide-scrollbar gap-3">
                                 {weekDays.map((dateObj, index) => {
                                     const iso = dateObj.toISOString().split('T')[0];
                                     const isActive = iso === selectedDayISO;
@@ -255,24 +259,32 @@ const SchedulePage = () => {
                                     const isScheduled = planData && diffDays >= 0 && diffDays < planData.length;
 
                                     return (
-                                        <div 
+                                        <button
                                             key={index}
-                                            className={`date-item ${isActive ? 'active' : ''} ${isScheduled && !isActive ? 'scheduled' : ''} ${!isScheduled ? 'disabled' : ''}`}
                                             onClick={() => isScheduled && setSelectedDayISO(iso)}
+                                            disabled={!isScheduled}
+                                            className={`flex flex-col items-center min-w-[3.5rem] p-2 rounded-2xl transition-all ${
+                                                isActive
+                                                    ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
+                                                    : isScheduled
+                                                        ? 'bg-neutral-50 text-neutral-500 hover:bg-orange-50'
+                                                        : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
+                                            }`}
                                         >
-                                            <span className="day-name">{daysOfWeekNames[dateObj.getDay()]}</span>
-                                            <span className="day-number">{dateObj.getDate()}</span>
-                                        </div>
+                                            <span className="text-xs font-semibold mb-1">{daysOfWeekNames[dateObj.getDay()]}</span>
+                                            <span className={`text-lg font-bold ${isActive ? 'text-white' : 'text-neutral-800'}`}>{dateObj.getDate()}</span>
+                                        </button>
                                     );
                                 })}
                             </div>
 
-                            <button 
-                                className={`nav-btn next ${isNextDisabled ? 'disabled' : ''}`} 
+                            {/* Mũi tên phải - chuyển tuần sau */}
+                            <button
+                                className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isNextDisabled ? 'text-neutral-200 cursor-not-allowed' : 'text-neutral-500 hover:bg-orange-50 hover:text-orange-500'}`}
                                 onClick={handleNextWeek}
                                 disabled={isNextDisabled}
                             >
-                                <ChevronRight size={20} />
+                                <ChevronRight className="w-5 h-5" />
                             </button>
                         </div>
                     )}
@@ -280,8 +292,8 @@ const SchedulePage = () => {
 
                 {/* Hiển thị tiến trình streaming khi đang tạo lịch trình */}
                 {isLoading && streamingProgress && (
-                    <div className="streaming-progress">
-                        <div className="streaming-spinner"></div>
+                    <div className="flex items-center gap-3 px-4 py-3 mx-4 mb-4 bg-orange-50 rounded-xl text-orange-700 text-sm font-medium">
+                        <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                         <span>{streamingProgress}</span>
                     </div>
                 )}

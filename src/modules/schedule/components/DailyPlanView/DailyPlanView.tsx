@@ -27,7 +27,7 @@ interface DailyPlanViewProps {
 const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
-    
+
     // Cơ chế: So sánh ngày đang chọn trên giao diện (selectedDayISO) với ngày bắt đầu (tripStart)
     // để trích xuất ra mảng bữa ăn của đúng 1 ngày cụ thể.
     const getActivePlan = () => {
@@ -35,7 +35,7 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
         const start = new Date(startDate);
         const diffTime = current.getTime() - start.getTime();
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-        
+
         return planData.find(p => p.day === diffDays + 1);
     };
 
@@ -79,7 +79,7 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
 
     const { dayTotal, grandTotal } = calculateCosts();
     const dailyTarget = (scheduleInfo?.totalBudget > 0) ? (scheduleInfo.totalBudget / (scheduleInfo.days || 1)) : 0;
-    
+
     // Modal States
     const [mapOpen, setMapOpen] = useState(false);
     const [selectedDish, setSelectedDish] = useState<any>(null);
@@ -110,45 +110,45 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
 
     const handleDishSelect = (newDishItem: any) => {
         if (!activePlan || !selectedSession) return;
-        
+
         const sessionMap: Record<string, string> = {
             'SÁNG': 'breakfast',
             'TRƯA': 'lunch',
             'TỐI': 'dinner'
         };
-        
+
         const sessionKey = sessionMap[selectedSession];
         if (!sessionKey) return;
 
         const newPlanData = [...planData];
         const dayIndex = newPlanData.findIndex(p => p.day === activePlan.day);
-        
+
         if (dayIndex !== -1) {
             const currentMeal = newPlanData[dayIndex].meals[sessionKey];
-            
+
             newPlanData[dayIndex].meals[sessionKey] = {
                 ...currentMeal,
                 dish: newDishItem.name,
                 price: newDishItem.price
             };
-            
+
             onUpdatePlan?.(newPlanData);
         }
     };
 
     const handleAddSnack = (snack: any) => {
         if (!activePlan) return;
-        
+
         const newPlanData = [...planData];
         const dayIndex = newPlanData.findIndex(p => p.day === activePlan.day);
-        
+
         if (dayIndex !== -1) {
             const currentSnacks = newPlanData[dayIndex].snacks || [];
             if (currentSnacks.length >= 3) {
                 alert("Bạn chỉ có thể thêm tối đa 3 bữa phụ mỗi ngày!");
                 return;
             }
-            
+
             newPlanData[dayIndex].snacks = [...currentSnacks, snack];
             onUpdatePlan?.(newPlanData);
         }
@@ -202,7 +202,7 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
 
         const { dayIdx, sessionKey } = swapTarget;
         const newPlanData = [...planData];
-        
+
         if (newPlanData[dayIdx]) {
             // Cập nhật toàn diện metadata từ Backend (Bao gồm cả address, rating, menu...)
             newPlanData[dayIdx].meals[sessionKey] = {
@@ -210,7 +210,7 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                 type: 'main',
                 time: planData[dayIdx].meals[sessionKey].time // Giữ nguyên mốc thời gian cũ
             };
-            
+
             onUpdatePlan?.(newPlanData);
             setSwapModalOpen(false);
         }
@@ -221,16 +221,16 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
     // Kết quả mảng `sortedMeals` giúp map ra UI Card từ trên xuống dưới mượt mà.
     const getSortedMeals = () => {
         if (!activePlan) return [];
-        
+
         const meals: any[] = [];
-        
+
         // Bữa chính
         if (activePlan.meals) {
             if (activePlan.meals.breakfast) meals.push({ ...activePlan.meals.breakfast, session: 'SÁNG', type: 'main' });
             if (activePlan.meals.lunch) meals.push({ ...activePlan.meals.lunch, session: 'TRƯA', type: 'main' });
             if (activePlan.meals.dinner) meals.push({ ...activePlan.meals.dinner, session: 'TỐI', type: 'main' });
         }
-        
+
         // Bữa phụ
         if (activePlan.snacks) {
             activePlan.snacks.forEach((s: any) => {
@@ -249,16 +249,19 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
     const sortedMeals = getSortedMeals();
 
     return (
-        <div className="daily-plan-container">
+        <div className="px-4 space-y-4">
 
-            {/* Toggle Thống kê chi phí */}
-            <div className={`cost-summary-toggle ${showCostSummary ? 'active' : ''}`} onClick={() => setShowCostSummary(!showCostSummary)}>
-                <div className="toggle-label"><BarChart3 size={18} /><span>Thống kê chi phí</span></div>
-                {showCostSummary ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {/* Toggle Thống kê chi phí - tính năng riêng, giữ nguyên */}
+            <div
+                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${showCostSummary ? 'bg-orange-100 text-orange-700 shadow-sm' : 'bg-white border border-neutral-100 text-neutral-600 hover:border-orange-200 hover:text-orange-600'}`}
+                onClick={() => setShowCostSummary(!showCostSummary)}
+            >
+                <div className="flex items-center gap-2"><BarChart3 className="w-4 h-4" /><span className="text-sm font-medium">Thống kê chi phí</span></div>
+                {showCostSummary ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </div>
 
             {showCostSummary && (
-                <CostSummary 
+                <CostSummary
                     dayTotal={dayTotal}
                     grandTotal={grandTotal}
                     targetDailyBudget={dailyTarget}
@@ -266,20 +269,18 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                 />
             )}
 
-            {/* Content Area */}
-            <div className="daily-content-header">
-                <h3>Hôm nay ăn gì?</h3>
-                <div className="header-actions">
-                    <button className="btn-regenerate" onClick={onRegenerate}>
-                        <RefreshCcw size={16} /> Tạo lại
-                    </button>
-                </div>
+            {/* Content Area - theo Figma */}
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="font-bold text-neutral-800 text-lg">Hôm nay ăn gì?</h2>
+                <button className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 px-3 py-1.5 rounded-lg transition-colors" onClick={onRegenerate}>
+                    <RefreshCcw className="w-4 h-4" /> Tạo lại
+                </button>
             </div>
 
-            <div className="meals-list">
+            <div className="space-y-4">
                 {sortedMeals.length > 0 ? (
                     sortedMeals.map((meal, idx) => (
-                        <MealCard 
+                        <MealCard
                             key={`${meal.id}-${meal.time}-${idx}`}
                             session={meal.session}
                             type={meal.type}
@@ -291,33 +292,37 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                         />
                     ))
                 ) : (
-                    <div className="empty-meal">Không có dữ liệu ăn uống cho ngày này</div>
+                    <div className="text-center py-8 text-neutral-400 text-sm">Không có dữ liệu ăn uống cho ngày này</div>
                 )}
             </div>
 
+            {/* Nút thêm bữa phụ - theo Figma */}
             {(activePlan?.snacks?.length || 0) < 3 && (
-                <button className="btn-add-snack-bottom" onClick={() => setSnackModalOpen(true)}>
-                    <Plus size={16} /> Thêm bữa ăn phụ
+                <button
+                    className="w-full border-2 border-dashed border-neutral-300 text-neutral-500 rounded-2xl py-4 flex items-center justify-center gap-2 font-medium hover:border-orange-300 hover:text-orange-500 transition-colors"
+                    onClick={() => setSnackModalOpen(true)}
+                >
+                    <Plus className="w-5 h-5" /> Thêm bữa ăn phụ
                 </button>
             )}
 
-            {/* Modals */}
+            {/* Modals - giữ nguyên 100% */}
             <MapModal isOpen={mapOpen} onClose={() => setMapOpen(false)} dishInfo={selectedDish} />
-            <RestaurantDetailModal 
-                isOpen={detailOpen} 
-                onClose={() => setDetailOpen(false)} 
-                dishInfo={selectedDetailDish} 
-                onDishSelect={handleDishSelect} 
+            <RestaurantDetailModal
+                isOpen={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                dishInfo={selectedDetailDish}
+                onDishSelect={handleDishSelect}
             />
-            <AddSnackModal 
-                isOpen={snackModalOpen} 
-                onClose={() => setSnackModalOpen(false)} 
-                onAdd={handleAddSnack} 
-                snackCandidates={snackCandidates} 
+            <AddSnackModal
+                isOpen={snackModalOpen}
+                onClose={() => setSnackModalOpen(false)}
+                onAdd={handleAddSnack}
+                snackCandidates={snackCandidates}
                 activePlan={activePlan}
             />
 
-            <SwapMealModal 
+            <SwapMealModal
                 isOpen={swapModalOpen}
                 onClose={() => setSwapModalOpen(false)}
                 options={swapOptions}
@@ -330,3 +335,4 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
 };
 
 export default DailyPlanView;
+

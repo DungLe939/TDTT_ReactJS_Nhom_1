@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Home as HomeIcon, Map, ScanLine, Languages, Ticket, Users, Menu, X } from 'lucide-react';
+import { Map, ScanLine, Languages, Ticket, Users, Menu, X } from 'lucide-react';
 
 /**
  * Component Navbar - Thanh điều hướng dùng chung cho cả giao diện desktop & mobile.
- * Lưu trữ trạng thái `isMobileMenuOpen` để điều khiển menu rút gọn khi xem trên điện thoại.
- * `navItems` chứa mốc định tuyến tuyệt đối khớp với khai báo trong App.tsx.
+ * Đồng bộ theo thiết kế Figma Layout.tsx của nhóm.
  */
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: 'Trang chủ', icon: HomeIcon, path: '/' },
     { label: 'Lịch trình', icon: Map, path: '/schedule' },
     { label: 'Quét món', icon: ScanLine, path: '/scan' },
     { label: 'Menu AI', icon: Languages, path: '/menu' },
@@ -20,100 +18,89 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white border-b border-gray-100 font-sans sticky top-0 z-50">
+    <header className="bg-white border-b border-neutral-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo Section */}
-          <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-2">
-              <span className="text-white font-bold text-lg leading-none">T</span>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+              T
             </div>
-            <span className="text-orange-500 font-bold text-xl tracking-wide">TasteTrekker</span>
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500 hidden sm:block">
+              TasteTrekker
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex flex-1 justify-center items-center">
-            <div className="flex space-x-8 h-full">
-              {navItems.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={index}
-                    to={item.path}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2 px-1 cursor-pointer transition-colors duration-200 h-full border-b-2 ${
-                        isActive
-                          ? 'border-orange-500 text-orange-500'
-                          : 'border-transparent text-gray-600 hover:text-orange-500'
-                      }`
-                    }
-                  >
-                    <Icon size={18} />
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex space-x-8">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive ? 'text-orange-500 border-b-2 border-orange-500' : 'text-neutral-600 hover:text-orange-400'
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </nav>
 
-          {/* Action Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer">
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center gap-2">
+            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
               Đăng nhập
             </button>
-            <button className="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer">
+            <button className="bg-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
               Admin
             </button>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            <button className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Đăng nhập
+            </button>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
+              className="text-neutral-500 hover:text-neutral-700 focus:outline-none"
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={index}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center space-x-3 px-3 py-3 rounded-md cursor-pointer ${
-                      isActive
-                        ? 'bg-orange-50 text-orange-500'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-orange-500'
-                    }`
-                  }
-                >
-                  <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
-                </NavLink>
-              );
-            })}
-            <div className="pt-4 pb-2 space-y-2 px-3">
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full font-medium transition-colors cursor-pointer">
-                Đăng nhập
-              </button>
-              <button className="w-full bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-full font-medium transition-colors cursor-pointer">
-                Admin
-              </button>
-            </div>
-          </div>
+        <div className="md:hidden bg-white border-t border-neutral-100 px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium ${
+                    isActive ? 'bg-orange-50 text-orange-600' : 'text-neutral-700 hover:bg-neutral-50'
+                  }`
+                }
+              >
+                <Icon className="w-5 h-5" />
+                {item.label}
+              </NavLink>
+            );
+          })}
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 

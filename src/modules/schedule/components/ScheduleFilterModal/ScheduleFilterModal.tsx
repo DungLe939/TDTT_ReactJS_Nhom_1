@@ -39,7 +39,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     const [dislikedFoods, setDislikedFoods] = useState(initialData.dislikedFoods || '');
     const [allergies, setAllergies] = useState(initialData.allergies || '');
     const [tastes, setTastes] = useState<string[]>(initialData.tastes || []);
-    
+
     // Autocomplete States
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -92,9 +92,9 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     // Vì khẩu vị là Mảng (Chọn được nhiều ô), nên mỗi khi bấm ta phải:
     // Kiểm tra xem đã có trong mảng chưa -> Nếu có gỡ ra (filter), chưa có thì thêm vào (Toán tử spread).
     const handleTasteChange = (tasteValue: string) => {
-        setTastes(prev => 
-            prev.includes(tasteValue) 
-                ? prev.filter(t => t !== tasteValue) 
+        setTastes(prev =>
+            prev.includes(tasteValue)
+                ? prev.filter(t => t !== tasteValue)
                 : [...prev, tasteValue]
         );
     };
@@ -113,7 +113,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     // ==========================================
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault(); // Chặn hành vi Reload rành trang mặc định của thẻ <form>
-        
+
         // Chuẩn hóa chuỗi text "A, B, C" thành mảng ["A", "B", "C"] chuẩn bị nộp cho Backend (NestJS yêu cầu Array)
         const commaToArray = (str: string) => str.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -152,7 +152,7 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                 <button className="modal-close" onClick={onClose}>
                     <X size={24} />
                 </button>
-                
+
                 <div className="modal-header">
                     <h2>Khai báo thông tin lộ trình</h2>
                     <p>Hãy cho chúng tôi biết sở thích và ngân sách để tạo ra lịch trình hoàn hảo cho bạn.</p>
@@ -163,8 +163,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     <div className="form-group">
                         <label>Địa điểm du lịch *</label>
                         <div className="location-input-container">
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 required
                                 placeholder="VD: Đà Nẵng, Phú Quốc..."
                                 value={location}
@@ -182,8 +182,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                             {showSuggestions && suggestions.length > 0 && (
                                 <ul className="autocomplete-dropdown">
                                     {suggestions.map((item, index) => (
-                                        <li 
-                                            key={index} 
+                                        <li
+                                            key={index}
                                             className="autocomplete-item"
                                             onMouseDown={(e) => {
                                                 e.preventDefault(); // Ngăn input mất focus quá sớm
@@ -239,8 +239,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                             <label>Ngày đi *</label>
                             <div className="date-input-wrapper">
                                 <Calendar size={18} className="input-icon" />
-                                <input 
-                                    type="date" 
+                                <input
+                                    type="date"
                                     required
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
@@ -251,8 +251,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                             <label>Ngày về *</label>
                             <div className="date-input-wrapper">
                                 <Calendar size={18} className="input-icon" />
-                                <input 
-                                    type="date" 
+                                <input
+                                    type="date"
                                     required
                                     min={startDate}
                                     value={endDate}
@@ -265,8 +265,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     {/* Budget */}
                     <div className="form-group">
                         <label>Tổng ngân sách khả dụng (VNĐ) *</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             required
                             min="0"
                             step="50000"
@@ -286,8 +286,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                         <div className="checkbox-group">
                             {TASTE_OPTIONS.map(opt => (
                                 <label key={opt.value} className="checkbox-item">
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={tastes.includes(opt.value)}
                                         onChange={() => handleTasteChange(opt.value)}
                                     />
@@ -301,8 +301,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     <div className="form-row">
                         <div className="form-group">
                             <label>Món ăn yêu thích</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="Ghi cách nhau bởi dấu phẩy. VD: phở, bún chả"
                                 value={favoriteFoods}
                                 onChange={(e) => setFavoriteFoods(e.target.value)}
@@ -310,8 +310,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                         </div>
                         <div className="form-group">
                             <label>Món ăn không thích</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="VD: mắm tôm, đồ tây"
                                 value={dislikedFoods}
                                 onChange={(e) => setDislikedFoods(e.target.value)}
@@ -322,8 +322,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                     {/* Allergies */}
                     <div className="form-group">
                         <label>Dị ứng (nếu có)</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="VD: hải sản, đậu phộng"
                             value={allergies}
                             onChange={(e) => setAllergies(e.target.value)}

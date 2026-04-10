@@ -13,7 +13,7 @@ interface SwapMealModalProps {
 
 const SwapMealModal = ({ isOpen, onClose, options, loading, onSelect, currentMealName }: SwapMealModalProps) => {
     const [confirmingOption, setConfirmingOption] = useState<any>(null);
-    
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -55,8 +55,8 @@ const SwapMealModal = ({ isOpen, onClose, options, loading, onSelect, currentMea
                             <div className="options-grid">
                                 {options.length > 0 ? (
                                     options.map((option, idx) => (
-                                        <div 
-                                            key={idx} 
+                                        <div
+                                            key={idx}
                                             className="swap-option-card"
                                             onClick={() => setConfirmingOption(option)}
                                         >
@@ -69,11 +69,11 @@ const SwapMealModal = ({ isOpen, onClose, options, loading, onSelect, currentMea
                                                     <span className="option-dist">{(option.distance / 1000).toFixed(1)}km</span>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="option-details">
                                                 <h4 className="option-dish-name">{option.dish}</h4>
                                                 <p className="option-res-name">{option.name || option.restaurantName}</p>
-                                                
+
                                                 <div className="option-footer">
                                                     <span className="option-price">{option.price?.toLocaleString()}đ</span>
                                                     <div className="option-address">
@@ -82,7 +82,7 @@ const SwapMealModal = ({ isOpen, onClose, options, loading, onSelect, currentMea
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="option-hover-hint">Chọn món này</div>
                                         </div>
                                     ))
