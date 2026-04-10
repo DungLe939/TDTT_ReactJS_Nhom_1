@@ -185,7 +185,8 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
                                         <li 
                                             key={index} 
                                             className="autocomplete-item"
-                                            onClick={() => {
+                                            onMouseDown={(e) => {
+                                                e.preventDefault(); // Ngăn input mất focus quá sớm
                                                 const shortName = item.name.split(',')[0];
                                                 setLocation(shortName);
                                                 setShowSuggestions(false);
