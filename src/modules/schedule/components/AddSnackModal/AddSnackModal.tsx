@@ -137,6 +137,10 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                             ...s,
                             restaurantId: res.restaurantId,
                             restaurantName: res.restaurantName,
+                            address: res.address || "Địa chỉ đang cập nhật",
+                            rating: res.rating || 4.2,
+                            priceRange: res.priceRange || 2,
+                            menu: res.menu,
                             location: res.location,
                             openingHours: res.openingHours,
                             distance: distHaversine
