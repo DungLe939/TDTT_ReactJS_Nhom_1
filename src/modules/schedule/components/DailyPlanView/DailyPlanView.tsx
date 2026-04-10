@@ -6,11 +6,12 @@ import SwapMealModal from '../SwapMealModal/SwapMealModal';
 import CostSummary from '../CostSummary/CostSummary';
 import AddSnackModal from '../AddSnackModal/AddSnackModal';
 import './DailyPlanView.css';
-import { RefreshCcw, BarChart3, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { RefreshCcw, BarChart3, ChevronDown, ChevronUp, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { scheduleService } from '../../../../services/api';
 
 interface DailyPlanViewProps {
     planData: any[];
+    selectedDayISO: string;
     startDate: string; // YYYY-MM-DD
     scheduleInfo: any;
     snackCandidates: any[];
@@ -23,10 +24,9 @@ interface DailyPlanViewProps {
  * Nhận Props từ `SchedulePage` và vẽ ra UI chuỗi các bữa ăn (Sáng, Trưa, Tối, Phụ)
  * theo chuẩn thời gian.
  */
-const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
+const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
     // startDate là ngày bắt đầu chuyến đi (VD: "2024-04-12")
     const tripStart = new Date(startDate);
-    const [selectedDayISO, setSelectedDayISO] = useState(startDate);
     
     // Cơ chế: So sánh ngày đang chọn trên giao diện (selectedDayISO) với ngày bắt đầu (tripStart)
     // để trích xuất ra mảng bữa ăn của đúng 1 ngày cụ thể.
@@ -95,32 +95,7 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
     const [swapOptions, setSwapOptions] = useState<any[]>([]);
     const [swapTarget, setSwapTarget] = useState<{ dayIdx: number, sessionKey: string, currentDish: string } | null>(null);
 
-    // Helpers
-    const getMonday = (d: Date) => {
-        const date = new Date(d);
-        const day = date.getDay(); 
-        const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
-        return new Date(date.setDate(diff));
-    };
-
-    const monday = getMonday(tripStart);
-    const weekDays = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return d;
-    });
-
     const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-
-    const handleDaySelect = (date: Date) => {
-        const iso = date.toISOString().split('T')[0];
-        const diffDays = Math.round((date.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
-        const isInPlan = diffDays >= 0 && diffDays < planData.length;
-        
-        if (isInPlan) {
-            setSelectedDayISO(iso);
-        }
-    };
 
     const handleShowMap = (dish: any) => {
         setSelectedDish(dish);
@@ -275,26 +250,6 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
 
     return (
         <div className="daily-plan-container">
-            {/* Header: Dates Slider */}
-            <div className="date-selector-container">
-                 {weekDays.map((dateObj, index) => {
-                     const iso = dateObj.toISOString().split('T')[0];
-                     const isActive = iso === selectedDayISO;
-                     const diffDays = Math.round((dateObj.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
-                     const isScheduled = diffDays >= 0 && diffDays < planData.length;
-
-                     return (
-                         <div 
-                             key={index}
-                             className={`date-item ${isActive ? 'active' : ''} ${isScheduled && !isActive ? 'scheduled' : ''} ${!isScheduled ? 'disabled' : ''}`}
-                             onClick={() => isScheduled && handleDaySelect(dateObj)}
-                         >
-                             <span className="day-name">{daysOfWeekNames[dateObj.getDay()]}</span>
-                             <span className="day-number">{dateObj.getDate()}</span>
-                         </div>
-                     );
-                 })}
-            </div>
 
             {/* Toggle Thống kê chi phí */}
             <div className={`cost-summary-toggle ${showCostSummary ? 'active' : ''}`} onClick={() => setShowCostSummary(!showCostSummary)}>

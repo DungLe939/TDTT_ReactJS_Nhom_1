@@ -7,10 +7,110 @@
 
 .schedule-main {
     flex: 1;
-    max-width: 1200px;
+    max-width: 1000px;
     width: 100%;
     margin: 0 auto;
-    padding: 0 24px 40px;
+    padding: 24px 16px 40px;
+}
+
+.schedule-header-card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    margin-bottom: 32px;
+}
+
+.card-date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    background: #fff;
+    border-top: 1px solid #f2f2f2;
+}
+
+.card-date-selector {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+}
+
+.card-date-selector::-webkit-scrollbar {
+    display: none;
+}
+
+.schedule-header-card .nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #ff6b00;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.schedule-header-card .nav-btn:hover:not(.disabled) {
+    background: #ff6b00;
+    color: white;
+    border-color: #ff6b00;
+}
+
+.schedule-header-card .nav-btn.disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.schedule-header-card .date-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    height: 74px;
+    border-radius: 16px;
+    cursor: pointer;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.schedule-header-card .date-item.active {
+    background-color: #ff6b00;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+}
+
+.schedule-header-card .date-item.active .day-name {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.schedule-header-card .date-item.scheduled {
+    background-color: #f7f7f7;
+}
+
+.schedule-header-card .date-item.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.schedule-header-card .date-item .day-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.schedule-header-card .date-item .day-number {
+    font-size: 18px;
+    font-weight: 700;
 }
 
 /* ==========================================
@@ -44,6 +144,11 @@
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }

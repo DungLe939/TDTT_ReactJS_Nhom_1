@@ -3,6 +3,7 @@ import ScheduleBanner from '../../components/ScheduleBanner/ScheduleBanner';
 import ScheduleFilterModal from '../../components/ScheduleFilterModal/ScheduleFilterModal';
 import DailyPlanView from '../../components/DailyPlanView/DailyPlanView';
 import { scheduleService } from '../../../../services/api';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './SchedulePage.css';
 
 const SchedulePage = () => {
@@ -10,9 +11,15 @@ const SchedulePage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // ============================================
+    // STATE QUẢN LÝ DÀNH CHO DATE SELECTOR (LIFTED)
+    // ============================================
+    const [selectedDayISO, setSelectedDayISO] = useState<string>('');
+    const [viewStartDate, setViewStartDate] = useState<Date | null>(null);
+
+    // ============================================
     // STATE QUẢN LÝ DỮ LIỆU CỐT LÕI CỦA ỨNG DỤNG
     // ============================================
-    
+
     // Lưu trữ mảng toàn bộ các ngày đi ăn (VD: Mảng 3 phần tử tương ứng 3 ngày)
     const [planData, setPlanData] = useState<any[] | null>(null);
 
@@ -41,10 +48,10 @@ const SchedulePage = () => {
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
         const savedSnacks = localStorage.getItem('FOOD_TOUR_SNACK_CANDIDATES');
-        
+
         if (savedPlan) setPlanData(JSON.parse(savedPlan));
         if (savedSnacks) setSnackCandidates(JSON.parse(savedSnacks));
-        
+
         if (savedInfo) {
             const parsedInfo = JSON.parse(savedInfo);
             setScheduleInfo({
@@ -52,8 +59,22 @@ const SchedulePage = () => {
                 totalBudget: parsedInfo.totalBudget || 0,
                 days: parsedInfo.days || 3
             });
+
+            // Đồng bộ ngày bắt đầu và view
+            if (parsedInfo.startDate && !selectedDayISO) {
+                setSelectedDayISO(parsedInfo.startDate.split('T')[0]);
+                const tripStart = new Date(parsedInfo.startDate);
+                
+                const getMonday = (d: Date) => {
+                    const date = new Date(d);
+                    const day = date.getDay(); 
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+                    return new Date(date.setDate(diff));
+                };
+                setViewStartDate(getMonday(tripStart));
+            }
         }
-    }, []);
+    }, [selectedDayISO]);
 
     const handleFilterClick = () => {
         setIsModalOpen(true);
@@ -100,7 +121,7 @@ const SchedulePage = () => {
             };
 
             const prepareRes = await scheduleService.preparePlan(preparePayload);
-            
+
             if (!prepareRes?.success || prepareRes.count === 0) {
                 alert('Không tìm thấy quán ăn phù hợp tại khu vực này!');
                 setIsLoading(false);
@@ -135,14 +156,17 @@ const SchedulePage = () => {
                     // Thêm ngày mới vào mảng
                     const newDay = { day: dayRes.day, meals: dayRes.meals };
                     allDays.push(newDay);
-                    
+
                     // Thu thập snack candidates từ từng ngày
                     if (dayRes.snackCandidates) {
                         allSnacks.push(...dayRes.snackCandidates);
                     }
 
+                    if (dayIdx === 0 && !selectedDayISO) {
+                        setSelectedDayISO(newScheduleInfo.startDate.split('T')[0]);
+                    }
+
                     // STREAMING RENDER: Cập nhật UI ngay sau mỗi ngày!
-                    // Spread [...allDays] tạo mảng mới để React detect thay đổi và re-render
                     setPlanData([...allDays]);
                     setSnackCandidates([...allSnacks]);
                 }
@@ -170,14 +194,89 @@ const SchedulePage = () => {
         localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(newPlanData));
     };
 
+    // Logic Date Selector (Lifted)
+    const tripStart = new Date(scheduleInfo.startDate || new Date());
+    const daysOfWeekNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    
+    const weekDays = viewStartDate ? Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(viewStartDate);
+        d.setDate(viewStartDate.getDate() + i);
+        return d;
+    }) : [];
+
+    const handlePrevWeek = () => {
+        if (!viewStartDate) return;
+        const d = new Date(viewStartDate);
+        d.setDate(d.getDate() - 7);
+        setViewStartDate(d);
+    };
+
+    const handleNextWeek = () => {
+        if (!viewStartDate) return;
+        const d = new Date(viewStartDate);
+        d.setDate(d.getDate() + 7);
+        setViewStartDate(d);
+    };
+
+    const isPrevDisabled = !viewStartDate;
+    
+    const lastDayOfTrip = new Date(tripStart);
+    if (planData) lastDayOfTrip.setDate(tripStart.getDate() + (planData.length || 1) - 1);
+    
+    const nextWeekStart = viewStartDate ? new Date(viewStartDate) : null;
+    if (nextWeekStart) nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    const isNextDisabled = !nextWeekStart || nextWeekStart.getTime() > lastDayOfTrip.getTime();
+
     return (
         <div className="schedule-page">
             <main className="schedule-main">
-                <ScheduleBanner 
-                    title="Lịch trình Food Tour" 
-                    subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`} 
-                    onFilterClick={handleFilterClick}
-                />
+                <div className="schedule-header-card">
+                    <ScheduleBanner
+                        title="Lịch trình Food Tour"
+                        subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`}
+                        onFilterClick={handleFilterClick}
+                    />
+
+                    {planData && viewStartDate && (
+                        <div className="card-date-navigation">
+                            <button 
+                                className={`nav-btn prev ${isPrevDisabled ? 'disabled' : ''}`} 
+                                onClick={handlePrevWeek}
+                                disabled={isPrevDisabled}
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+
+                            <div className="card-date-selector">
+                                {weekDays.map((dateObj, index) => {
+                                    const iso = dateObj.toISOString().split('T')[0];
+                                    const isActive = iso === selectedDayISO;
+                                    const diffDays = Math.round((dateObj.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
+                                    const isScheduled = planData && diffDays >= 0 && diffDays < planData.length;
+
+                                    return (
+                                        <div 
+                                            key={index}
+                                            className={`date-item ${isActive ? 'active' : ''} ${isScheduled && !isActive ? 'scheduled' : ''} ${!isScheduled ? 'disabled' : ''}`}
+                                            onClick={() => isScheduled && setSelectedDayISO(iso)}
+                                        >
+                                            <span className="day-name">{daysOfWeekNames[dateObj.getDay()]}</span>
+                                            <span className="day-number">{dateObj.getDate()}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <button 
+                                className={`nav-btn next ${isNextDisabled ? 'disabled' : ''}`} 
+                                onClick={handleNextWeek}
+                                disabled={isNextDisabled}
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 {/* Hiển thị tiến trình streaming khi đang tạo lịch trình */}
                 {isLoading && streamingProgress && (
@@ -186,25 +285,24 @@ const SchedulePage = () => {
                         <span>{streamingProgress}</span>
                     </div>
                 )}
-                
+
                 {/* Khu vực Render Component Lịch trình */}
-                {planData && (
-                    <div className="plan-view-wrapper">
-                        <DailyPlanView 
-                            planData={planData}
-                            startDate={scheduleInfo.startDate}
-                            scheduleInfo={scheduleInfo}
-                            snackCandidates={snackCandidates}
-                            onUpdatePlan={handleUpdatePlan}
-                            onRegenerate={() => {
-                                alert("Tính năng tạo lại lịch trình đang thực thi lại logic lọc!");
-                            }}
-                        />
-                    </div>
+                {planData && selectedDayISO && (
+                    <DailyPlanView
+                        planData={planData}
+                        selectedDayISO={selectedDayISO}
+                        startDate={scheduleInfo.startDate}
+                        scheduleInfo={scheduleInfo}
+                        snackCandidates={snackCandidates}
+                        onUpdatePlan={handleUpdatePlan}
+                        onRegenerate={() => {
+                            alert("Tính năng tạo lại lịch trình đang thực thi lại logic lọc!");
+                        }}
+                    />
                 )}
             </main>
 
-            <ScheduleFilterModal 
+            <ScheduleFilterModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleGenerateSubmit}
