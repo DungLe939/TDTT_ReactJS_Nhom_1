@@ -1,3 +1,2 @@
-- Tiến hành tạo Navbar
-- Add depenencies : lucide-react (for icon), react-router-dom (for route)
-- Thêm NavBar và thêm trang homepage tạm thời
+- Cấu hình thêm config ở `vite.config.js` (Hãy vào file để đọc và xem thay đổi)
+- Thêm các dependencies từ thư viện figma, do có lỗi xung đột nên phải tôi đã config trong `.npmrc`
