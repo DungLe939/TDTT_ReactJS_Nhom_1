@@ -37,7 +37,7 @@ const ScheduleBanner = ({ title, subtitle, onFilterClick }: ScheduleBannerProps)
                     </p>
                 </div>
                 <button
-                    className="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/30"
+                    className="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/30 transition-transform duration-200 hover:scale-110 active:scale-95"
                     onClick={onFilterClick}
                     aria-label="Open Filters"
                 >
