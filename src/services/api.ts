@@ -72,5 +72,11 @@ export const scheduleService = {
             2 // Retry tối đa 2 lần nữa nếu thất bại
         );
         return response.data;
+    },
+
+    // PHASE 3: Lấy danh sách món ăn thay thế (Deduplicated)
+    swapOptions: async (payload: { dayIndex: number, mealType: string, userLat?: number, userLng?: number }) => {
+        const response = await apiClient.post('/schedule/swapOptions', payload);
+        return response.data;
     }
 };

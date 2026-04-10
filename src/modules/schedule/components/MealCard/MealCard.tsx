@@ -1,4 +1,4 @@
-import { Send } from 'lucide-react';
+import { Send, RefreshCw } from 'lucide-react';
 import './MealCard.css';
 
 // ==========================================
@@ -15,9 +15,10 @@ interface MealCardProps {
     // Callbacks: Khi người dùng bấm nút trên Card, Card không tự xử lý mà gọi hàm Cha
     onShowMap?: (dishInfo: any) => void;
     onShowDetail?: (dishInfo: any) => void;
+    onSwap?: (dishInfo: any) => void;
 }
 
-const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDetail }: MealCardProps) => {
+const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDetail, onSwap }: MealCardProps) => {
 
     return (
         <div className={`meal-card-wrapper ${type === 'snack' ? 'is-snack' : ''}`}>
@@ -57,6 +58,16 @@ const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDet
                          <span className="meal-category">{dishInfo.category}</span>
                      )}
                  </div>
+
+                 {type === 'main' && (
+                    <button 
+                        className="meal-swap-btn"
+                        onClick={() => onSwap?.(dishInfo)}
+                        title="Đổi món ăn"
+                    >
+                        <RefreshCw size={16} />
+                    </button>
+                 )}
 
                  <button 
                     className="meal-action-btn"

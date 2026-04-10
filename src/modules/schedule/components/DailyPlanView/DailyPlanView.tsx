@@ -2,10 +2,12 @@ import { useState } from 'react';
 import MealCard from '../MealCard/MealCard';
 import MapModal from '../MapModal/MapModal';
 import RestaurantDetailModal from '../RestaurantDetailModal/RestaurantDetailModal';
+import SwapMealModal from '../SwapMealModal/SwapMealModal';
 import CostSummary from '../CostSummary/CostSummary';
 import AddSnackModal from '../AddSnackModal/AddSnackModal';
 import './DailyPlanView.css';
 import { RefreshCcw, BarChart3, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { scheduleService } from '../../../../services/api';
 
 interface DailyPlanViewProps {
     planData: any[];
@@ -86,6 +88,12 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
     const [selectedSession, setSelectedSession] = useState<string | null>(null);
     const [showCostSummary, setShowCostSummary] = useState(false);
     const [snackModalOpen, setSnackModalOpen] = useState(false);
+
+    // Swap Modal States
+    const [swapModalOpen, setSwapModalOpen] = useState(false);
+    const [isSwapLoading, setIsSwapLoading] = useState(false);
+    const [swapOptions, setSwapOptions] = useState<any[]>([]);
+    const [swapTarget, setSwapTarget] = useState<{ dayIdx: number, sessionKey: string, currentDish: string } | null>(null);
 
     // Helpers
     const getMonday = (d: Date) => {
@@ -168,6 +176,68 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
             
             newPlanData[dayIndex].snacks = [...currentSnacks, snack];
             onUpdatePlan?.(newPlanData);
+        }
+    };
+
+    /**
+     * handleOpenSwap: Mở Modal đổi món ăn.
+     * Gọi API backend để lấy 30 món ăn tốt nhất (đã lọc trùng) cho bữa đó.
+     */
+    const handleOpenSwap = async (meal: any, dayIdx: number, session: string) => {
+        const sessionMap: Record<string, string> = {
+            'SÁNG': 'breakfast',
+            'TRƯA': 'lunch',
+            'TỐI': 'dinner'
+        };
+        const sessionKey = sessionMap[session];
+        if (!sessionKey) return;
+
+        setSwapTarget({ dayIdx, sessionKey, currentDish: meal.dish });
+        setSwapModalOpen(true);
+        setIsSwapLoading(true);
+        setSwapOptions([]);
+
+        try {
+            // Lấy vị trí hiện tại của user (nếu có trong Browser) để Backend tính khoảng cách chính xác hơn
+            let userLat, userLng;
+            // (Optional: Implement navigator.geolocation here if needed)
+
+            const res = await scheduleService.swapOptions({
+                dayIndex: dayIdx,
+                mealType: sessionKey,
+                userLat,
+                userLng
+            });
+
+            if (res.success) {
+                setSwapOptions(res.options);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách đổi món:", error);
+        } finally {
+            setIsSwapLoading(false);
+        }
+    };
+
+    /**
+     * handleConfirmSelectedSwap: Thực thi việc thay đổi món ăn vào lịch trình.
+     */
+    const handleConfirmSelectedSwap = (newOption: any) => {
+        if (!swapTarget) return;
+
+        const { dayIdx, sessionKey } = swapTarget;
+        const newPlanData = [...planData];
+        
+        if (newPlanData[dayIdx]) {
+            // Cập nhật toàn diện metadata từ Backend (Bao gồm cả address, rating, menu...)
+            newPlanData[dayIdx].meals[sessionKey] = {
+                ...newOption,
+                type: 'main',
+                time: planData[dayIdx].meals[sessionKey].time // Giữ nguyên mốc thời gian cũ
+            };
+            
+            onUpdatePlan?.(newPlanData);
+            setSwapModalOpen(false);
         }
     };
 
@@ -262,6 +332,7 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
                             dishInfo={meal}
                             onShowMap={handleShowMap}
                             onShowDetail={(dish) => handleShowDetail(dish, meal.session || 'PHỤ')}
+                            onSwap={(dish) => handleOpenSwap(dish, planData.findIndex(p => p.day === activePlan?.day), meal.session)}
                         />
                     ))
                 ) : (
@@ -289,6 +360,15 @@ const DailyPlanView = ({ planData, startDate, scheduleInfo, snackCandidates, onR
                 onAdd={handleAddSnack} 
                 snackCandidates={snackCandidates} 
                 activePlan={activePlan}
+            />
+
+            <SwapMealModal 
+                isOpen={swapModalOpen}
+                onClose={() => setSwapModalOpen(false)}
+                options={swapOptions}
+                loading={isSwapLoading}
+                onSelect={handleConfirmSelectedSwap}
+                currentMealName={swapTarget?.currentDish || ""}
             />
         </div>
     );
