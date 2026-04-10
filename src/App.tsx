@@ -1,17 +1,13 @@
-import { Routes, Route } from 'react-router-dom'
-import Navbar from './layouts/Navbar'
-import Home from './pages/Home'
-import './App.css'
+import { RouterProvider } from 'react-router';
+import { router } from './routes';
+import { AuthProvider } from './context/AuthContext';
+import { Toaster } from 'sonner';
 
-function App() {
+export default function App() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-  </>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <Toaster position="top-right" richColors />
+    </AuthProvider>
+  );
 }
-
-export default App

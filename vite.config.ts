@@ -14,7 +14,7 @@ export default defineConfig({
       /* 
       Cấu hình alias để có thể sử dụng '@' để truy cập vào thư mục 'src'
       Example: import MyComponent from '@/components/MyComponent'
-      Instead of: import MyComponent from '../../components/MyComponent'
+      Instead of: import MyComponent from '../../common/components/MyComponent'
       */
       '@': path.resolve(__dirname, './src'),
     },
