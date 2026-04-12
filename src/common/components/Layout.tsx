@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
-import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon } from 'lucide-react';
 import { TranslateWidget } from './TranslateWidget';
 
 export const Layout = () => {
@@ -10,7 +10,8 @@ export const Layout = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { path: '/', label: 'Lịch trình', icon: <Map className="w-5 h-5" /> },
+    { path: '/', label: 'Trang chủ', icon: <HomeIcon className="w-5 h-5" /> },
+    { path: '/itinerary', label: 'Lịch trình', icon: <Map className="w-5 h-5" /> },
     { path: '/scan', label: 'Quét món', icon: <ScanFace className="w-5 h-5" /> },
     { path: '/menu', label: 'Menu AI', icon: <Languages className="w-5 h-5" /> },
     { path: '/quests', label: 'Nhiệm vụ', icon: <Dices className="w-5 h-5" /> },
@@ -22,22 +23,47 @@ export const Layout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col font-sans">
+    <div className="min-h-screen relative flex flex-col font-sans bg-transparent">
+      {/* Background Wrapper */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-gradient-to-br from-neutral-50 via-orange-50/40 to-amber-50/50">
+        {/* Full Page Blurred Image */}
+        <div 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.08] blur-[24px]"
+        />
+        
+        {/* Ambient Glow Tones (SaaS/Luxury effect) */}
+        <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-orange-400/20 blur-[120px] mix-blend-multiply" />
+        <div className="absolute top-[40%] -left-[10%] w-[40vw] h-[40vw] rounded-full bg-amber-400/15 blur-[100px] mix-blend-multiply" />
+        <div className="absolute -bottom-[10%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-yellow-300/15 blur-[120px] mix-blend-multiply" />
+
+        {/* Center content glow for better focus on Hero & Main areas */}
+        <div className="absolute top-[15%] left-[50%] -translate-x-1/2 w-[70vw] h-[40vw] rounded-full bg-orange-300/15 blur-[120px] mix-blend-multiply" />
+
+        {/* AI Subtle Radial Grid Overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.12]" 
+          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(0,0,0,0.8) 1px, transparent 0)', backgroundSize: '32px 32px' }}
+        />
+      </div>
+
       {/* Navbar */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-40">
+      <header className="bg-white/70 backdrop-blur-lg border-b border-white/50 shadow-[0_4px_30px_rgba(0,0,0,0.02)] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
-                T
+              <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-full" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500 hidden sm:block">
-                TasteTrekker
+              <span className="text-xl font-bold hidden sm:block">
+                <span className="text-black">Hương Vị </span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">
+                  Bản Địa
+                </span>
               </span>
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-4">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -78,7 +104,7 @@ export const Layout = () => {
                     Đăng nhập
                   </button>
                   <button
-                    onClick={() => login('admin')}
+                    onClick={() => navigate('/admin-login')}
                     className="bg-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
                   >
                     Admin
@@ -98,7 +124,10 @@ export const Layout = () => {
                     Đăng nhập
                   </button>
                   <button
-                    onClick={() => login('admin')}
+                    onClick={() => {
+                      navigate('/admin-login');
+                      setIsMobileMenuOpen(false);
+                    }}
                     className="bg-neutral-800 text-white px-3 py-1.5 rounded-full text-sm font-medium"
                   >
                     Admin
@@ -149,7 +178,7 @@ export const Layout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
         <Outlet />
       </main>
 
