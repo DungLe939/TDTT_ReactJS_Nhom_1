@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Star, MapPin, Camera, Users, Gift, Crown } from 'lucide-react';
+import { Trophy, Star, MapPin, Camera, Users, Gift, Crown, Heart, MessageCircle, Share2, MoreHorizontal, Send } from 'lucide-react';
 
 const MOCK_QUESTS = [
   {
@@ -43,8 +43,84 @@ const LEADERBOARD = [
   { rank: 5, name: 'Hương Lê', level: 12, xp: '5.1k' },
 ];
 
+const INITIAL_FEED = [
+  {
+    id: 1,
+    user: 'Linh Nguyễn',
+    avatar: 'L',
+    time: '2 giờ trước',
+    content: 'Vừa hoàn thành nhiệm vụ "Thợ Săn Ẩm Thực" tại chợ đêm! Các món ăn đường phố ở đây quá tuyệt vời 🥰🍲',
+    image: 'https://images.unsplash.com/photo-1555126634-323283e090fa?auto=format&fit=crop&q=80&w=600&h=400',
+    likes: 124,
+    comments: [
+      { id: 1, user: 'Hoàng Trần', content: 'Ngon quá bạn ơi!', time: '1 giờ trước' }
+    ],
+    isLiked: true,
+  },
+  {
+    id: 2,
+    user: 'Hoàng Trần',
+    avatar: 'H',
+    time: '5 giờ trước',
+    content: 'Có ai biết quán bún cá nào ngon ở quận 1 không ạ? Đang làm nhiệm vụ mà bí quá 😅',
+    likes: 45,
+    comments: [],
+    isLiked: false,
+  }
+];
+
 export const Quests = () => {
-  const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard'>('quests');
+  const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard' | 'feed'>('quests');
+  const [feed, setFeed] = useState(INITIAL_FEED);
+  const [newPost, setNewPost] = useState('');
+  const [commentText, setCommentText] = useState<{ [key: number]: string }>({});
+  const [openComments, setOpenComments] = useState<{ [key: number]: boolean }>({});
+
+  const handleLike = (postId: number) => {
+    setFeed(feed.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          isLiked: !post.isLiked,
+          likes: post.isLiked ? post.likes - 1 : post.likes + 1
+        };
+      }
+      return post;
+    }));
+  };
+
+  const handleAddComment = (postId: number) => {
+    const text = commentText[postId];
+    if (!text || text.trim() === '') return;
+
+    setFeed(feed.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [...post.comments, { id: Date.now(), user: 'Traveler (Bạn)', content: text, time: 'Vừa xong' }]
+        };
+      }
+      return post;
+    }));
+    
+    setCommentText({ ...commentText, [postId]: '' });
+  };
+
+  const handlePost = () => {
+    if (!newPost.trim()) return;
+    const newPostObj = {
+      id: Date.now(),
+      user: 'Traveler (Bạn)',
+      avatar: 'T',
+      time: 'Vừa xong',
+      content: newPost,
+      likes: 0,
+      comments: [],
+      isLiked: false
+    };
+    setFeed([newPostObj, ...feed]);
+    setNewPost('');
+  };
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-neutral-50 pb-20">
@@ -83,20 +159,27 @@ export const Quests = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-4">
+      <div className="flex gap-2 p-4 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('quests')}
-          className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'quests' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
+          className={`shrink-0 flex-1 min-w-[max-content] py-2 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'quests' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
             }`}
         >
           Nhiệm vụ
         </button>
         <button
           onClick={() => setActiveTab('leaderboard')}
-          className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
+          className={`shrink-0 flex-1 min-w-[max-content] py-2 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
             }`}
         >
-          Bảng xếp hạng
+          Xếp hạng
+        </button>
+        <button
+          onClick={() => setActiveTab('feed')}
+          className={`shrink-0 flex-1 min-w-[max-content] py-2 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'feed' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
+            }`}
+        >
+          Cộng đồng
         </button>
       </div>
 
@@ -151,7 +234,7 @@ export const Quests = () => {
                 </div>
               ))}
             </motion.div>
-          ) : (
+          ) : activeTab === 'leaderboard' ? (
             <motion.div
               key="leaderboard"
               initial={{ opacity: 0, x: 20 }}
@@ -183,6 +266,129 @@ export const Quests = () => {
                   <div className="text-right">
                     <p className="font-bold text-neutral-700">{user.xp}</p>
                     <p className="text-[10px] text-neutral-400 uppercase">XP</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="feed"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 flex gap-3">
+                <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold shrink-0">
+                  T
+                </div>
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handlePost()}
+                    placeholder="Bạn đang nghĩ gì về món ăn hôm nay?"
+                    className="flex-1 bg-neutral-100 rounded-full px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  <button onClick={handlePost} className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 shrink-0">
+                    <Send className="w-4 h-4 ml-1" />
+                  </button>
+                </div>
+              </div>
+
+              {feed.map((post) => (
+                <div key={post.id} className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-300 flex items-center justify-center text-white font-bold shrink-0">
+                          {post.avatar}
+                        </div>
+                        <div>
+                          <p className="font-bold text-neutral-800 text-sm">{post.user}</p>
+                          <p className="text-xs text-neutral-500">{post.time}</p>
+                        </div>
+                      </div>
+                      <button className="text-neutral-400 hover:text-neutral-600 p-1">
+                        <MoreHorizontal className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <p className="text-sm text-neutral-700 mb-3">{post.content}</p>
+                  </div>
+
+                  {post.image && (
+                    <img src={post.image} alt="Post media" className="w-full h-48 object-cover" />
+                  )}
+
+                  <div className="p-4 border-t border-neutral-50">
+                    <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                        <span>{post.likes}</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span>{post.comments.length} bình luận</span>
+                        <span>0 chia sẻ</span>
+                      </div>
+                    </div>
+
+                    <div className="flex pt-2 border-t border-neutral-100">
+                      <button 
+                        onClick={() => handleLike(post.id)}
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-medium transition-colors ${post.isLiked ? 'text-red-500 hover:bg-red-50' : 'text-neutral-500 hover:bg-neutral-50'}`}
+                      >
+                        <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-red-500' : ''}`} /> Thích
+                      </button>
+                      <button 
+                        onClick={() => setOpenComments(prev => ({...prev, [post.id]: !prev[post.id]}))}
+                        className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-medium text-neutral-500 hover:bg-neutral-50 transition-colors"
+                      >
+                        <MessageCircle className="w-5 h-5" /> Bình luận
+                      </button>
+                      <button className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-medium text-neutral-500 hover:bg-neutral-50 transition-colors">
+                        <Share2 className="w-5 h-5" /> Chia sẻ
+                      </button>
+                    </div>
+
+                    {/* Comments Section */}
+                    {openComments[post.id] && (
+                      <div className="mt-4 space-y-3">
+                        {post.comments.map(comment => (
+                          <div key={comment.id} className="flex gap-2">
+                            <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                              {comment.user.charAt(0)}
+                            </div>
+                            <div className="flex-1 bg-neutral-100 rounded-2xl rounded-tl-none p-3">
+                              <p className="font-bold text-neutral-800 text-xs">{comment.user}</p>
+                              <p className="text-sm text-neutral-700 mt-1">{comment.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="flex gap-2 items-center pt-2">
+                          <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs shrink-0">
+                            T
+                          </div>
+                          <div className="flex-1 flex bg-neutral-100 rounded-full pr-1">
+                            <input
+                              type="text"
+                              value={commentText[post.id] || ''}
+                              onChange={(e) => setCommentText({...commentText, [post.id]: e.target.value})}
+                              onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                              placeholder="Viết bình luận..."
+                              className="flex-1 bg-transparent px-3 py-2 text-sm focus:outline-none"
+                            />
+                            <button 
+                              onClick={() => handleAddComment(post.id)}
+                              className="w-8 h-8 self-center rounded-full flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors"
+                            >
+                              <Send className="w-4 h-4 ml-0.5 mt-0.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
