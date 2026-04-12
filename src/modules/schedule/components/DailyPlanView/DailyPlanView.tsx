@@ -29,8 +29,7 @@ interface DailyPlanViewProps {
  */
 const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
 
-    // tripStart: Chuyển đổi ngày bắt đầu chuyến đi sang đối tượng Date để tính toán độ lệch ngày
-    const tripStart = new Date(startDate);
+
 
     /**
      * Thuật toán trích xuất dữ liệu ngày hiện tại:

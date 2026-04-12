@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
 import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users } from 'lucide-react';
-import { Chatbot } from './Chatbot';
+import { TranslateWidget } from './TranslateWidget';
 
 export const Layout = () => {
   const { isLoggedIn, user, login, logout, isAdmin } = useAuth();
@@ -153,7 +153,7 @@ export const Layout = () => {
         <Outlet />
       </main>
 
-      <Chatbot />
+      <TranslateWidget />
     </div>
   );
 };
