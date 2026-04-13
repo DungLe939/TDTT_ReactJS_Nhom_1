@@ -29,6 +29,14 @@ export const retryRequest = async <T>(
         } catch (error) {
             lastError = error;
 
+            const errorWithCode = error as { code?: string; name?: string };
+            if (
+                errorWithCode?.code === 'ERR_CANCELED' ||
+                errorWithCode?.name === 'CanceledError'
+            ) {
+                throw error;
+            }
+
             // Nếu đã hết lượt retry → throw error ra ngoài
             if (attempt >= maxRetries) {
                 break;

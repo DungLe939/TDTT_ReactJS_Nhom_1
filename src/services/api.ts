@@ -1,5 +1,9 @@
 import axios from 'axios';
 import { retryRequest } from '../utils/retryRequest';
+import type {
+    ScanPredictResponse,
+    ScanPredictResult,
+} from '../modules/scanning/types/scan.types';
 
 /**
  * Biến toàn cục lấy từ file .env (VITE_API_URL).
@@ -7,6 +11,7 @@ import { retryRequest } from '../utils/retryRequest';
  * là địa chỉ chạy mặc định của server NestJS Backend khi phát triển local.
  */
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SCAN_API_URL = import.meta.env.VITE_SCAN_API_URL || '';
 
 /**
  * Khởi tạo apiClient - Một Axios Instance dùng chung cho toàn dự án.
@@ -21,6 +26,37 @@ export const apiClient = axios.create({
     baseURL: API_URL,
     withCredentials: true,
 });
+
+const scanClient = axios.create({
+    baseURL: SCAN_API_URL || undefined,
+    timeout: 45000,
+});
+
+const ensureScanApiConfigured = () => {
+    if (!SCAN_API_URL) {
+        throw new Error('Thieu cau hinh VITE_SCAN_API_URL trong file .env');
+    }
+};
+
+const normalizePredictContent = (content: ScanPredictResponse['content']) => {
+    if (typeof content === 'string') {
+        return content;
+    }
+
+    if (content && typeof content === 'object') {
+        const textValues = Object.values(content).filter(
+            (value): value is string => typeof value === 'string'
+        );
+
+        if (textValues.length > 0) {
+            return textValues.join(' ');
+        }
+
+        return JSON.stringify(content);
+    }
+
+    return '';
+};
 
 /**
  * Object `scheduleService` - Chứa toàn bộ logic giao tiếp mạng cho Module Lịch Trình (Schedule).
@@ -105,4 +141,48 @@ export const scheduleService = {
         const response = await apiClient.post('/schedule/swapOptions', payload);
         return response.data;
     }
+};
+
+/**
+ * Scan service: Kết nối trực tiếp tới endpoint FastAPI public qua Pinggy.
+ * Chỉ dùng cho luồng nhận diện món ăn và lấy audio kể chuyện.
+ */
+export const scanService = {
+    predictFood: async (
+        imageFile: File,
+        signal?: AbortSignal
+    ): Promise<ScanPredictResult> => {
+        ensureScanApiConfigured();
+
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        const response = await retryRequest(
+            () =>
+                scanClient.post<ScanPredictResponse>('/predict', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    signal,
+                }),
+            1
+        );
+
+        const data = response.data;
+        return {
+            ...data,
+            content: normalizePredictContent(data.content),
+        };
+    },
+
+    fetchNarrationAudio: async (signal?: AbortSignal): Promise<Blob> => {
+        ensureScanApiConfigured();
+
+        const response = await scanClient.get<Blob>('/audio', {
+            responseType: 'blob',
+            signal,
+        });
+
+        return response.data;
+    },
 };
