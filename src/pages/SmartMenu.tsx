@@ -42,7 +42,7 @@ export const SmartMenu = () => {
     //    hoặc tốt nhất là tạo một file tên là ".env" tại thư mục TDTT_ReactJS_Nhom_1
     //    rồi ghi vào đó: VITE_API_URL=https://quyet-mat-khau-gi-do.a.pinggy.link
     // ----------------------------------------------------------------------
-    const API_URL = import.meta.env.VITE_API_URL || "https://rraid-103-249-22-29.run.pinggy-free.link";
+    const API_URL = import.meta.env.VITE_API_URL || "https://mbdyb-103-249-22-29.run.pinggy-free.link";
     // ----------------------------------------------------------------------
 
     try {
