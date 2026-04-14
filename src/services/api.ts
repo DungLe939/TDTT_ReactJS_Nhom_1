@@ -5,13 +5,32 @@ import type {
     ScanPredictResult,
 } from '../modules/scanning/types/scan.types';
 
+export interface ScanSystemInfoResponse {
+    name?: string;
+    description?: string;
+    technologies?: string;
+    endpoints?: Record<string, string>;
+}
+
+export type ScanHealthResponse = Record<string, unknown>;
+
+type GenericScanPayload = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null;
+
 /**
  * Biến toàn cục lấy từ file .env (VITE_API_URL).
  * Nếu chưa setup .env, hệ thống sẽ mặc định trỏ về 'http://localhost:3000' 
  * là địa chỉ chạy mặc định của server NestJS Backend khi phát triển local.
  */
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const SCAN_API_URL = import.meta.env.VITE_SCAN_API_URL || '';
+const SCAN_API_URL = (import.meta.env.VITE_SCAN_API_URL || '').replace(/\/+$/, '');
+const SCAN_PROXY_PREFIX = '/scan-api';
+const SCAN_CLIENT_BASE_URL = import.meta.env.DEV
+    ? SCAN_PROXY_PREFIX
+    : SCAN_API_URL || undefined;
+const SCAN_TIMEOUT_MS = 180000;
 
 /**
  * Khởi tạo apiClient - Một Axios Instance dùng chung cho toàn dự án.
@@ -28,8 +47,11 @@ export const apiClient = axios.create({
 });
 
 const scanClient = axios.create({
-    baseURL: SCAN_API_URL || undefined,
-    timeout: 45000,
+    baseURL: SCAN_CLIENT_BASE_URL,
+    timeout: SCAN_TIMEOUT_MS,
+    headers: {
+        'X-Pinggy-No-Screen': 'true',
+    },
 });
 
 const ensureScanApiConfigured = () => {
@@ -38,7 +60,7 @@ const ensureScanApiConfigured = () => {
     }
 };
 
-const normalizePredictContent = (content: ScanPredictResponse['content']) => {
+const normalizePredictContent = (content: unknown) => {
     if (typeof content === 'string') {
         return content;
     }
@@ -56,6 +78,60 @@ const normalizePredictContent = (content: ScanPredictResponse['content']) => {
     }
 
     return '';
+};
+
+const normalizePredictStatus = (payload: GenericScanPayload): string => {
+    const rawStatus = payload.status;
+
+    if (typeof rawStatus === 'string') {
+        return rawStatus.trim().toLowerCase();
+    }
+
+    if (typeof rawStatus === 'number') {
+        return String(rawStatus);
+    }
+
+    const rawSuccess = payload.success;
+    if (typeof rawSuccess === 'boolean') {
+        return rawSuccess ? 'success' : 'error';
+    }
+
+    return '';
+};
+
+const extractPredictPayload = (rawData: unknown): GenericScanPayload => {
+    let candidate: unknown = rawData;
+
+    if (typeof candidate === 'string') {
+        const trimmed = candidate.trim();
+        if (!trimmed) {
+            return {};
+        }
+
+        try {
+            candidate = JSON.parse(trimmed);
+        } catch {
+            return {
+                status: 'error',
+                message: `Payload /predict khong phai JSON hop le: ${trimmed.slice(0, 180)}`,
+            };
+        }
+    }
+
+    if (!isRecord(candidate)) {
+        return {};
+    }
+
+    const nestedData = candidate.data;
+    if (
+        isRecord(nestedData) &&
+        !('status' in candidate) &&
+        !('content' in candidate)
+    ) {
+        return nestedData;
+    }
+
+    return candidate;
 };
 
 /**
@@ -79,7 +155,7 @@ export const scheduleService = {
     /**
      * Gửi toàn bộ thông tin để tạo lịch trình (Phiên bản đồng bộ )
      */
-    generatePlan: async (payload: any) => {
+    generatePlan: async (payload: unknown) => {
         const response = await apiClient.post('/schedule/generatePlan', payload);
         return response.data;
     },
@@ -89,7 +165,7 @@ export const scheduleService = {
      * @param payload - Chứa danh sách các điểm đi qua 
      * @returns Dữ liệu Geometry để vẽ lên bản đồ Leaflet.
      */
-    getRoute: async (payload: any) => {
+    getRoute: async (payload: unknown) => {
         const response = await apiClient.post('/schedule/route', payload);
         return response.data;
     },
@@ -111,7 +187,7 @@ export const scheduleService = {
      * các quán ăn theo từng khu vực địa lý dựa trên số ngày đi.
      * Dữ liệu sau khi xử lý sẽ được CACHE tại RAM của Server để các bước sau truy cập cực nhanh.
      */
-    preparePlan: async (payload: any) => {
+    preparePlan: async (payload: unknown) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/preparePlan', payload),
             2 // Thực hiện lại tối đa 2 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
@@ -148,6 +224,26 @@ export const scheduleService = {
  * Chỉ dùng cho luồng nhận diện món ăn và lấy audio kể chuyện.
  */
 export const scanService = {
+    getSystemInfo: async (signal?: AbortSignal): Promise<ScanSystemInfoResponse> => {
+        ensureScanApiConfigured();
+
+        const response = await scanClient.get<ScanSystemInfoResponse>('/', {
+            signal,
+        });
+
+        return response.data;
+    },
+
+    getHealth: async (signal?: AbortSignal): Promise<ScanHealthResponse> => {
+        ensureScanApiConfigured();
+
+        const response = await scanClient.get<ScanHealthResponse>('/health', {
+            signal,
+        });
+
+        return response.data;
+    },
+
     predictFood: async (
         imageFile: File,
         signal?: AbortSignal
@@ -160,17 +256,18 @@ export const scanService = {
         const response = await retryRequest(
             () =>
                 scanClient.post<ScanPredictResponse>('/predict', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
                     signal,
                 }),
-            1
+            0
         );
 
-        const data = response.data;
+        const data = extractPredictPayload(response.data) as ScanPredictResponse &
+            GenericScanPayload;
+        const normalizedStatus = normalizePredictStatus(data);
+
         return {
             ...data,
+            status: normalizedStatus || 'unknown',
             content: normalizePredictContent(data.content),
         };
     },

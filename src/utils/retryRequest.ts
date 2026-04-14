@@ -19,7 +19,7 @@ export const retryRequest = async <T>(
     fn: () => Promise<T>,
     maxRetries: number = 2
 ): Promise<T> => {
-    let lastError: any;
+    let lastError: unknown;
 
     // Tổng số lần thử = lần đầu + maxRetries lần retry
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
