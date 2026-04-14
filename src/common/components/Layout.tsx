@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users } from 'lucide-react';
 import { Chatbot } from './Chatbot';
+import { toast } from 'sonner';
 
 export const Layout = () => {
-  const { isLoggedIn, user, login, logout, isAdmin } = useAuth();
+  const { isLoggedIn, user, logout, isAdmin, isLoading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -19,6 +20,28 @@ export const Layout = () => {
 
   if (isAdmin) {
     navItems.push({ path: '/admin', label: 'Developer', icon: <Code className="w-5 h-5" /> });
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Đăng xuất thành công!');
+      navigate('/');
+    } catch {
+      toast.error('Đăng xuất thất bại. Vui lòng thử lại.');
+    }
+  };
+
+  // Hiển thị loading screen khi đang kiểm tra trạng thái auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-neutral-500 text-sm">Đang tải...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -57,12 +80,31 @@ export const Layout = () => {
             <div className="hidden md:flex items-center gap-4">
               {isLoggedIn ? (
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-sm text-neutral-600">
-                    <UserIcon className="w-4 h-4" />
-                    <span>Xin chào, {user?.name}</span>
-                  </div>
                   <button
-                    onClick={logout}
+                    onClick={() => navigate('/profile')}
+                    className="flex items-center gap-2 text-sm text-neutral-600 hover:text-orange-500 transition-colors cursor-pointer"
+                  >
+                    {user?.photoURL ? (
+                      <>
+                        <img
+                          src={user.photoURL}
+                          alt={user.name}
+                          referrerPolicy="no-referrer"
+                          className="w-7 h-7 rounded-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <UserIcon className="w-4 h-4 hidden" />
+                      </>
+                    ) : (
+                      <UserIcon className="w-4 h-4" />
+                    )}
+                    <span>Xin chào, {user?.name}</span>
+                  </button>
+                  <button
+                    onClick={handleLogout}
                     className="flex items-center gap-1 text-sm text-neutral-500 hover:text-red-500 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
@@ -77,12 +119,6 @@ export const Layout = () => {
                   >
                     Đăng nhập
                   </button>
-                  <button
-                    onClick={() => login('admin')}
-                    className="bg-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
-                  >
-                    Admin
-                  </button>
                 </div>
               )}
             </div>
@@ -90,20 +126,12 @@ export const Layout = () => {
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-2">
               {!isLoggedIn && (
-                <>
-                  <button
-                    onClick={() => navigate('/auth')}
-                    className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-medium"
-                  >
-                    Đăng nhập
-                  </button>
-                  <button
-                    onClick={() => login('admin')}
-                    className="bg-neutral-800 text-white px-3 py-1.5 rounded-full text-sm font-medium"
-                  >
-                    Admin
-                  </button>
-                </>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-medium"
+                >
+                  Đăng nhập
+                </button>
               )}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -135,7 +163,7 @@ export const Layout = () => {
             {isLoggedIn && (
               <button
                 onClick={() => {
-                  logout();
+                  handleLogout();
                   setIsMobileMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50"

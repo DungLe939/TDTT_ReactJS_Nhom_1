@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PlusCircle, Info, UploadCloud, ChevronDown, Save, Database, AlertCircle, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
 type DishFormData = {
   name: string;

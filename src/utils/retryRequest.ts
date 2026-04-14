@@ -19,7 +19,7 @@ export const retryRequest = async <T>(
     fn: () => Promise<T>,
     maxRetries: number = 2
 ): Promise<T> => {
-    let lastError: any;
+    let lastError: unknown;
 
     // Tổng số lần thử = lần đầu + maxRetries lần retry
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -28,6 +28,14 @@ export const retryRequest = async <T>(
             return await fn();
         } catch (error) {
             lastError = error;
+
+            const errorWithCode = error as { code?: string; name?: string };
+            if (
+                errorWithCode?.code === 'ERR_CANCELED' ||
+                errorWithCode?.name === 'CanceledError'
+            ) {
+                throw error;
+            }
 
             // Nếu đã hết lượt retry → throw error ra ngoài
             if (attempt >= maxRetries) {
