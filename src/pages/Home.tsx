@@ -5,12 +5,7 @@ import { Map, ScanFace, Languages, Dices, Users, ArrowRight } from 'lucide-react
 /**
  * Component Home - Thành phần trang chủ của ứng dụng TasteTrekker.
  * 
- * Trực tiếp gọi Component `SchedulePage` từ Module Schedule.
- * 
- * Điều này đảm bảo:
- * 1. Toàn bộ logic Lịch trình được gom nhóm trong Module riêng.
- * 2. Khi nhóm phát triển thêm các phần khác (Scan, Menu), trang chủ vẫn tự động 
- *    hiển thị đúng Module Lịch trình mà không bị phân tán code.
+ * Hiển thị các tính năng chính của ứng dụng dưới dạng grid.
  */
 export const Home = () => {
 

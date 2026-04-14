@@ -43,7 +43,26 @@ const LEADERBOARD = [
   { rank: 5, name: 'Hương Lê', level: 12, xp: '5.1k' },
 ];
 
-const INITIAL_FEED = [
+type CommentType = {
+  id: number;
+  user: string;
+  content: string;
+  time: string;
+};
+
+type PostType = {
+  id: number;
+  user: string;
+  avatar: string;
+  time: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: CommentType[];
+  isLiked: boolean;
+};
+
+const INITIAL_FEED: PostType[] = [
   {
     id: 1,
     user: 'Linh Nguyễn',
@@ -71,7 +90,7 @@ const INITIAL_FEED = [
 
 export const Quests = () => {
   const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard' | 'feed'>('quests');
-  const [feed, setFeed] = useState(INITIAL_FEED);
+  const [feed, setFeed] = useState<PostType[]>(INITIAL_FEED);
   const [newPost, setNewPost] = useState('');
   const [commentText, setCommentText] = useState<{ [key: number]: string }>({});
   const [openComments, setOpenComments] = useState<{ [key: number]: boolean }>({});
