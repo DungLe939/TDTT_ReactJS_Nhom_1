@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Languages, X, ArrowLeftRight, Activity } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
 export const TranslateWidget = () => {
   const [isOpen, setIsOpen] = useState(false);

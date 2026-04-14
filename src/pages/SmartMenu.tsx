@@ -40,9 +40,10 @@ export const SmartMenu = () => {
     // 2. Nếu dùng Pinggy để Public server cho người khác xài qua điện thoại:
     //    Bạn thay đường dẫn Pinggy vào cái link chữ màu đục ở dòng bên dưới, 
     //    hoặc tốt nhất là tạo một file tên là ".env" tại thư mục TDTT_ReactJS_Nhom_1
+    //  ssh -p 443 -R0:localhost:3000 a.pinggy.io x:passpreflight
     //    rồi ghi vào đó: VITE_API_URL=https://quyet-mat-khau-gi-do.a.pinggy.link
     // ----------------------------------------------------------------------
-    const API_URL = import.meta.env.VITE_API_URL || "https://mbdyb-103-249-22-29.run.pinggy-free.link";
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
     // ----------------------------------------------------------------------
 
     try {
