@@ -1,11 +1,42 @@
 import { type FormEvent, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
-import { LoadingModal } from '../common/components/LoadingModal';
+import { LoadingModal } from '@/common/components/LoadingModal';
+import { toast } from 'sonner';
 
 type AuthMode = 'signin' | 'signup';
+
+// Map Firebase error codes sang thông báo tiếng Việt
+const getFirebaseErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/invalid-email':
+      return 'Email không hợp lệ.';
+    case 'auth/user-disabled':
+      return 'Tài khoản đã bị vô hiệu hóa.';
+    case 'auth/user-not-found':
+      return 'Không tìm thấy tài khoản với email này.';
+    case 'auth/wrong-password':
+      return 'Mật khẩu không chính xác.';
+    case 'auth/invalid-credential':
+      return 'Email hoặc mật khẩu không chính xác.';
+    case 'auth/email-already-in-use':
+      return 'Email này đã được sử dụng.';
+    case 'auth/weak-password':
+      return 'Mật khẩu phải có ít nhất 6 ký tự.';
+    case 'auth/too-many-requests':
+      return 'Quá nhiều lần thử. Vui lòng thử lại sau.';
+    case 'auth/popup-closed-by-user':
+      return 'Bạn đã đóng cửa sổ đăng nhập.';
+    case 'auth/account-exists-with-different-credential':
+      return 'Tài khoản đã tồn tại với phương thức đăng nhập khác.';
+    case 'auth/popup-blocked':
+      return 'Trình duyệt đã chặn popup. Vui lòng cho phép popup và thử lại.';
+    default:
+      return 'Đã xảy ra lỗi. Vui lòng thử lại.';
+  }
+};
 
 export function Auth() {
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -17,30 +48,65 @@ export function Auth() {
     password: ''
   });
 
-  const { login } = useAuth();
+  const { loginWithEmail, registerWithEmail, loginWithGoogle, loginWithGithub, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent) => {
+  // Nếu đã đăng nhập rồi thì chuyển về trang chủ
+  if (isLoggedIn) {
+    navigate('/');
+    return null;
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      login('user');
-      setIsLoading(false);
+    try {
+      if (mode === 'signin') {
+        await loginWithEmail(formData.email, formData.password);
+        toast.success('Đăng nhập thành công!');
+      } else {
+        await registerWithEmail(formData.email, formData.password, formData.name);
+        toast.success('Đăng ký thành công!');
+      }
       navigate('/');
-    }, 1500);
+    } catch (error) {
+      const firebaseError = error as { code?: string };
+      const message = getFirebaseErrorMessage(firebaseError.code || '');
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-
-    // Simulate social login
-    setTimeout(() => {
-      login('user');
-      setIsLoading(false);
+    try {
+      await loginWithGoogle();
+      toast.success('Đăng nhập Google thành công!');
       navigate('/');
-    }, 1500);
+    } catch (error) {
+      const firebaseError = error as { code?: string };
+      const message = getFirebaseErrorMessage(firebaseError.code || '');
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    setIsLoading(true);
+    try {
+      await loginWithGithub();
+      toast.success('Đăng nhập GitHub thành công!');
+      navigate('/');
+    } catch (error) {
+      const firebaseError = error as { code?: string };
+      const message = getFirebaseErrorMessage(firebaseError.code || '');
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -78,7 +144,6 @@ export function Auth() {
 
               {/* Sliding Background */}
               <motion.div
-                layout
                 className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
                 initial={false}
                 animate={{
@@ -146,6 +211,7 @@ export function Auth() {
                     className="w-full pl-11 pr-12 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="••••••••"
                     required
+                    minLength={6}
                   />
                   <button
                     type="button"
@@ -177,7 +243,8 @@ export function Auth() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/30"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/30"
             >
               {mode === 'signin' ? 'Đăng nhập' : 'Đăng ký'}
             </button>
@@ -197,10 +264,12 @@ export function Auth() {
 
           {/* Social Login Buttons */}
           <div className="space-y-3">
+            {/* Google Login */}
             <button
               type="button"
-              onClick={handleSocialLogin}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 rounded-xl hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -223,26 +292,17 @@ export function Auth() {
               <span className="font-medium text-neutral-700">Google</span>
             </button>
 
+            {/* GitHub Login */}
             <button
               type="button"
-              onClick={handleSocialLogin}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors"
+              onClick={handleGithubLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 rounded-xl hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
-              <span className="font-medium text-neutral-700">Facebook</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSocialLogin}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="#000000" viewBox="0 0 24 24">
-                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-              </svg>
-              <span className="font-medium text-neutral-700">Apple</span>
+              <span className="font-medium text-neutral-700">GitHub</span>
             </button>
           </div>
         </div>
