@@ -1,161 +1,241 @@
 import { useState } from 'react';
-import { Camera, RefreshCw, Languages, ShieldAlert, Sparkles } from 'lucide-react';
-import { motion } from 'motion/react';
-
-const TRANSLATED_ITEMS = [
-  {
-    id: 1,
-    original: 'Khao Soi',
-    translated: 'Mì Cà ri Dừa',
-    image: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&q=80&w=200&h=200',
-    popularity: 95,
-    allergens: ['Đậu phộng', 'Hải sản (mắm tép)'],
-    spicyLevel: 2,
-    desc: 'Món mì đặc sản miền Bắc Thái Lan, nước dùng cà ri dừa béo ngậy ăn kèm mì chiên giòn.'
-  },
-  {
-    id: 2,
-    original: 'Som Tum',
-    translated: 'Gỏi Đu đủ Thái',
-    image: 'https://images.unsplash.com/photo-1564834724105-918b73d1b9e0?auto=format&fit=crop&q=80&w=200&h=200',
-    popularity: 88,
-    allergens: ['Tôm khô', 'Đậu phộng'],
-    spicyLevel: 3,
-    desc: 'Gỏi đu đủ xanh bào sợi trộn gia vị chua cay mặn ngọt đặc trưng.'
-  }
-];
+import { Languages, ArrowLeftRight, X, Copy, Check, Sparkles, Smile, Frown, Meh, Activity, Lightbulb, LightbulbOff, Bot } from 'lucide-react';
 
 export const SmartMenu = () => {
-  const [isScanning, setIsScanning] = useState(false);
-  const [hasScanned, setHasScanned] = useState(false);
+  // ----------------------------------------------------------------------
+  // [STATE CỦA COMPONENT] - Ghi chú dành cho team
+  // ----------------------------------------------------------------------
+  // lang: Quản lý ngôn ngữ Đích đến ('vi' = Dịch sang tiếng Việt, 'en' = Dịch sang tiếng Anh)
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
 
-  const handleScan = () => {
-    setIsScanning(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setHasScanned(true);
-    }, 2500);
+  // sourceText: Nội dung chữ người dùng gõ vào khung trên
+  const [sourceText, setSourceText] = useState('');
+
+  // translatedText: Nội dung chữ đã được AI trả về ở khung dưới
+  const [translatedText, setTranslatedText] = useState('');
+
+  // isTranslating: Trạng thái cờ (boolean) báo hiệu đang gọi API Pinggy để hiện Loading spinner
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // copied: Trạng thái UI cho biểu tượng copy (hiển thị dấu tích ✅ sau khi copy thành công)
+  const [copied, setCopied] = useState(false);
+
+  // sentiment: Dữ liệu phân tích cảm xúc trích xuất từ AI Backend (vd: {label: 'POS', score: 0.99})
+  const [sentiment, setSentiment] = useState<{ label: string, score: number } | null>(null);
+
+  // isDarkMode: Trạng thái cờ chuyển đổi Giao diện Tối/Sáng thông qua cái nút gạt (Lamp switch)
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  // ----------------------------------------------------------------------
+
+  const handleTranslate = async () => {
+    if (!sourceText.trim()) return;
+    setIsTranslating(true);
+
+    // ----------------------------------------------------------------------
+    // [HƯỚNG DẪN DÀNH CHO NHÓM] - CÁCH TÍCH HỢP ĐƯỜNG DẪN PINGGY (API PATH)
+    // ----------------------------------------------------------------------
+    // 1. Nếu chạy hoàn toàn trên máy cá nhân (Localhost):
+    //    Đường dẫn mặc định sẽ là: http://localhost:3000
+    //
+    // 2. Nếu dùng Pinggy để Public server cho người khác xài qua điện thoại:
+    //    Bạn thay đường dẫn Pinggy vào cái link chữ màu đục ở dòng bên dưới, 
+    //    hoặc tốt nhất là tạo một file tên là ".env" tại thư mục TDTT_ReactJS_Nhom_1
+    //    rồi ghi vào đó: VITE_API_URL=https://quyet-mat-khau-gi-do.a.pinggy.link
+    // ----------------------------------------------------------------------
+    const API_URL = import.meta.env.VITE_API_URL || "https://rraid-103-249-22-29.run.pinggy-free.link";
+    // ----------------------------------------------------------------------
+
+    try {
+      const response = await fetch(`${API_URL}/api/translate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Pinggy-No-Screen': 'true' // Bỏ qua trang cảnh báo của Pinggy Free
+        },
+        body: JSON.stringify({
+          text: sourceText,
+          // 'vi' tức là đích đến tiếng Việt => Anh dịch sang Việt (en2vi)
+          method: lang === 'vi' ? 'en2vi' : 'vi2en'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // Cập nhật đúng trường dữ liệu trả về từ API của bạn: result.data.output
+        const textHienThi = result.data.output || result.data.translated_text || (typeof result.data === 'string' ? result.data : "Không tìm thấy nội dung dịch");
+        setTranslatedText(textHienThi);
+
+        // Đọc thêm trường sentiment từ mô hình AI (nếu có)
+        if (result.data.sentiment) {
+          setSentiment(result.data.sentiment);
+        } else {
+          setSentiment(null);
+        }
+      } else {
+        setTranslatedText("Lỗi: " + (result.error || "Không có kết quả"));
+      }
+    } catch (error: any) {
+      console.error(error);
+      setTranslatedText("Lỗi mạng: Không thể kết nối. Xin hãy kiểm tra lại server Backend hoặc đường link Pinggy đã đúng chưa.");
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
-  const reset = () => setHasScanned(false);
+  const clearText = () => {
+    setSourceText('');
+    setTranslatedText('');
+    setSentiment(null);
+  };
+
+  const copyToClipboard = () => {
+    if (translatedText) {
+      navigator.clipboard.writeText(translatedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-neutral-100 flex flex-col max-w-lg mx-auto border-x border-neutral-200">
+    <div className={`relative min-h-[calc(100vh-4rem)] flex flex-col max-w-lg mx-auto border-x transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
 
       {/* Top Bar */}
-      <div className="bg-white px-4 py-3 flex justify-between items-center shadow-sm z-10 relative">
-        <h1 className="font-bold text-neutral-800 text-lg flex items-center gap-2">
-          <Languages className="w-5 h-5 text-orange-500" /> Menu AI
-        </h1>
-        <div className="flex bg-neutral-100 rounded-lg p-1">
+      <div className={`px-4 py-3 flex justify-between items-center shadow-sm z-10 relative transition-colors duration-500 ${isDarkMode ? 'bg-slate-800 border-b border-slate-700' : 'bg-white'}`}>
+        <div className="flex flex-col gap-1.5">
+          <h1 className={`font-bold text-lg flex items-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-100' : 'text-neutral-800'}`}>
+            <Bot className="w-6 h-6 text-orange-500 animate-bounce" /> Thông Dịch Viên
+          </h1>
+          {/* Cầu dao đèn tối/sáng */}
+          <div className="flex items-center gap-2">
+            <LightbulbOff className={`w-4 h-4 transition-colors ${isDarkMode ? 'text-blue-400 animate-pulse' : 'text-neutral-300'}`} />
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-300 shadow-inner ${isDarkMode ? 'bg-slate-600' : 'bg-orange-200'}`}
+              title="Gạt trái để Tắt đèn (Dark Mode) - Gạt phải để Bật đèn (Light Mode)"
+            >
+              <div className={`absolute top-1 w-4 h-4 rounded-full shadow-md transition-all duration-300 ${isDarkMode ? 'left-1 bg-slate-300' : 'left-7 bg-white'}`} />
+            </button>
+            <Lightbulb className={`w-4 h-4 transition-colors ${!isDarkMode ? 'text-yellow-500 animate-[pulse_2s_ease-in-out_infinite]' : 'text-slate-500'}`} />
+          </div>
+        </div>
+
+        <div className={`flex items-center rounded-full p-1 border shadow-inner transition-colors duration-500 ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-neutral-100 border-neutral-200'}`}>
+          <div className={`px-3 py-1 text-xs font-bold w-16 text-center select-none transition-colors ${isDarkMode ? 'text-slate-300' : 'text-neutral-700'}`}>
+            {lang === 'vi' ? 'Anh' : 'Việt'}
+          </div>
+
           <button
-            onClick={() => setLang('vi')}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${lang === 'vi' ? 'bg-white shadow-sm text-orange-600' : 'text-neutral-500'}`}
+            onClick={() => {
+              setLang(lang === 'vi' ? 'en' : 'vi');
+              setSourceText(translatedText);
+              setTranslatedText(sourceText);
+            }}
+            className={`p-1.5 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all ${isDarkMode ? 'bg-slate-800 text-orange-400 hover:bg-slate-700' : 'bg-white text-orange-500 hover:bg-orange-50'}`}
+            title="Đảo ngôn ngữ"
           >
-            VI
+            <ArrowLeftRight className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={() => setLang('en')}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-white shadow-sm text-orange-600' : 'text-neutral-500'}`}
-          >
-            EN
-          </button>
+
+          <div className={`px-3 py-1 text-xs font-bold w-16 text-center select-none transition-colors ${isDarkMode ? 'text-slate-300' : 'text-neutral-700'}`}>
+            {lang === 'vi' ? 'Việt' : 'Anh'}
+          </div>
         </div>
       </div>
 
-      {!hasScanned ? (
-        <div className="flex-1 relative bg-black flex items-center justify-center">
-          <img src="https://images.unsplash.com/photo-1525648199074-cee30ba79a4a?auto=format&fit=crop&q=80" alt="Menu background" className="absolute inset-0 w-full h-full object-cover opacity-50 grayscale" />
+      {/* Translation Interface */}
+      <div className="flex-1 flex flex-col">
+        {/* Source Text Area */}
+        <div className={`flex-1 p-5 border-b relative shadow-sm z-0 flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-neutral-200'}`}>
+          <textarea
+            value={sourceText}
+            onChange={(e) => setSourceText(e.target.value)}
+            placeholder={lang === 'vi' ? "Nhập văn bản tiếng Anh cần dịch..." : "Nhập văn bản tiếng Việt cần dịch..."}
+            className={`w-full flex-1 resize-none outline-none text-xl md:text-2xl bg-transparent transition-colors duration-500 ${isDarkMode ? 'text-white placeholder-slate-500' : 'text-neutral-800 placeholder-neutral-300'}`}
+          />
 
-          <div className="relative z-10 w-[80%] aspect-[3/4] border-2 border-white/40 rounded-xl flex items-center justify-center bg-black/20 backdrop-blur-sm overflow-hidden">
-            {isScanning && (
-              <motion.div
-                initial={{ top: '-10%' }}
-                animate={{ top: '110%' }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                className="absolute left-0 right-0 h-8 bg-gradient-to-b from-transparent via-orange-500/50 to-orange-500 blur-sm"
-              />
-            )}
-
-            <div className="absolute inset-0 p-4">
-              <div className="w-full h-full border border-dashed border-white/50 rounded-lg relative">
-                <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-orange-500"></div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-orange-500"></div>
-                <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-orange-500"></div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-orange-500"></div>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Camera className="w-10 h-10 text-white/80 mx-auto mb-2" />
-              <p className="text-white/90 text-sm font-medium">Đưa menu vào khung hình</p>
-              <p className="text-white/60 text-xs mt-1 px-4">Hỗ trợ nhận diện cả chữ viết tay</p>
-            </div>
-          </div>
-
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10">
+          {sourceText && (
             <button
-              onClick={handleScan}
-              disabled={isScanning}
-              className={`px-8 py-3 rounded-full font-bold shadow-lg transition-all flex items-center gap-2 ${isScanning ? 'bg-orange-600 text-white opacity-80' : 'bg-orange-500 text-white hover:bg-orange-600'
+              onClick={clearText}
+              className={`absolute top-5 right-5 transition-colors p-1 rounded-full ${isDarkMode ? 'text-slate-400 hover:text-slate-200 bg-slate-700' : 'text-neutral-300 hover:text-neutral-500 bg-white'}`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+
+          <div className={`flex justify-between items-center mt-2 border-t pt-3 transition-colors duration-500 ${isDarkMode ? 'border-slate-700' : 'border-neutral-100'}`}>
+            <div className="flex items-center gap-3">
+              <div className="relative flex items-center justify-center w-8 h-8">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle cx="16" cy="16" r="14" fill="transparent" stroke={isDarkMode ? "#334155" : "#f3f4f6"} strokeWidth="3" />
+                  <circle cx="16" cy="16" r="14" fill="transparent" stroke={sourceText.length > 1900 ? "#ef4444" : "#f97316"} strokeWidth="3" strokeDasharray="88" strokeDashoffset={Math.max(0, 88 - (sourceText.length / 2000) * 88)} strokeLinecap="round" className="transition-all duration-300" />
+                </svg>
+                <span className={`absolute text-[9px] font-bold ${sourceText.length > 2000 ? 'text-red-500' : (isDarkMode ? 'text-slate-400' : 'text-neutral-400')}`}>{sourceText.length}</span>
+              </div>
+              <span className={`text-xs font-medium hidden sm:inline ${isDarkMode ? 'text-slate-500' : 'text-neutral-400'}`}>/ 2000 ký tự</span>
+            </div>
+            <button
+              onClick={handleTranslate}
+              disabled={isTranslating || !sourceText.trim()}
+              className={`px-6 py-2 rounded-full font-bold shadow-md transition-all flex items-center gap-2 ${isTranslating || !sourceText.trim()
+                ? (isDarkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed')
+                : 'bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:shadow-lg hover:-translate-y-0.5'
                 }`}
             >
-              {isScanning ? (
-                <><RefreshCw className="w-5 h-5 animate-spin" /> Đang dịch...</>
+              {isTranslating ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Đang dịch...
+                </span>
               ) : (
-                <><Sparkles className="w-5 h-5" /> Quét Menu</>
+                <><Sparkles className="w-4 h-4 group-hover:animate-ping" /> Dịch</>
               )}
             </button>
           </div>
         </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20 bg-neutral-50">
-          <div className="flex justify-between items-end mb-2">
-            <div>
-              <h2 className="text-sm font-bold text-neutral-500 uppercase">Kết quả bản dịch</h2>
-              <p className="text-xs text-neutral-400">Đã tìm thấy 2 món nổi bật</p>
-            </div>
-            <button onClick={reset} className="text-sm text-orange-600 font-semibold hover:underline">
-              Quét lại
-            </button>
-          </div>
 
-          {TRANSLATED_ITEMS.map(item => (
-            <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
-              <div className="h-32 w-full relative">
-                <img src={item.image} alt={item.translated} className="w-full h-full object-cover" />
-                <div className="absolute top-2 right-2 bg-black/60 text-white px-2 py-1 rounded-md text-xs font-bold backdrop-blur-sm flex items-center gap-1">
-                  🔥 {item.popularity}% yêu thích
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-bold text-lg text-neutral-800">{lang === 'vi' ? item.translated : item.original}</h3>
-                  <div className="flex gap-0.5">
-                    {[...Array(3)].map((_, i) => (
-                      <span key={i} className={`text-xs ${i < item.spicyLevel ? 'text-red-500' : 'text-neutral-200'}`}>🌶️</span>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-neutral-400 mb-3">{lang === 'vi' ? item.original : item.translated}</p>
+        {/* Target Text Area */}
+        <div className={`flex-1 p-5 relative flex flex-col items-start border-t transition-colors duration-500 ${isDarkMode ? 'bg-gradient-to-b from-slate-900 to-slate-800 border-slate-700' : 'bg-gradient-to-b from-[#F9FAFB] to-white border-neutral-100'}`}>
+          <textarea
+            readOnly
+            value={translatedText}
+            placeholder="Bản dịch sẽ xuất hiện ở đây..."
+            className={`w-full flex-1 resize-none outline-none text-lg md:text-xl font-medium bg-transparent transition-colors duration-500 ${isDarkMode ? 'text-orange-400 placeholder-slate-600' : 'text-orange-600 placeholder-orange-200/60'}`}
+          />
 
-                <p className="text-sm text-neutral-600 mb-4 line-clamp-2">{item.desc}</p>
-
-                {item.allergens.length > 0 && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-                    <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-amber-800">Cảnh báo dị ứng</p>
-                      <p className="text-xs text-amber-700 mt-0.5">{item.allergens.join(', ')}</p>
-                    </div>
-                  </div>
-                )}
+          {sentiment && (
+            <div className={`mt-4 mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] transition-all duration-500 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-neutral-100'}`}>
+              <Activity className="w-4 h-4 text-orange-400 animate-pulse" />
+              <span className={`text-xs font-semibold ${isDarkMode ? 'text-slate-300' : 'text-neutral-500'}`}>Giọng văn:</span>
+              <div className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${sentiment.label === 'POS' ? (isDarkMode ? 'bg-emerald-900/50 text-emerald-400' : 'bg-emerald-100 text-emerald-700') :
+                sentiment.label === 'NEG' ? (isDarkMode ? 'bg-rose-900/50 text-rose-400' : 'bg-rose-100 text-rose-700') :
+                  (isDarkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700')
+                }`}>
+                {sentiment.label === 'POS' ? <Smile className="w-3.5 h-3.5" /> :
+                  sentiment.label === 'NEG' ? <Frown className="w-3.5 h-3.5" /> :
+                    <Meh className="w-3.5 h-3.5" />}
+                {sentiment.label === 'POS' ? 'Tích cực' :
+                  sentiment.label === 'NEG' ? 'Tiêu cực' : 'Trung lập'}
+                <span className="opacity-70 ml-0.5 font-medium">({Math.round(sentiment.score * 100)}%)</span>
               </div>
             </div>
-          ))}
+          )}
+
+          {translatedText && (
+            <div className="absolute bottom-5 right-5 flex gap-2">
+              <button
+                onClick={copyToClipboard}
+                className={`p-2.5 rounded-full border shadow-sm transition-all flex items-center gap-1 ${isDarkMode ? 'bg-slate-800 border-slate-600 text-slate-400 hover:text-orange-400 hover:border-orange-500/50' : 'bg-white border-neutral-200 text-neutral-500 hover:text-orange-500 hover:border-orange-200'}`}
+                title="Sao chép"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                {copied && <span className="text-xs font-bold text-green-500 pr-1">Đã chép</span>}
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
     </div>
   );
 };
