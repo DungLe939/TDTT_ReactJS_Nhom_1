@@ -39,6 +39,8 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   // Logout
   logout: () => Promise<void>;
+  // Manual Login (Simulation/Role-based)
+  login: (role: 'user' | 'admin') => void;
 }
 
 // Helper: Chuyển đổi Firebase User sang User interface của app
@@ -119,6 +121,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut(auth);
   };
 
+  // Đăng nhập thủ công (Simulated)
+  const login = (role: 'user' | 'admin') => {
+    setUser({
+      id: 'simulated-id',
+      name: role === 'admin' ? 'Administrator' : 'User',
+      email: role === 'admin' ? 'admin@example.com' : 'user@example.com',
+      photoURL: null,
+      allergies: [],
+      role: role,
+    });
+  };
+
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -139,6 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         updateUserProfile,
         sendPasswordReset,
         logout,
+        login,
       }}
     >
       {children}
