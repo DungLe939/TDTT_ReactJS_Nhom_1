@@ -218,7 +218,7 @@ export const Home = () => {
 
               {/* Category buttons inside the HCM Banner */}
               <div className="flex flex-wrap gap-3">
-                {foodCategories.map((cat, i) => (
+                {foodCategories.map((cat) => (
                   <motion.button
                     key={cat.name}
                     whileHover={{ y: -4, scale: 1.05 }}
