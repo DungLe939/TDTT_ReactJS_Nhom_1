@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
-import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X } from 'lucide-react';
 
 export const Home = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+
   const features = [
     {
       title: 'Lịch trình Food Tour',
@@ -41,12 +44,19 @@ export const Home = () => {
     }
   ];
 
+  const foodCategories = [
+    { name: 'Phở Bò', img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGglRTElQkIlOUYlMjBiJUMzJUIyfGVufDB8fDB8fHww' },
+    { name: 'Bánh Mì', img: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YiVDMyVBMW5oJTIwbSVDMyVBQ3xlbnwwfHwwfHx8MA%3D%3D' },
+    { name: 'Bún Bò', img: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YiVDMyVCQW4lMjBiJUMzJUIyfGVufDB8fDB8fHww' },
+    { name: 'Cơm Tấm', img: 'https://images.unsplash.com/photo-1766050587783-1c90751275dd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YyVDNiVBMW0lMjB0JUUxJUJBJUE1bXxlbnwwfHwwfHx8MA%3D%3D' },
+    { name: 'Gỏi Cuốn', img: 'https://plus.unsplash.com/premium_photo-1663850685033-a8557389963e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZyVFMSVCQiU4RmklMjBjdSVFMSVCQiU5MW58ZW58MHx8MHx8fDA%3D' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#FFF8F0] py-12 px-4 sm:px-6 lg:px-8 selection:bg-orange-200">
       <div className="max-w-7xl mx-auto">
-        {/* New Hero Section */}
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-24 mt-4 lg:mt-8">
-          {/* Left Side: Text and Buttons */}
+        {/* Hero Section */}
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-20 mt-4 lg:mt-8">
           <div className="lg:w-[55%] flex flex-col items-start text-left space-y-6">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -76,7 +86,6 @@ export const Home = () => {
               Hương Vị Bản Địa giúp bạn khám phá, nhận diện và tận hưởng ẩm thực đích thực ở bất cứ nơi đâu. Từ nhận diện món ăn tức thì tới dịch thuật thông minh.
             </motion.p>
             
-            {/* Buttons */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -98,7 +107,6 @@ export const Home = () => {
               </Link>
             </motion.div>
 
-            {/* Stats */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -120,14 +128,12 @@ export const Home = () => {
             </motion.div>
           </div>
 
-          {/* Right Side: Image and Floating Card */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, x: 20 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
             className="lg:w-[45%] relative w-full mt-12 lg:mt-0"
           >
-            {/* Main Image */}
             <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full">
               <img 
                 src="https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop" 
@@ -136,7 +142,6 @@ export const Home = () => {
               />
             </div>
 
-            {/* Floating Card */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -153,18 +158,86 @@ export const Home = () => {
                     <span className="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full">98% Match</span>
                   </div>
                   <p className="text-xs md:text-sm text-neutral-500 mb-2 font-medium">Vietnamese Beef Noodle Soup</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] md:text-xs font-bold text-orange-700 bg-orange-100/80 px-2.5 py-1 rounded-md">450 cal</span>
-                    <span className="text-[10px] md:text-xs font-bold text-blue-700 bg-blue-100/80 px-2.5 py-1 rounded-md">High Protein</span>
-                  </div>
                 </div>
               </div>
             </motion.div>
           </motion.div>
         </div>
 
+        {/* ── RICH Search Banner Section with HCM Background ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="relative mt-30 mb-30 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-orange-900/10"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 50%',
+          }}
+        >
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1px]" />
+
+          <div className="relative flex flex-col lg:flex-row items-center gap-8 px-8 md:px-14 py-16">
+            <div className="flex-1 z-10 w-full">
+              <motion.h2
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-8"
+              >
+                Xin chào <span className="text-orange-500">User</span>,<br />
+                bạn muốn ăn gì vào ngày hôm nay nào?
+              </motion.h2>
+
+              {/* Search input inside the HCM Banner */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden mb-8"
+              >
+                <Search className="absolute left-5 w-5 h-5 text-neutral-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Tìm kiếm món ăn yêu thích..."
+                  className="flex-1 pl-14 pr-4 py-5 text-neutral-800 outline-none font-medium"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="mr-2 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-400">
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+                <button className="m-2 px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/30">
+                  Tìm kiếm
+                </button>
+              </motion.div>
+
+              {/* Category buttons inside the HCM Banner */}
+              <div className="flex flex-wrap gap-3">
+                {foodCategories.map((cat, i) => (
+                  <motion.button
+                    key={cat.name}
+                    whileHover={{ y: -4, scale: 1.05 }}
+                    onClick={() => setSearchQuery(cat.name)}
+                    className="flex flex-col items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 transition-all"
+                  >
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/20">
+                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">{cat.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Feature Grid Header */}
-        <div className="text-center md:text-left mb-8 mt-32 md:mt-40">
+        <div className="text-center md:text-left mb-8">
           <h2 className="text-3xl md:text-4xl font-extrabold text-neutral-900 mb-3">Các Tính Năng Nổi Bật</h2>
           <p className="text-neutral-600 text-lg">Khám phá sức mạnh của AI trong trải nghiệm văn hóa và ẩm thực</p>
         </div>
@@ -180,13 +253,8 @@ export const Home = () => {
             >
               <Link 
                 to={feature.path}
-                className="block h-full bg-white rounded-[2rem] p-8 border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group scale-100 hover:-translate-y-1 relative overflow-hidden"
+                className="block h-full bg-white rounded-[2rem] p-8 border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group hover:-translate-y-1 relative overflow-hidden"
               >
-                {/* Background decorative icon */}
-                <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 text-neutral-900 pointer-events-none transform group-hover:scale-150 group-hover:-rotate-12">
-                  {feature.icon}
-                </div>
-                
                 <div className={`w-16 h-16 rounded-2xl ${feature.color} text-white flex items-center justify-center mb-6 shadow-lg shadow-${feature.color}/20 relative z-10`}>
                   {feature.icon}
                 </div>
@@ -196,7 +264,6 @@ export const Home = () => {
                 <p className="text-neutral-600 mb-6 line-clamp-2 relative z-10">
                   {feature.description}
                 </p>
-                
                 <div className="flex items-center text-sm font-bold text-neutral-900 group-hover:text-orange-500 transition-colors mt-auto pt-4 border-t border-neutral-100 relative z-10">
                   Trải nghiệm ngay <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
