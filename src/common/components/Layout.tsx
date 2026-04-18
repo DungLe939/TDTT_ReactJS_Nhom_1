@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
-import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon, MessageSquare } from 'lucide-react';
 import { Chatbot } from './Chatbot';
 
 export const Layout = () => {
@@ -16,6 +16,7 @@ export const Layout = () => {
     { path: '/menu', label: 'Menu AI', icon: <Languages className="w-5 h-5" /> },
     { path: '/quests', label: 'Nhiệm vụ', icon: <Dices className="w-5 h-5" /> },
     { path: '/group', label: 'Nhóm ăn', icon: <Users className="w-5 h-5" /> },
+    { path: '/blogs', label: 'Cộng đồng', icon: <MessageSquare className="w-5 h-5" /> },
   ];
 
   if (isAdmin) {
