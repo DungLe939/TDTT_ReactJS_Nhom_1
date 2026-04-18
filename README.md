@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://hcmus.edu.vn/wp-content/uploads/2022/01/logo-khtn.png" height="120" alt="HCMUS Logo"/>
+<img src="https://hcmus.edu.vn/wp-content/uploads/2023/04/Logo-chinh-e1681638380305.png" height="120" alt="HCMUS Logo"/>
 
 # 🍜 Smart Tourism System
 ### *Hương Vị Bản Địa — Gợi ý ẩm thực cá nhân hóa cho du khách*
@@ -139,7 +139,8 @@ cd TDTT_ReactJS_Nhom_1
 ### Bước 2: Cài đặt Frontend
 
 ```bash
-cd huong-vi-ban-dia-web
+cd TDTT_ReactJS_Nhom_1    # Nếu chưa từng dùng lần nào
+npm install               # Nếu chưa từng dùng lần nào
 npm ci                    # Dùng npm ci để đảm bảo đúng version
 npm run dev
 ```
@@ -147,7 +148,7 @@ npm run dev
 ### Bước 3: Cài đặt Backend
 
 ```bash
-cd huong-vi-ban-dia-api
+cd TDTT_ReactJS_Nhom_1    # Nếu chưa từng dùng lần nào
 npm ci
 cp .env.example .env      # Điền thông tin Firebase Admin SDK
 npm run start:dev
