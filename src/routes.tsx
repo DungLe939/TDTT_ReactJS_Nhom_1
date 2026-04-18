@@ -13,6 +13,7 @@ import { FileUploadDemo } from './pages/FileUploadDemo';
 import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './pages/Auth';
 import BlogPage from './modules/quests/pages/BlogPage';
+import { AdminQuests } from './pages/AdminQuests';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },
       { path: 'blogs', Component: BlogPage },
+      { path: 'admin-quests', Component: AdminQuests }
     ],
   },
 ]);

@@ -1,5 +1,17 @@
+import axios from 'axios';
 import type { ActivityLog, Tag, CuisineType } from '../types/quest.types';
+import type {
+  AchievementWithProgress,
+  UserRewardResolved,
+  Reward,
+  Achievement,
+  RewardType,
+  ActivityEventType,
+} from '../types/quest.types';
 import { blogActivityService } from './blogActivityService';
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const api = axios.create({ baseURL: BASE_URL });
 
 export interface UserStats {
   xp: number;
@@ -77,6 +89,69 @@ const calculateStats = (userId: string): UserStats => {
   };
 };
 
+// ─── User endpoints ──────────────────────────────────────────────────────────
+
+export async function getAchievementsForUser(userId: string): Promise<AchievementWithProgress[]> {
+  const { data } = await api.get<AchievementWithProgress[]>(`/achievements/user/${userId}`);
+  return data;
+}
+
+export async function getUserRewards(userId: string): Promise<UserRewardResolved[]> {
+  const { data } = await api.get<UserRewardResolved[]>(`/rewards/user/${userId}`);
+  return data;
+}
+
+export async function redeemVoucher(
+  userId: string,
+  userRewardId: string,
+): Promise<{ success: boolean; discountPercent?: number; message: string }> {
+  const { data } = await api.post('/rewards/redeem', { userId, userRewardId });
+  return data;
+}
+
+// ─── Admin endpoints ─────────────────────────────────────────────────────────
+
+export async function getAllRewards(): Promise<Reward[]> {
+  const { data } = await api.get<Reward[]>('/rewards');
+  return data;
+}
+
+export async function createReward(payload: {
+  type: RewardType;
+  value: number;
+  description: string;
+  expiresAt?: string; // ISO string
+}): Promise<Reward> {
+  const { data } = await api.post<Reward>('/rewards', payload);
+  return data;
+}
+
+export async function createAchievement(payload: {
+  name: string;
+  description: string;
+  icon: string;
+  rewardId: string;
+  isActive: boolean;
+  condition: {
+    eventType: ActivityEventType;
+    requiredCount: number;
+    filters?: {
+      cuisineType?: CuisineType;
+      withinDays?: number;
+      tag?: Tag;
+    };
+  };
+}): Promise<Achievement> {
+  const { data } = await api.post<Achievement>('/achievements', payload);
+  return data;
+}
+
 export const achievementService = {
-  calculateStats
+  calculateStats,
+  getAchievementsForUser,
+  getUserRewards,
+  redeemVoucher,
+  getAllRewards,
+  createReward,
+  createAchievement
 };
