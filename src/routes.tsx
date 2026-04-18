@@ -32,7 +32,8 @@ export const router = createBrowserRouter([
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },
-      { path: 'admin-quests', Component: AdminQuests }
+      { path: 'admin-quests', Component: AdminQuests },
+      { path: 'blogs', Component: BlogPage },
     ],
   },
 ]);

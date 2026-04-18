@@ -130,7 +130,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
     restaurants.map(r => {
       const rAny = r as any;
       let addrRaw = rAny.address || rAny.Address || rAny.diaChi || rAny.location;
-      
+
       let addrStr = '';
       if (typeof addrRaw === 'string') {
         addrStr = addrRaw;
@@ -151,14 +151,14 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
 
   if (!isLoggedIn) {
     return (
-      <div 
+      <div
         className="bg-white rounded-3xl p-6 shadow-sm border border-neutral-100 flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-all group overflow-hidden relative"
         onClick={() => navigate('/auth')}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-inner group-hover:scale-110 transition-transform">
-             <ImageIcon className="w-6 h-6" />
+            <ImageIcon className="w-6 h-6" />
           </div>
           <div>
             <h4 className="font-extrabold text-neutral-800 text-sm">Chia sẻ trải nghiệm ẩm thực của bạn</h4>
@@ -166,7 +166,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
           </div>
         </div>
         <button className="bg-neutral-900 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-neutral-200 group-hover:bg-black transition-all relative z-10">
-           Đăng nhập ngay
+          Đăng nhập ngay
         </button>
       </div>
     );
@@ -174,7 +174,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
 
   return (
     <>
-      <div 
+      <div
         className="bg-white rounded-3xl p-4 shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-neutral-100 flex items-center gap-3 cursor-pointer hover:bg-neutral-50 transition-colors"
         onClick={() => setIsModalOpen(true)}
       >
@@ -190,18 +190,18 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[500px] z-10 overflow-hidden flex flex-col max-h-[90vh]">
-            
+
             {/* Header */}
             <div className="relative border-b border-neutral-100 p-4 text-center">
               <h2 className="text-lg font-bold text-neutral-900">Tạo bài viết</h2>
-              <button 
+              <button
                 className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors"
                 onClick={() => setIsModalOpen(false)}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
               {/* User Info */}
               <div className="flex items-center gap-3 mb-4">
@@ -228,7 +228,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
               {/* Emoji bar */}
               <div className="flex justify-between items-center mb-4 relative">
                 <div className="text-xl font-bold text-neutral-300">Aa</div>
-                <div 
+                <div
                   className="cursor-pointer text-neutral-400 hover:text-orange-500 transition-colors p-1"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 >
@@ -251,7 +251,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                   {photoPreviews.map((url, index) => (
                     <div key={index} className="relative group rounded-xl overflow-hidden aspect-square border border-neutral-100">
                       <img src={url} alt="preview" className="w-full h-full object-cover" />
-                      <button 
+                      <button
                         className="absolute top-2 right-2 w-7 h-7 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-neutral-700 hover:bg-red-500 hover:text-white transition-colors shadow-sm"
                         onClick={() => removePhoto(index)}
                       >
@@ -294,8 +294,8 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
               {/* Tags Section - Searchable & Compact */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                   <h4 className="text-[11px] font-black text-neutral-400 uppercase tracking-widest pl-1">Thẻ bài viết</h4>
-                   <span className="text-[10px] font-bold text-neutral-300 italic">Chọn nhiều thẻ...</span>
+                  <h4 className="text-[11px] font-black text-neutral-400 uppercase tracking-widest pl-1">Thẻ bài viết</h4>
+                  <span className="text-[10px] font-bold text-neutral-300 italic">Chọn nhiều thẻ...</span>
                 </div>
                 <Select
                   isMulti
@@ -343,19 +343,18 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                     })
                   }}
                 />
-                
+
                 {/* Gợi ý nhanh */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   <span className="text-[9px] font-black text-neutral-300 uppercase mt-1.5 mr-1">Gợi ý:</span>
                   {QUICK_TAGS.map(tag => (
-                    <button 
-                      key={tag} 
+                    <button
+                      key={tag}
                       type="button"
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold transition-all border ${
-                        selectedTags.includes(tag) 
-                          ? 'bg-orange-500 border-orange-500 text-white shadow-sm' 
+                      className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold transition-all border ${selectedTags.includes(tag)
+                          ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
                           : 'bg-white border-neutral-100 text-neutral-400 hover:border-orange-500 hover:text-orange-500'
-                      }`}
+                        }`}
                       onClick={() => toggleTag(tag)}
                     >
                       #{tag.toUpperCase()}
@@ -386,12 +385,11 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
               <input type="file" ref={fileInputRef} hidden multiple accept="image/*" onChange={handleImageChange} />
 
               {/* Submit Button */}
-              <button 
-                className={`w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-sm ${
-                  canSubmit 
-                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30' 
+              <button
+                className={`w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-sm ${canSubmit
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30'
                     : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                }`}
+                  }`}
                 disabled={!canSubmit}
                 onClick={handleSubmit}
               >

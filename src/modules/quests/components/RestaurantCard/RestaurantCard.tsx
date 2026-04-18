@@ -80,11 +80,10 @@ const RestaurantCard = ({ restaurant, onVisit }: RestaurantCardProps) => {
 
         <button
           onClick={handleVisit}
-          className={`w-full py-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex justify-center items-center gap-2 transition-all shadow-sm ${
-            visited 
-              ? 'bg-orange-500 text-white shadow-orange-500/25' 
+          className={`w-full py-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex justify-center items-center gap-2 transition-all shadow-sm ${visited
+              ? 'bg-orange-500 text-white shadow-orange-500/25'
               : 'bg-neutral-50 text-neutral-500 hover:bg-orange-500 hover:text-white border border-neutral-100'
-          }`}
+            }`}
         >
           <Footprints className={`w-3.5 h-3.5 ${visited ? 'animate-bounce' : ''}`} />
           {visited ? 'Đã lưu' : 'Ghé thăm'}

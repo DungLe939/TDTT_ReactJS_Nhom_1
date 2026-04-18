@@ -25,11 +25,10 @@ const PostFilter = ({ activeTags, onToggleTag, onClear }: PostFilterProps) => {
               <button
                 key={tag}
                 type="button"
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
-                  isActive 
-                    ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 scale-[1.02]' 
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${isActive
+                    ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 scale-[1.02]'
                     : 'bg-neutral-50 border-neutral-100 text-neutral-500 hover:border-orange-200 hover:text-orange-500 hover:bg-white'
-                }`}
+                  }`}
                 onClick={() => onToggleTag(tag)}
               >
                 #{tag.toUpperCase()}

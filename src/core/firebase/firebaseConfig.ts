@@ -10,7 +10,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const isFirebaseConfigured = true; 
+export const isFirebaseConfigured = true;
 
 let app = null;
 if (isFirebaseConfigured) {

@@ -18,7 +18,7 @@ import type { Post, Restaurant, PostFilter, BlogComment } from '../types/quest.t
 export const firebaseBlogService = {
   getPosts: async (filter?: PostFilter): Promise<Post[]> => {
     if (!isFirebaseConfigured || !db) return [];
-    
+
     try {
       let q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
 
@@ -35,10 +35,10 @@ export const firebaseBlogService = {
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
-        
+
         let createdAt = data.createdAt;
         if (createdAt && typeof createdAt.toDate === 'function') {
-           createdAt = createdAt.toDate().toISOString();
+          createdAt = createdAt.toDate().toISOString();
         }
 
         return {
@@ -69,30 +69,30 @@ export const firebaseBlogService = {
       const docRef = await addDoc(collection(db, 'posts'), postData);
       return { ...postData, id: docRef.id };
     } catch (error) {
-       console.error("Error creating post:", error);
-       return null;
+      console.error("Error creating post:", error);
+      return null;
     }
   },
 
   toggleLikePost: async (postId: string, userId: string, alreadyLiked: boolean): Promise<void> => {
-     if (!isFirebaseConfigured || !db) return;
+    if (!isFirebaseConfigured || !db) return;
 
-     try {
-       const postRef = doc(db, 'posts', postId);
-       if (alreadyLiked) {
-         await updateDoc(postRef, {
-           likedByUserIds: arrayRemove(userId),
-           likesCount: increment(-1)
-         });
-       } else {
-         await updateDoc(postRef, {
-           likedByUserIds: arrayUnion(userId),
-           likesCount: increment(1)
-         });
-       }
-     } catch (error) {
-       console.error("Error toggling like:", error);
-     }
+    try {
+      const postRef = doc(db, 'posts', postId);
+      if (alreadyLiked) {
+        await updateDoc(postRef, {
+          likedByUserIds: arrayRemove(userId),
+          likesCount: increment(-1)
+        });
+      } else {
+        await updateDoc(postRef, {
+          likedByUserIds: arrayUnion(userId),
+          likesCount: increment(1)
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
   },
 
   addComment: async (postId: string, comment: BlogComment): Promise<void> => {
@@ -109,17 +109,17 @@ export const firebaseBlogService = {
   },
 
   getRestaurants: async (): Promise<Restaurant[]> => {
-      if (!isFirebaseConfigured || !db) return [];
-      
-      try {
-        const querySnapshot = await getDocs(collection(db, 'restaurants'));
-         return querySnapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        })) as Restaurant[];
-      } catch (error) {
-        console.error("Error fetching restaurants:", error);
-        return [];
-      }
+    if (!isFirebaseConfigured || !db) return [];
+
+    try {
+      const querySnapshot = await getDocs(collection(db, 'restaurants'));
+      return querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Restaurant[];
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+      return [];
+    }
   }
 }

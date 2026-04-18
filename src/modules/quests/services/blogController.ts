@@ -26,9 +26,9 @@ const createPost = async (dto: CreatePostDto): Promise<Post> => {
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dto),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dto),
     });
     if (response.ok) {
       const created = await response.json();
@@ -43,15 +43,15 @@ const createPost = async (dto: CreatePostDto): Promise<Post> => {
   if (isFirebaseConfigured) {
     try {
       const created = await firebaseBlogService.createPost({
-          authorId: dto.authorId,
-          content: dto.content,
-          tags: dto.tags,
-          restaurantId: dto.restaurantId,
-          photoUrls: dto.photoUrls,
-          createdAt: new Date().toISOString(),
-          likesCount: 0,
-          likedByUserIds: [],
-          comments: [],
+        authorId: dto.authorId,
+        content: dto.content,
+        tags: dto.tags,
+        restaurantId: dto.restaurantId,
+        photoUrls: dto.photoUrls,
+        createdAt: new Date().toISOString(),
+        likesCount: 0,
+        likedByUserIds: [],
+        comments: [],
       });
       if (created) {
         blogActivityService.logActivity({
@@ -81,8 +81,8 @@ const createPost = async (dto: CreatePostDto): Promise<Post> => {
     likedByUserIds: [],
     comments: [],
   };
-  
-  SEED_POSTS.unshift(newPost); 
+
+  SEED_POSTS.unshift(newPost);
   return newPost;
 };
 
@@ -106,12 +106,12 @@ const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
     if (filter?.authorId) queryParams.append('authorId', filter.authorId);
     if (filter?.restaurantId) queryParams.append('restaurantId', filter.restaurantId);
     if (filter?.tags) {
-        filter.tags.forEach(tag => queryParams.append('tags', tag));
+      filter.tags.forEach(tag => queryParams.append('tags', tag));
     }
-    
+
     const queryString = queryParams.toString();
     if (queryString) {
-        url += `?${queryString}`;
+      url += `?${queryString}`;
     }
 
     const response = await fetch(url);
@@ -151,7 +151,7 @@ const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
       filtered = filtered.filter(p => p.restaurantId === filter.restaurantId);
     }
     if (filter.tags && filter.tags.length > 0) {
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         filter.tags!.every(tag => p.tags.includes(tag))
       );
     }
@@ -166,17 +166,17 @@ const toggleLikePost = async (userId: string, postId: string, post: Post): Promi
   const optimisticResult: Post = {
     ...post,
     likesCount: alreadyLiked ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
-    likedByUserIds: alreadyLiked 
-        ? post.likedByUserIds.filter(id => id !== userId) 
-        : [...post.likedByUserIds, userId]
+    likedByUserIds: alreadyLiked
+      ? post.likedByUserIds.filter(id => id !== userId)
+      : [...post.likedByUserIds, userId]
   };
 
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/posts/${postId}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
     });
     if (response.ok) {
       const result = await response.json();
@@ -211,18 +211,18 @@ const toggleLikePost = async (userId: string, postId: string, post: Post): Promi
 
 
 const addComment = async (
-  userId: string, 
-  postId: string, 
-  content: string, 
+  userId: string,
+  postId: string,
+  content: string,
   post: Post,
   photoUrls?: string[]
 ): Promise<Post> => {
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, content, photoUrls }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, content, photoUrls }),
     });
     if (response.ok) {
       const result = await response.json();
@@ -285,8 +285,8 @@ const addComment = async (
 
 
 const toggleLikeComment = async (
-  userId: string, 
-  postId: string, 
+  userId: string,
+  postId: string,
   commentId: string,
   post: Post
 ): Promise<Post> => {
@@ -297,7 +297,7 @@ const toggleLikeComment = async (
       return {
         ...comment,
         likesCount: alreadyLiked ? Math.max(0, comment.likesCount - 1) : comment.likesCount + 1,
-        likedByUserIds: alreadyLiked 
+        likedByUserIds: alreadyLiked
           ? comment.likedByUserIds.filter(id => id !== userId)
           : [...comment.likedByUserIds, userId]
       };
@@ -310,9 +310,9 @@ const toggleLikeComment = async (
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/posts/${postId}/comments/${commentId}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
     });
     if (response.ok) {
       const result = await response.json();
@@ -390,19 +390,19 @@ const getRestaurants = async (): Promise<Restaurant[]> => {
     const response = await fetch(url);
     if (response.ok) {
       const apiUpdates = await response.json();
-      
+
       if (Array.isArray(apiUpdates) && apiUpdates.length > 0) {
-        
+
         // Hợp nhất dữ liệu: Dùng Map để ghi đè các ID cũ bằng dữ liệu mới hoặc thêm ID mới
         const restaurantMap = new Map(cached.map(r => [r.id, r]));
         apiUpdates.forEach(r => restaurantMap.set(r.id, r));
-        
+
         const merged = Array.from(restaurantMap.values());
-        
+
         // Lưu lại vào cache
         setCachedRestaurants(merged);
         localStorage.setItem(LAST_SYNCED_KEY, new Date().toISOString());
-        
+
         return merged;
       } else {
         console.log(`[API] Không có cập nhật mới nào từ ${lastSyncedAt}`);
@@ -441,9 +441,9 @@ const visitRestaurant = async (userId: string, restaurantId: string, cuisineType
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/visit-restaurant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, restaurantId, cuisineType }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, restaurantId, cuisineType }),
     });
     if (response.ok) {
       console.log(`[API] Restaurant visit logged via NestJS backend`);
