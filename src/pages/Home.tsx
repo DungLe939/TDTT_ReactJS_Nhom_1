@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X } from 'lucide-react';
@@ -42,7 +42,7 @@ interface Feature {
 
 const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
   const [hovered, setHovered] = useState(false);
-  const [drawKey, setDrawKey] = useState(0); // bump to re-trigger CSS animation
+  const [drawKey, setDrawKey] = useState(0);
 
   const handleEnter = () => {
     setHovered(true);
@@ -61,16 +61,13 @@ const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
         onMouseEnter={handleEnter}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* subtle background glow on hover */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem]"
           style={{ background: `radial-gradient(ellipse at top left, ${feature.color}12 0%, transparent 65%)` }}
         />
 
-        {/* ── Icon ── */}
         <motion.div
           className="mb-6 relative w-fit"
-          /* floating loop while hovering */
           animate={
             hovered
               ? { y: [0, -7, 0, -4, 0], rotate: [0, -5, 5, -3, 0] }
@@ -82,7 +79,6 @@ const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
               : { duration: 0.35, ease: 'easeOut' }
           }
         >
-          {/* outer "ring" circle that scales in on hover */}
           <motion.div
             className="absolute -inset-2 rounded-3xl pointer-events-none"
             style={{ border: `2px solid ${feature.color}` }}
@@ -90,12 +86,10 @@ const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
             transition={{ duration: 0.35, ease: 'easeOut' }}
           />
 
-          {/* icon box – stroke outline style */}
           <div
             className={`w-16 h-16 rounded-2xl ${feature.bgLight} border-2 ${feature.borderColor} ${feature.iconColor} flex items-center justify-center relative transition-all duration-300`}
             style={{ boxShadow: hovered ? `0 8px 24px -4px ${feature.color}40` : 'none' }}
           >
-            {/* key bump forces CSS animation to replay on every hover */}
             <div key={drawKey} className={hovered ? 'icon-draw' : ''}>
               {feature.icon}
             </div>
@@ -125,6 +119,40 @@ const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
 };
 
 export const Home = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const heroSlides = [
+    {
+      mainImg: 'https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop',
+      avatarImg: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=400&auto=format&fit=crop',
+      title: 'Phở Bò',
+      description: 'Vietnamese Beef Noodle Soup',
+      match: '98%',
+    },
+    {
+      mainImg: 'https://images.unsplash.com/photo-1645571059598-4f1f23df9a19?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YiVDMyVBMW5oJTIwbSVDMyVBQ3xlbnwwfHwwfHx8MA%3D%3D',
+      avatarImg: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=400&auto=format&fit=crop',
+      title: 'Bánh Mì',
+      description: 'Crispy Vietnamese Sandwich',
+      match: '95%',
+    },
+    {
+      mainImg: 'https://media.istockphoto.com/id/2171448100/photo/traditional-vietnamese-b%C3%BAn-b%C3%B2-hu%E1%BA%BF-with-aromatic-broth-and-tender-beef.webp?a=1&b=1&s=612x612&w=0&k=20&c=3WKE_E7UmtU0Nfe0n3saWhFt-TM618BEdER2VvI40eA=',
+      avatarImg: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=400&auto=format&fit=crop',
+      title: 'Bún Bò Huế',
+      description: 'Spicy Beef & Pork Noodle',
+      match: '99%',
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   const features: Feature[] = [
     {
       title: 'Lịch trình Food Tour',
@@ -178,8 +206,6 @@ export const Home = () => {
     }
   ];
 
-  const [searchQuery, setSearchQuery] = useState('');
-
   const foodCategories = [
     { name: 'Phở Bò', img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGglRTElQkIlOUYlMjBiJUMzJUIyfGVufDB8fDB8fHww' },
     { name: 'Bánh Mì', img: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YiVDMyVBMW5oJTIwbSVDMyVBQ3xlbnwwfHwwfHx8MA%3D%3D' },
@@ -191,10 +217,8 @@ export const Home = () => {
   return (
     <div className="min-h-screen bg-[#FFF8F0] py-12 px-4 sm:px-6 lg:px-8 selection:bg-orange-200">
       <div className="max-w-7xl mx-auto">
-
-        {/* New Hero Section */}
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-24 mt-4 lg:mt-8">
-          {/* Left Side: Text and Buttons */}
+        {/* Hero Section */}
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-20 mt-4 lg:mt-8">
           <div className="lg:w-[55%] flex flex-col items-start text-left space-y-6">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -224,7 +248,6 @@ export const Home = () => {
               Hương Vị Bản Địa giúp bạn khám phá, nhận diện và tận hưởng ẩm thực đích thực ở bất cứ nơi đâu. Từ nhận diện món ăn tức thì tới dịch thuật thông minh.
             </motion.p>
             
-            {/* Buttons */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -246,7 +269,6 @@ export const Home = () => {
               </Link>
             </motion.div>
 
-            {/* Stats */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -268,174 +290,134 @@ export const Home = () => {
             </motion.div>
           </div>
 
-          {/* Right Side: Image and Floating Card */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, x: 20 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
             className="lg:w-[45%] relative w-full mt-12 lg:mt-0"
           >
-            {/* Main Image */}
-            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full">
-              <img 
-                src="https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop" 
-                alt="Delicious Asian Food" 
-                className="w-full h-full object-cover"
-              />
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full bg-neutral-100">
+              {heroSlides.map((slide, idx) => (
+                <motion.img 
+                  key={idx}
+                  animate={{ opacity: currentSlideIndex === idx ? 1 : 0 }}
+                  transition={{ duration: 1 }}
+                  src={slide.mainImg} 
+                  alt={slide.title} 
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ))}
+              
+              {/* Slider Dots Indicator */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {heroSlides.map((_, idx) => (
+                  <button
+                    key={'dot-'+idx}
+                    onClick={() => setCurrentSlideIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'bg-white w-8 shadow-sm' : 'bg-white/60 hover:bg-white/90 w-2'}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            {/* Floating Card */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.5 }}
-              className="absolute -bottom-8 left-4 md:-bottom-12 md:-left-12 bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] w-[90%] md:w-[340px] border border-white/50"
+              className="absolute -bottom-8 left-4 md:-bottom-12 md:-left-12 bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] w-[90%] md:w-[340px] border border-white/50 h-[104px] md:h-[112px] overflow-hidden"
             >
-              <div className="flex gap-4 items-center">
-                <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl overflow-hidden shrink-0 border-[3px] border-white shadow-sm bg-orange-50">
-                  <img src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=1964&auto=format&fit=crop" alt="Phở Bò" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-extrabold text-neutral-900 text-base md:text-lg">Phở Bò</h3>
-                    <span className="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full">98% Match</span>
+              {heroSlides.map((slide, idx) => (
+                <motion.div
+                  key={'card-'+idx}
+                  animate={{ opacity: currentSlideIndex === idx ? 1 : 0, y: currentSlideIndex === idx ? 0 : 5 }}
+                  transition={{ duration: 0.5 }}
+                  className={`absolute left-4 right-4 md:left-5 md:right-5 top-4 md:top-5 flex gap-4 items-center ${currentSlideIndex === idx ? 'pointer-events-auto z-10' : 'pointer-events-none z-0'}`}
+                >
+                  <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl overflow-hidden shrink-0 border-[3px] border-white shadow-sm bg-orange-50">
+                    <img src={slide.avatarImg} alt={slide.title} className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-xs md:text-sm text-neutral-500 mb-2 font-medium">Vietnamese Beef Noodle Soup</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] md:text-xs font-bold text-orange-700 bg-orange-100/80 px-2.5 py-1 rounded-md">450 cal</span>
-                    <span className="text-[10px] md:text-xs font-bold text-blue-700 bg-blue-100/80 px-2.5 py-1 rounded-md">High Protein</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-extrabold text-neutral-900 text-base md:text-lg truncate pr-2">{slide.title}</h3>
+                      <span className="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">{slide.match} Match</span>
+                    </div>
+                    <p className="text-xs md:text-sm text-neutral-500 font-medium truncate">{slide.description}</p>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
 
-        {/* ── Food Search Banner ── */}
+        {/* ── RICH Search Banner Section with HCM Background ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative mt-28 md:mt-36 mb-14 rounded-[2.5rem] overflow-hidden"
+          className="relative my-24 lg:my-32 rounded-[3rem] overflow-hidden shadow-2xl shadow-orange-900/20"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center 40%',
+            backgroundPosition: 'center 50%',
           }}
         >
-          {/* Dark overlay with slight blur */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(5, 10, 30, 0.62)', backdropFilter: 'blur(1.5px)' }} />
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[2px]" />
 
-          <div className="relative flex flex-col lg:flex-row items-center gap-8 px-8 md:px-14 py-12">
-            {/* Left: text + search + categories */}
-            <div className="flex-1 z-10">
+          <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 md:px-16 lg:px-20 py-20 lg:py-32 w-full">
+            <div className="flex-1 z-10 w-full">
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.35 }}
-                className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-6"
+                className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-8"
               >
                 Xin chào <span className="text-orange-500">User</span>,<br />
                 bạn muốn ăn gì vào ngày hôm nay nào?
               </motion.h2>
 
-              {/* Search input */}
+              {/* Search input inside the HCM Banner */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="relative flex items-center bg-white rounded-2xl shadow-[0_6px_28px_rgba(0,0,0,0.10)] overflow-hidden mb-7 focus-within:shadow-[0_8px_36px_rgba(249,115,22,0.22)] transition-all duration-300"
+                className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden mb-8"
               >
-                <Search className="absolute left-5 w-5 h-5 text-neutral-400 pointer-events-none" />
+                <Search className="absolute left-5 w-5 h-5 text-neutral-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm món ăn yêu thích..."
-                  className="flex-1 pl-14 pr-4 py-4 text-sm md:text-base text-neutral-800 placeholder-neutral-400 outline-none bg-transparent font-medium"
+                  className="flex-1 pl-14 pr-4 py-5 text-neutral-800 outline-none font-medium"
                 />
                 {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="mr-2 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-400 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
+                  <button onClick={() => setSearchQuery('')} className="mr-2 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-400">
+                    <X className="w-5 h-5" />
                   </button>
                 )}
-                <button className="m-2 px-6 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold text-sm rounded-xl shadow-[0_4px_14px_rgba(249,115,22,0.4)] transition-all">
-                  <Search className="w-4 h-4" />
+                <button className="m-2 px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/30">
+                  Tìm kiếm
                 </button>
               </motion.div>
 
-              {/* Food category chips with real images */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55 }}
-              >
-                <p className="text-sm font-bold text-white/75 mb-4">Khám phá món ăn phổ biến</p>
-                <div className="flex flex-wrap gap-3">
-                  {foodCategories.map((cat, i) => (
-                    <motion.button
-                      key={cat.name}
-                      whileHover={{ y: -4, scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setSearchQuery(cat.name)}
-                      className="flex flex-col items-center gap-2 bg-white/80 backdrop-blur-sm border border-white hover:border-orange-300 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-all group"
-                      style={{ transitionDelay: `${i * 40}ms` }}
-                    >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-orange-100 group-hover:border-orange-300 transition-colors">
-                        <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
-                      </div>
-                      <span className="text-xs font-bold text-neutral-700 group-hover:text-orange-600 transition-colors whitespace-nowrap">{cat.name}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
+              {/* Category buttons inside the HCM Banner */}
+              <div className="flex flex-wrap gap-4 md:gap-5 lg:gap-6 mt-6">
+                {foodCategories.map((cat) => (
+                  <motion.button
+                    key={cat.name}
+                    whileHover={{ y: -8, scale: 1.05 }}
+                    onClick={() => setSearchQuery(cat.name)}
+                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white/30 hover:bg-white/40 backdrop-blur-xl border-[1px] border-white/60 rounded-[2rem] px-6 py-5 lg:px-8 lg:py-6 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
+                  >
+                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-[1.25rem] overflow-hidden border-[2px] border-white/80 shadow-md">
+                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <span className="text-sm lg:text-base font-extrabold text-white uppercase tracking-wider drop-shadow-lg">{cat.name}</span>
+                  </motion.button>
+                ))}
+              </div>
             </div>
-
-            {/* Right: food hero image collage */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 30 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.7 }}
-              className="lg:w-[38%] relative shrink-0 hidden lg:flex items-center justify-center"
-            >
-              {/* Main large image */}
-              <div className="w-78 h-78 rounded-full overflow-hidden border-4 border-white shadow-2xl shadow-orange-300/40">
-                <img
-                  src="https://images.unsplash.com/photo-1622087250339-9295c9ef442b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHZpZXRuYW1lc2UlMjBmb29kfGVufDB8fDB8fHww"
-                  alt="Vietnamese food spread"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Floating mini images */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                className="absolute -top-4 -right-2 w-24 h-24 rounded-2xl overflow-hidden border-3 border-white shadow-xl"
-              >
-                <img src="https://plus.unsplash.com/premium_photo-1675865396004-c7b86406affe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHZpZXRuYW1lc2UlMjBmb29kfGVufDB8fDB8fHww" alt="Bún" className="w-full h-full object-cover" />
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.5 }}
-                className="absolute -bottom-4 -left-4 w-36 h-35 rounded-2xl overflow-hidden border-3 border-white shadow-xl"
-              >
-                <img src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2hlZnxlbnwwfHwwfHx8MA%3D%3D" alt="Bánh" className="w-full h-full object-cover" />
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 1 }}
-                className="absolute top-8 -left-8 w-26 h-26 rounded-2xl overflow-hidden border-2 border-white shadow-lg"
-              >
-                <img src="https://images.unsplash.com/photo-1653233797467-1a528819fd4f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2hlZnxlbnwwfHwwfHx8MA%3D%3D" alt="Gỏi cuốn" className="w-full h-full object-cover" />
-              </motion.div>
-              {/* Orange badge */}
-              <div className="absolute bottom-8 right-0 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                🔥 Trending hôm nay
-              </div>
-            </motion.div>
           </div>
         </motion.div>
 
