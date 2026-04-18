@@ -4,7 +4,7 @@ import {
   Trophy, Star, Flame, CheckCircle2, Lock,
   ChevronRight, Ticket, Award, Coins, Sparkles, Target
 } from 'lucide-react';
-import { useAuth } from '@/modules/auth/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { getAchievementsForUser } from '@/modules/quests/services/achievementService';
 import type { AchievementWithProgress } from '@/modules/quests/types/quest.types';
 
