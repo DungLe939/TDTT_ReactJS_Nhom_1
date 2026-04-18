@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { AchievementWithProgress } from '../modules/quests/types/quest.types';
+import { useAuth } from '../modules/auth/context/AuthContext';
+import { getAchievementsForUser } from '../modules/quests/services/achievementService';
+
+
+
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Star, MapPin, Camera, Users, Gift, Crown, Heart, MessageCircle, Share2, MoreHorizontal, Send } from 'lucide-react';
+
 
 const MOCK_QUESTS = [
   {
@@ -33,7 +40,8 @@ const MOCK_QUESTS = [
     icon: <Users className="w-6 h-6 text-blue-500" />,
     xp: 150,
   },
-];
+]
+
 
 const LEADERBOARD = [
   { rank: 1, name: 'Linh Nguyễn', level: 24, xp: '12.4k' },
@@ -89,6 +97,18 @@ const INITIAL_FEED: PostType[] = [
 ];
 
 export const Quests = () => {
+  const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoading(true);
+    getAchievementsForUser(user.id)
+      .then(setAchievements)
+      .finally(() => setLoading(false));
+  }, [user?.id]);
+
   const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard' | 'feed'>('quests');
   const [feed, setFeed] = useState<PostType[]>(INITIAL_FEED);
   const [newPost, setNewPost] = useState('');
@@ -121,7 +141,7 @@ export const Quests = () => {
       }
       return post;
     }));
-    
+
     setCommentText({ ...commentText, [postId]: '' });
   };
 
@@ -212,46 +232,54 @@ export const Quests = () => {
               exit={{ opacity: 0, x: 20 }}
               className="space-y-4"
             >
-              {MOCK_QUESTS.map((quest) => (
-                <div key={quest.id} className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-neutral-50 rounded-xl flex items-center justify-center shrink-0">
-                      {quest.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-neutral-800">{quest.title}</h3>
-                        <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">+{quest.xp} XP</span>
+              {loading ? (
+                <div className="text-center text-neutral-400 py-8">Đang tải...</div>
+              ) : (
+                achievements.map((ach: AchievementWithProgress) => (
+                  <div key={ach.id} className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+                    <div className="flex gap-4">
+                      {/* icon is now an emoji string from the DB, not JSX */}
+                      <div className="w-12 h-12 bg-neutral-50 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                        {ach.icon}
                       </div>
-                      <p className="text-sm text-neutral-500 mt-1">{quest.description}</p>
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
-                          <Gift className="w-3.5 h-3.5" /> {quest.reward}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-neutral-800">{ach.name}</h3>
+                          {ach.reward?.type === 'points' && (
+                            <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
+                              +{ach.reward.value} XP
+                            </span>
+                          )}
                         </div>
-                        <div className="text-xs font-semibold text-neutral-400">
-                          {quest.progress}/{quest.total}
+                        <p className="text-sm text-neutral-500 mt-1">{ach.description}</p>
+
+                        <div className="mt-4 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                            <Gift className="w-3.5 h-3.5" /> {ach.reward?.description ?? '—'}
+                          </div>
+                          <div className="text-xs font-semibold text-neutral-400">
+                            {ach.progress.currentCount}/{ach.progress.requiredCount}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Progress bar */}
-                      <div className="w-full h-1.5 bg-neutral-100 rounded-full mt-3">
-                        <div
-                          className="h-full bg-orange-500 rounded-full transition-all"
-                          style={{ width: `${(quest.progress / quest.total) * 100}%` }}
-                        />
-                      </div>
+                        <div className="w-full h-1.5 bg-neutral-100 rounded-full mt-3">
+                          <div
+                            className="h-full bg-orange-500 rounded-full transition-all"
+                            style={{ width: `${ach.progress.progressPercent}%` }}
+                          />
+                        </div>
 
-                      <button className={`w-full mt-4 py-2 rounded-xl text-sm font-semibold transition-all ${quest.progress === quest.total
-                          ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-200'
-                          : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                        }`}>
-                        {quest.progress === quest.total ? 'Nhận thưởng' : 'Tham gia'}
-                      </button>
+                        {/* <button className={`w-full mt-4 py-2 rounded-xl text-sm font-semibold transition-all ${ach.progress.isCompleted
+                            ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-200'
+                            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                          }`}>
+                          {ach.progress.isCompleted ? 'Nhận thưởng' : 'Tham gia'}
+                        </button> */}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </motion.div>
           ) : activeTab === 'leaderboard' ? (
             <motion.div
@@ -333,7 +361,7 @@ export const Quests = () => {
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </div>
-                    
+
                     <p className="text-sm text-neutral-700 mb-3">{post.content}</p>
                   </div>
 
@@ -354,14 +382,14 @@ export const Quests = () => {
                     </div>
 
                     <div className="flex pt-2 border-t border-neutral-100">
-                      <button 
+                      <button
                         onClick={() => handleLike(post.id)}
                         className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-medium transition-colors ${post.isLiked ? 'text-red-500 hover:bg-red-50' : 'text-neutral-500 hover:bg-neutral-50'}`}
                       >
                         <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-red-500' : ''}`} /> Thích
                       </button>
-                      <button 
-                        onClick={() => setOpenComments(prev => ({...prev, [post.id]: !prev[post.id]}))}
+                      <button
+                        onClick={() => setOpenComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
                         className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-medium text-neutral-500 hover:bg-neutral-50 transition-colors"
                       >
                         <MessageCircle className="w-5 h-5" /> Bình luận
@@ -393,12 +421,12 @@ export const Quests = () => {
                             <input
                               type="text"
                               value={commentText[post.id] || ''}
-                              onChange={(e) => setCommentText({...commentText, [post.id]: e.target.value})}
+                              onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })}
                               onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.id)}
                               placeholder="Viết bình luận..."
                               className="flex-1 bg-transparent px-3 py-2 text-sm focus:outline-none"
                             />
-                            <button 
+                            <button
                               onClick={() => handleAddComment(post.id)}
                               className="w-8 h-8 self-center rounded-full flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors"
                             >
