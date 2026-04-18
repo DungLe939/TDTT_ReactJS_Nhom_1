@@ -47,7 +47,7 @@ export const Layout = () => {
       </div>
 
       {/* Navbar */}
-      <header className="bg-white/70 backdrop-blur-lg border-b border-white/50 shadow-[0_4px_30px_rgba(0,0,0,0.02)] sticky top-0 z-40">
+      <header className="bg-white border-b border-neutral-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
