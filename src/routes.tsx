@@ -12,6 +12,8 @@ import { AdminLogin } from './pages/AdminLogin';
 import { FileUploadDemo } from './pages/FileUploadDemo';
 import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './pages/Auth';
+import { AdminQuests } from './pages/AdminQuests';
+
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },
+      { path: 'admin-quests', Component: AdminQuests }
     ],
   },
 ]);
