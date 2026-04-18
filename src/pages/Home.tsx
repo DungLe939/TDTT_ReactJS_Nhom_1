@@ -1,10 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X } from 'lucide-react';
 
 export const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const heroSlides = [
+    {
+      mainImg: 'https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop',
+      avatarImg: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=400&auto=format&fit=crop',
+      title: 'Phở Bò',
+      description: 'Vietnamese Beef Noodle Soup',
+      match: '98%',
+    },
+    {
+      mainImg: 'https://images.unsplash.com/photo-1645571059598-4f1f23df9a19?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YiVDMyVBMW5oJTIwbSVDMyVBQ3xlbnwwfHwwfHx8MA%3D%3D',
+      avatarImg: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=400&auto=format&fit=crop',
+      title: 'Bánh Mì',
+      description: 'Crispy Vietnamese Sandwich',
+      match: '95%',
+    },
+    {
+      mainImg: 'https://media.istockphoto.com/id/2171448100/photo/traditional-vietnamese-b%C3%BAn-b%C3%B2-hu%E1%BA%BF-with-aromatic-broth-and-tender-beef.webp?a=1&b=1&s=612x612&w=0&k=20&c=3WKE_E7UmtU0Nfe0n3saWhFt-TM618BEdER2VvI40eA=',
+      avatarImg: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=400&auto=format&fit=crop',
+      title: 'Bún Bò Huế',
+      description: 'Spicy Beef & Pork Noodle',
+      match: '99%',
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const features = [
     {
@@ -134,32 +166,55 @@ export const Home = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="lg:w-[45%] relative w-full mt-12 lg:mt-0"
           >
-            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full">
-              <img 
-                src="https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop" 
-                alt="Delicious Asian Food" 
-                className="w-full h-full object-cover"
-              />
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full bg-neutral-100">
+              {heroSlides.map((slide, idx) => (
+                <motion.img 
+                  key={idx}
+                  animate={{ opacity: currentSlideIndex === idx ? 1 : 0 }}
+                  transition={{ duration: 1 }}
+                  src={slide.mainImg} 
+                  alt={slide.title} 
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ))}
+              
+              {/* Slider Dots Indicator */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {heroSlides.map((_, idx) => (
+                  <button
+                    key={'dot-'+idx}
+                    onClick={() => setCurrentSlideIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'bg-white w-8 shadow-sm' : 'bg-white/60 hover:bg-white/90 w-2'}`}
+                  />
+                ))}
+              </div>
             </div>
 
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.5 }}
-              className="absolute -bottom-8 left-4 md:-bottom-12 md:-left-12 bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] w-[90%] md:w-[340px] border border-white/50"
+              className="absolute -bottom-8 left-4 md:-bottom-12 md:-left-12 bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] w-[90%] md:w-[340px] border border-white/50 h-[104px] md:h-[112px] overflow-hidden"
             >
-              <div className="flex gap-4 items-center">
-                <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl overflow-hidden shrink-0 border-[3px] border-white shadow-sm bg-orange-50">
-                  <img src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=1964&auto=format&fit=crop" alt="Phở Bò" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-extrabold text-neutral-900 text-base md:text-lg">Phở Bò</h3>
-                    <span className="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full">98% Match</span>
+              {heroSlides.map((slide, idx) => (
+                <motion.div
+                  key={'card-'+idx}
+                  animate={{ opacity: currentSlideIndex === idx ? 1 : 0, y: currentSlideIndex === idx ? 0 : 5 }}
+                  transition={{ duration: 0.5 }}
+                  className={`absolute left-4 right-4 md:left-5 md:right-5 top-4 md:top-5 flex gap-4 items-center ${currentSlideIndex === idx ? 'pointer-events-auto z-10' : 'pointer-events-none z-0'}`}
+                >
+                  <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl overflow-hidden shrink-0 border-[3px] border-white shadow-sm bg-orange-50">
+                    <img src={slide.avatarImg} alt={slide.title} className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-xs md:text-sm text-neutral-500 mb-2 font-medium">Vietnamese Beef Noodle Soup</p>
-                </div>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-extrabold text-neutral-900 text-base md:text-lg truncate pr-2">{slide.title}</h3>
+                      <span className="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">{slide.match} Match</span>
+                    </div>
+                    <p className="text-xs md:text-sm text-neutral-500 font-medium truncate">{slide.description}</p>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
@@ -169,7 +224,7 @@ export const Home = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative mt-30 mb-30 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-orange-900/10"
+          className="relative my-24 lg:my-32 rounded-[3rem] overflow-hidden shadow-2xl shadow-orange-900/20"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')`,
             backgroundSize: 'cover',
@@ -177,9 +232,9 @@ export const Home = () => {
           }}
         >
           {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[2px]" />
 
-          <div className="relative flex flex-col lg:flex-row items-center gap-8 px-8 md:px-14 py-16">
+          <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 md:px-16 lg:px-20 py-20 lg:py-32 w-full">
             <div className="flex-1 z-10 w-full">
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
@@ -217,18 +272,18 @@ export const Home = () => {
               </motion.div>
 
               {/* Category buttons inside the HCM Banner */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4 md:gap-5 lg:gap-6 mt-6">
                 {foodCategories.map((cat) => (
                   <motion.button
                     key={cat.name}
-                    whileHover={{ y: -4, scale: 1.05 }}
+                    whileHover={{ y: -8, scale: 1.05 }}
                     onClick={() => setSearchQuery(cat.name)}
-                    className="flex flex-col items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 transition-all"
+                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white/30 hover:bg-white/40 backdrop-blur-xl border-[1px] border-white/60 rounded-[2rem] px-6 py-5 lg:px-8 lg:py-6 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
                   >
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/20">
-                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-[1.25rem] overflow-hidden border-[2px] border-white/80 shadow-md">
+                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">{cat.name}</span>
+                    <span className="text-sm lg:text-base font-extrabold text-white uppercase tracking-wider drop-shadow-lg">{cat.name}</span>
                   </motion.button>
                 ))}
               </div>
