@@ -1,0 +1,243 @@
+.snack-modal-container {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    padding: 32px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.snack-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.header-icon {
+    width: 48px;
+    height: 48px;
+    background: #f3f0ff;
+    color: #7048e8;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.snack-modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.snack-modal-header p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.snack-form-section {
+    margin-bottom: 20px;
+}
+
+.snack-form-section label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+/* Time Grid */
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+}
+
+.time-chip {
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
+    background: #f9f9f9;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-chip:hover {
+    border-color: #7048e8;
+    color: #7048e8;
+}
+
+.time-chip.active {
+    background: #7048e8;
+    color: white;
+    border-color: #7048e8;
+}
+
+/* Category Scroll */
+.category-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.cat-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #f0f0f0;
+    background: #f9f9f9;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cat-chip:hover {
+    border-color: #7048e8;
+    background: #f3f0ff;
+}
+
+.cat-chip.active {
+    background: #7048e8;
+    color: white;
+    border-color: #7048e8;
+}
+
+/* Snack List */
+.snack-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.snack-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.snack-item-card:hover {
+    background: #fafafa;
+    border-color: #ddd;
+}
+
+.snack-item-card.selected {
+    background: #f3f0ff;
+    border-color: #7048e8;
+}
+
+.snack-item-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #333;
+}
+
+.snack-item-res {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Location Warning */
+.location-warning {
+    background-color: #fefce8;
+    border: 1px solid #fef08a;
+    color: #854d0e;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.snack-item-right {
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.snack-item-price {
+    font-weight: 700;
+    color: #ff6b00;
+    font-size: 15px;
+}
+
+.selected-badge {
+    width: 20px;
+    height: 20px;
+    background: #7048e8;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-snacks {
+    text-align: center;
+    padding: 24px;
+    color: #aaa;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Footer */
+.snack-modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    flex: 2;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #7048e8;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-confirm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}

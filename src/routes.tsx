@@ -14,7 +14,6 @@ import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './pages/Auth';
 import { AdminQuests } from './pages/AdminQuests';
 
-
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -27,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'menu', Component: SmartMenu },
       { path: 'quests', Component: Quests },
       { path: 'group', Component: GroupTaste },
+      { path: 'group/:groupId', Component: GroupTaste },
       { path: 'admin', Component: Admin },
       { path: 'admin-login', Component: AdminLogin },
       { path: 'upload-demo', Component: FileUploadDemo },

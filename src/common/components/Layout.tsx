@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
-import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Code, Users, Home as HomeIcon, MessageSquare } from 'lucide-react';
 import { Chatbot } from './Chatbot';
 
 export const Layout = () => {
