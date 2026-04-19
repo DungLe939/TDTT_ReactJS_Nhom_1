@@ -1,0 +1,3 @@
+- Cấu hình thêm config ở `vite.config.js` (Hãy vào file để đọc và xem thay đổi)
+- Thêm các dependencies từ thư viện figma, do có lỗi xung đột nên phải tôi đã config trong `.npmrc`
+- Merge dự án với layout bên figma
