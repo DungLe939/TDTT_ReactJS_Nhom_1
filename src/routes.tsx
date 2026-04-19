@@ -32,8 +32,12 @@ export const router = createBrowserRouter([
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },
+<<<<<<< HEAD
       { path: 'admin-quests', Component: AdminQuests },
       { path: 'blogs', Component: BlogPage },
+=======
+      { path: 'admin-quests', Component: AdminQuests }
+>>>>>>> 3553cc0 ([UPDATE] Hoàn thiện tích hợp Firebase và Incremental Sync cho Frontend)
     ],
   },
 ]);

@@ -343,7 +343,6 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                     })
                   }}
                 />
-
                 {/* Gợi ý nhanh */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   <span className="text-[9px] font-black text-neutral-300 uppercase mt-1.5 mr-1">Gợi ý:</span>
@@ -352,8 +351,8 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                       key={tag}
                       type="button"
                       className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold transition-all border ${selectedTags.includes(tag)
-                          ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
-                          : 'bg-white border-neutral-100 text-neutral-400 hover:border-orange-500 hover:text-orange-500'
+                        ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
+                        : 'bg-white border-neutral-100 text-neutral-400 hover:border-orange-500 hover:text-orange-500'
                         }`}
                       onClick={() => toggleTag(tag)}
                     >
@@ -387,8 +386,8 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
               {/* Submit Button */}
               <button
                 className={`w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-sm ${canSubmit
-                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30'
-                    : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30'
+                  : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
                   }`}
                 disabled={!canSubmit}
                 onClick={handleSubmit}
