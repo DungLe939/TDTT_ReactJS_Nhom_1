@@ -8,7 +8,7 @@ import type {
   Restaurant,
   PostFilter,
   CuisineType,
-  Comment,
+  BlogComment,
 } from '../types/quest.types';
 
 import type { CreatePostDto } from '../types/blog.types';
@@ -23,69 +23,83 @@ const API_URL = 'http://localhost:3000/blog';
 const localRestaurants: Restaurant[] = [...SEED_RESTAURANTS];
 
 const createPost = async (dto: CreatePostDto): Promise<Post> => {
-  if (isFirebaseConfigured) {
-    const created = await firebaseBlogService.createPost({
-        authorId: dto.authorId,
-        content: dto.content,
-        tags: dto.tags,
-        restaurantId: dto.restaurantId,
-        photoUrls: dto.photoUrls,
-        createdAt: new Date().toISOString(),
-        likesCount: 0,
-        likedByUserIds: [],
-        comments: [],
+  // Bước 1: Thử NestJS API
+  try {
+    const response = await fetch(`${API_URL}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dto),
     });
-    if (!created) throw new Error("Failed to create post via Firebase");
-    
-    // Log activity
-    blogActivityService.logActivity({
-      userId: dto.authorId,
-      type: 'POST_CREATED',
-      targetId: created.id,
-      metadata: { tags: dto.tags },
-    });
-    
-    return created;
-  } else {
-    // NestJS API
-    try {
-      const response = await fetch(`${API_URL}/posts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dto),
-      });
-      if (response.ok) return await response.json();
-    } catch (e) {
-      console.warn("NestJS API failed, using local fallback", e);
+    if (response.ok) {
+      const created = await response.json();
+      console.log(`[API] Post created via NestJS backend: ${created.id}`);
+      return { ...created, comments: created.comments || [] };
     }
-
-    // Local fallback
-    const newPost: Post = {
-      id: `post-${Date.now()}`,
-      authorId: dto.authorId,
-      content: dto.content,
-      tags: dto.tags,
-      restaurantId: dto.restaurantId,
-      photoUrls: dto.photoUrls || [],
-      createdAt: new Date().toISOString(),
-      likesCount: 0,
-      likedByUserIds: [],
-      comments: [],
-    };
-    
-    // TRICK: Lưu trực tiếp vào SEED_POSTS để refreshPosts lấy được dữ liệu mới
-    SEED_POSTS.unshift(newPost); 
-    
-    return newPost;
+  } catch (e) {
+    console.warn("[API] NestJS createPost failed, trying next source...", e);
   }
+
+  // Bước 2: Thử Firebase
+  if (isFirebaseConfigured) {
+    try {
+      const created = await firebaseBlogService.createPost({
+          authorId: dto.authorId,
+          content: dto.content,
+          tags: dto.tags,
+          restaurantId: dto.restaurantId,
+          photoUrls: dto.photoUrls,
+          createdAt: new Date().toISOString(),
+          likesCount: 0,
+          likedByUserIds: [],
+          comments: [],
+      });
+      if (created) {
+        blogActivityService.logActivity({
+          userId: dto.authorId,
+          type: 'POST_CREATED',
+          targetId: created.id,
+          metadata: { tags: dto.tags },
+        });
+        return created;
+      }
+    } catch (e) {
+      console.warn("[Firebase] createPost failed", e);
+    }
+  }
+
+  // Bước 3: Local fallback
+  console.log("[Mock] Creating post locally");
+  const newPost: Post = {
+    id: `post-${Date.now()}`,
+    authorId: dto.authorId,
+    content: dto.content,
+    tags: dto.tags,
+    restaurantId: dto.restaurantId,
+    photoUrls: dto.photoUrls || [],
+    createdAt: new Date().toISOString(),
+    likesCount: 0,
+    likedByUserIds: [],
+    comments: [],
+  };
+  
+  SEED_POSTS.unshift(newPost); 
+  return newPost;
 };
 
-const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
-  if (isFirebaseConfigured) {
-    return await firebaseBlogService.getPosts(filter);
-  }
 
-  // NestJS API
+const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
+  // Helper: normalize posts from API (ensure comments array exists)
+  const normalizePosts = (posts: any[]): Post[] =>
+    posts.map(p => ({
+      ...p,
+      tags: Array.isArray(p.tags) ? p.tags : [],
+      likedByUserIds: Array.isArray(p.likedByUserIds) ? p.likedByUserIds : [],
+      comments: Array.isArray(p.comments) ? p.comments : [],
+      photoUrls: Array.isArray(p.photoUrls) ? p.photoUrls : [],
+      likesCount: typeof p.likesCount === 'number' ? p.likesCount : 0,
+    }));
+
+  // Bước 1: Thử NestJS API
   try {
     let url = `${API_URL}/posts`;
     const queryParams = new URLSearchParams();
@@ -101,12 +115,32 @@ const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
     }
 
     const response = await fetch(url);
-    if (response.ok) return await response.json();
+    if (response.ok) {
+      const apiPosts = await response.json();
+      if (Array.isArray(apiPosts)) {
+        console.log(`[API] Fetched ${apiPosts.length} posts từ NestJS backend`);
+        return normalizePosts(apiPosts);
+      }
+    }
   } catch (e) {
-    console.warn("NestJS API failed, falling back to local filtering", e);
+    console.warn("[API] NestJS posts failed, trying next source...", e);
   }
 
-  // Local fallback with filtering logic
+  // Bước 2: Thử Firebase
+  if (isFirebaseConfigured) {
+    try {
+      const fbPosts = await firebaseBlogService.getPosts(filter);
+      if (fbPosts.length > 0) {
+        console.log(`[Firebase] Fetched ${fbPosts.length} posts`);
+        return normalizePosts(fbPosts);
+      }
+    } catch (e) {
+      console.warn("[Firebase] getPosts failed", e);
+    }
+  }
+
+  // Bước 3: Local fallback with filtering logic
+  console.log(`[Mock] Dùng ${SEED_POSTS.length} posts từ mock data`);
   let filtered = [...SEED_POSTS];
 
   if (filter) {
@@ -126,38 +160,55 @@ const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
   return filtered;
 };
 
+
 const toggleLikePost = async (userId: string, postId: string, post: Post): Promise<Post> => {
   const alreadyLiked = post.likedByUserIds.includes(userId);
-  if (isFirebaseConfigured) {
-    await firebaseBlogService.toggleLikePost(postId, userId, alreadyLiked);
-    
-    if (!alreadyLiked) {
-      blogActivityService.logActivity({
-        userId,
-        type: 'POST_LIKED',
-        targetId: postId,
-        metadata: { likedPostAuthorId: post.authorId },
-      });
-    }
+  const optimisticResult: Post = {
+    ...post,
+    likesCount: alreadyLiked ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
+    likedByUserIds: alreadyLiked 
+        ? post.likedByUserIds.filter(id => id !== userId) 
+        : [...post.likedByUserIds, userId]
+  };
 
-    return {
-      ...post,
-      likesCount: alreadyLiked ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
-      likedByUserIds: alreadyLiked 
-          ? post.likedByUserIds.filter(id => id !== userId) 
-          : [...post.likedByUserIds, userId]
-    };
-  } else {
-    // NestJS API
+  // Bước 1: Thử NestJS API
+  try {
     const response = await fetch(`${API_URL}/posts/${postId}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
     });
-    if (!response.ok) throw new Error('API Error');
-    return await response.json();
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`[API] Like toggled via NestJS backend`);
+      return { ...result, comments: result.comments || [] };
+    }
+  } catch (e) {
+    console.warn("[API] NestJS toggleLike failed, trying next...", e);
   }
+
+  // Bước 2: Thử Firebase
+  if (isFirebaseConfigured) {
+    try {
+      await firebaseBlogService.toggleLikePost(postId, userId, alreadyLiked);
+      if (!alreadyLiked) {
+        blogActivityService.logActivity({
+          userId,
+          type: 'POST_LIKED',
+          targetId: postId,
+          metadata: { likedPostAuthorId: post.authorId },
+        });
+      }
+      return optimisticResult;
+    } catch (e) {
+      console.warn("[Firebase] toggleLike failed", e);
+    }
+  }
+
+  // Bước 3: Return optimistic result (mock fallback)
+  return optimisticResult;
 };
+
 
 const addComment = async (
   userId: string, 
@@ -166,61 +217,72 @@ const addComment = async (
   post: Post,
   photoUrls?: string[]
 ): Promise<Post> => {
-  if (isFirebaseConfigured) {
-    const newComment: Comment = {
-      id: `cmt-${Date.now()}`,
-      authorId: userId,
-      content,
-      photoUrls: photoUrls || [],
-      likesCount: 0,
-      likedByUserIds: [],
-      createdAt: new Date().toISOString(),
-    };
-    await firebaseBlogService.addComment(postId, newComment);
-    return {
-      ...post,
-      comments: [...post.comments, newComment],
-    };
-  } else {
-    // NestJS API
-    try {
-      const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, content, photoUrls }),
-      });
-      if (response.ok) return await response.json();
-    } catch (e) {
-      console.warn("NestJS API failed, using local fallback for comment", e);
+  // Bước 1: Thử NestJS API
+  try {
+    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, content, photoUrls }),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`[API] Comment added via NestJS backend`);
+      return { ...result, comments: result.comments || [] };
     }
-
-    // Local fallback
-    const newComment: Comment = {
-      id: `cmt-${Date.now()}`,
-      authorId: userId,
-      content,
-      photoUrls: photoUrls || [],
-      likesCount: 0,
-      likedByUserIds: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    const postIndex = SEED_POSTS.findIndex(p => p.id === postId);
-    if (postIndex !== -1) {
-      const updatedPost = {
-        ...SEED_POSTS[postIndex],
-        comments: [...SEED_POSTS[postIndex].comments, newComment]
-      };
-      SEED_POSTS[postIndex] = updatedPost;
-      return updatedPost;
-    }
-
-    return {
-      ...post,
-      comments: [...post.comments, newComment],
-    };
+  } catch (e) {
+    console.warn("[API] NestJS addComment failed, trying next...", e);
   }
+
+  // Bước 2: Thử Firebase
+  if (isFirebaseConfigured) {
+    try {
+      const newComment: BlogComment = {
+        id: `cmt-${Date.now()}`,
+        authorId: userId,
+        content,
+        photoUrls: photoUrls || [],
+        likesCount: 0,
+        likedByUserIds: [],
+        createdAt: new Date().toISOString(),
+      };
+      await firebaseBlogService.addComment(postId, newComment);
+      return {
+        ...post,
+        comments: [...post.comments, newComment],
+      };
+    } catch (e) {
+      console.warn("[Firebase] addComment failed", e);
+    }
+  }
+
+  // Bước 3: Local fallback
+  console.log("[Mock] Adding comment locally");
+  const newComment: BlogComment = {
+    id: `cmt-${Date.now()}`,
+    authorId: userId,
+    content,
+    photoUrls: photoUrls || [],
+    likesCount: 0,
+    likedByUserIds: [],
+    createdAt: new Date().toISOString(),
+  };
+
+  const postIndex = SEED_POSTS.findIndex(p => p.id === postId);
+  if (postIndex !== -1) {
+    const updatedPost = {
+      ...SEED_POSTS[postIndex],
+      comments: [...SEED_POSTS[postIndex].comments, newComment]
+    };
+    SEED_POSTS[postIndex] = updatedPost;
+    return updatedPost;
+  }
+
+  return {
+    ...post,
+    comments: [...post.comments, newComment],
+  };
 };
+
 
 const toggleLikeComment = async (
   userId: string, 
@@ -228,7 +290,7 @@ const toggleLikeComment = async (
   commentId: string,
   post: Post
 ): Promise<Post> => {
-  // Tìm bình luận cần xử lý
+  // Tìm bình luận cần xử lý (Optimistic UI)
   const updatedComments = post.comments.map(comment => {
     if (comment.id === commentId) {
       const alreadyLiked = comment.likedByUserIds.includes(userId);
@@ -243,20 +305,36 @@ const toggleLikeComment = async (
     return comment;
   });
 
-  const updatedPost = { ...post, comments: updatedComments };
+  const optimisticPost = { ...post, comments: updatedComments };
 
-  if (isFirebaseConfigured) {
-    // Giả định service firebase đã hỗ trợ cập nhật bình luận cụ thể
-    // firebaseBlogService.updateComments(postId, updatedComments);
+  // Bước 1: Thử NestJS API
+  try {
+    const response = await fetch(`${API_URL}/posts/${postId}/comments/${commentId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`[API] Comment like toggled via NestJS backend`);
+      return { ...result, comments: result.comments || [] };
+    }
+  } catch (e) {
+    console.warn("[API] NestJS toggleLikeComment failed, trying next source...", e);
   }
 
-  // Cập nhật SEED_POSTS cho Mock Data
+  // Bước 2: Thử Firebase (nếu được cấu hình - hiện tại code logic Firebase cho comment like chưa tách riêng service)
+  if (isFirebaseConfigured) {
+    // Firebase fallback logic could be added here if needed
+  }
+
+  // Bước 3: Cập nhật Mock Data (Fallback cuối cùng)
   const postIndex = SEED_POSTS.findIndex(p => p.id === postId);
   if (postIndex !== -1) {
-    SEED_POSTS[postIndex] = updatedPost;
+    SEED_POSTS[postIndex] = optimisticPost;
   }
 
-  return updatedPost;
+  return optimisticPost;
 };
 
 // ---------------------------------------------------------------------------
@@ -288,70 +366,106 @@ const setCachedRestaurants = (restaurants: Restaurant[]): void => {
   }
 };
 
+const LAST_SYNCED_KEY = 'restaurants_last_synced';
+
 /**
  * Lấy danh sách restaurants:
- * 1. Trả về cache ngay lập tức (nếu có)
- * 2. Fetch từ Firebase, so sánh ID → chỉ thêm restaurants mới
- * 3. Cập nhật cache
+ * 1. Đọc từ Cache (Instant UX)
+ * 2. Gọi NestJS API để lấy dữ liệu CẬP NHẬT (Incremental Sync)
+ * 3. Hợp nhất (Merge) dữ liệu mới vào Cache
+ * 4. Fallback Firebase/Mock nếu API lỗi
  */
 const getRestaurants = async (): Promise<Restaurant[]> => {
-  // Bước 1: Đọc cache trước
-  const cached = getCachedRestaurants();
+  // Bước 1: Đọc từ cache cục bộ trước (để UI có dữ liệu ngay lập tức)
+  let cached = getCachedRestaurants();
+  const lastSyncedAt = localStorage.getItem(LAST_SYNCED_KEY) || '';
 
+  // Bước 2: Thử NestJS API lấy các bản ghi thay đổi (Incremental Sync)
   try {
-    if (isFirebaseConfigured) {
-      const fbRestaurants = await firebaseBlogService.getRestaurants();
+    let url = `${API_URL}/restaurants`;
+    if (lastSyncedAt) {
+      url += `?since=${encodeURIComponent(lastSyncedAt)}`;
+    }
 
-      if (fbRestaurants && fbRestaurants.length > 0) {
-        if (cached.length === 0) {
-          // Lần đầu: chưa có cache → lưu toàn bộ
-          console.log(`[Cache] Lần đầu — lưu ${fbRestaurants.length} restaurants vào localStorage`);
-          setCachedRestaurants(fbRestaurants);
-          return fbRestaurants;
-        }
-
-        // Lần sau: so sánh ID để tìm restaurants mới
-        const cachedIds = new Set(cached.map(r => r.id));
-        const newRestaurants = fbRestaurants.filter(r => !cachedIds.has(r.id));
-
-        if (newRestaurants.length > 0) {
-          console.log(`[Cache] Tìm thấy ${newRestaurants.length} restaurants mới, cập nhật cache`);
-          const merged = [...cached, ...newRestaurants];
-          setCachedRestaurants(merged);
-          return merged;
-        }
-
-        // Không có gì mới → trả cache
-        console.log(`[Cache] Không có restaurants mới — dùng cache (${cached.length})`);
-        return cached;
+    const response = await fetch(url);
+    if (response.ok) {
+      const apiUpdates = await response.json();
+      
+      if (Array.isArray(apiUpdates) && apiUpdates.length > 0) {
+        
+        // Hợp nhất dữ liệu: Dùng Map để ghi đè các ID cũ bằng dữ liệu mới hoặc thêm ID mới
+        const restaurantMap = new Map(cached.map(r => [r.id, r]));
+        apiUpdates.forEach(r => restaurantMap.set(r.id, r));
+        
+        const merged = Array.from(restaurantMap.values());
+        
+        // Lưu lại vào cache
+        setCachedRestaurants(merged);
+        localStorage.setItem(LAST_SYNCED_KEY, new Date().toISOString());
+        
+        return merged;
+      } else {
+        console.log(`[API] Không có cập nhật mới nào từ ${lastSyncedAt}`);
+        if (cached.length > 0) return cached;
       }
     }
   } catch (e) {
-    console.warn("Firebase getRestaurants failed, using cache/fallback", e);
+    console.warn("[API] NestJS incremental sync failed, trying fallback...", e);
   }
 
-  // Nếu có cache → dùng cache (offline-friendly)
-  if (cached.length > 0) return cached;
+  // Bước 3: Thử Firebase (nếu được cấu hình và API thất bại)
+  try {
+    if (isFirebaseConfigured) {
+      const fbRestaurants = await firebaseBlogService.getRestaurants();
+      if (fbRestaurants && fbRestaurants.length > 0) {
+        setCachedRestaurants(fbRestaurants);
+        return fbRestaurants;
+      }
+    }
+  } catch (e) {
+    console.warn("[Firebase] getRestaurants failed", e);
+  }
 
-  // Fallback cuối cùng: mock data
+  // Bước 4: Trả về kết quả cuối cùng (Cache hoặc Mock)
+  if (cached.length > 0) {
+    console.log(`[Cache] Dùng ${cached.length} nhà hàng từ localStorage`);
+    return cached;
+  }
+
+  console.log(`[Mock] Dùng ${localRestaurants.length} nhà hàng từ mock data`);
   return [...localRestaurants];
 };
 
+
 const visitRestaurant = async (userId: string, restaurantId: string, cuisineType: CuisineType): Promise<void> => {
+  // Bước 1: Thử NestJS API
+  try {
+    const response = await fetch(`${API_URL}/visit-restaurant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, restaurantId, cuisineType }),
+    });
+    if (response.ok) {
+      console.log(`[API] Restaurant visit logged via NestJS backend`);
+      return;
+    }
+  } catch (e) {
+    console.warn("[API] NestJS visit-restaurant failed, trying next source...", e);
+  }
+
+  // Bước 2: Thử Firebase
   if (isFirebaseConfigured) {
+    try {
       blogActivityService.logActivity({
         userId,
         type: 'RESTAURANT_VISITED',
         targetId: restaurantId,
         metadata: { cuisineType },
       });
-  } else {
-      // NestJS API
-      await fetch(`${API_URL}/visit-restaurant`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, restaurantId, cuisineType }),
-      });
+      console.log(`[Firebase] Restaurant visit logged`);
+    } catch (e) {
+      console.warn("[Firebase] visit-restaurant failed", e);
+    }
   }
 };
 

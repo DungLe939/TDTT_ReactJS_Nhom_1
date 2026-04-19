@@ -15,6 +15,9 @@ export const DEMO_USERS: DemoUser[] = [
     id: 'user-1',
     username: 'Nguyen Van A',
     avatar: '🧑‍🍳',
+    level: 3,
+    points: 150,
+    achievements: ['ach-1', 'ach-2'],
     foodPreferences: ['vietnamese', 'street-food', 'budget'],
     budget: 'budget',
   },
@@ -22,6 +25,9 @@ export const DEMO_USERS: DemoUser[] = [
     id: 'user-2',
     username: 'Tran Thi B',
     avatar: '🍜',
+    level: 5,
+    points: 280,
+    achievements: ['ach-1', 'ach-4', 'ach-5'],
     foodPreferences: ['japanese', 'korean', 'mid-range'],
     budget: 'mid-range',
   },
@@ -29,6 +35,9 @@ export const DEMO_USERS: DemoUser[] = [
     id: 'user-3',
     username: 'Dang Thanh C',
     avatar: '🍽️',
+    level: 2,
+    points: 90,
+    achievements: ['ach-1'],
     foodPreferences: ['french', 'fine-dining', 'vegetarian'],
     budget: 'fine-dining',
   },
@@ -175,6 +184,7 @@ export const SEED_POSTS: Post[] = [
     createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
     likesCount: 3,
     likedByUserIds: ['user-1', 'user-3', 'user-2'],
+    comments: [],
   },
   {
     id: 'post-2',
@@ -185,6 +195,7 @@ export const SEED_POSTS: Post[] = [
     createdAt: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
     likesCount: 5,
     likedByUserIds: ['user-2', 'user-3'],
+    comments: [],
   },
   {
     id: 'post-3',
@@ -195,6 +206,7 @@ export const SEED_POSTS: Post[] = [
     createdAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
     likesCount: 8,
     likedByUserIds: ['user-1', 'user-2'],
+    comments: [],
   },
   {
     id: 'post-4',
@@ -205,6 +217,7 @@ export const SEED_POSTS: Post[] = [
     createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
     likesCount: 2,
     likedByUserIds: ['user-3'],
+    comments: [],
   },
   {
     id: 'post-5',
@@ -215,5 +228,6 @@ export const SEED_POSTS: Post[] = [
     createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
     likesCount: 6,
     likedByUserIds: ['user-2', 'user-3'],
+    comments: [],
   },
 ];

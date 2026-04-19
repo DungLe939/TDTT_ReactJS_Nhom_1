@@ -1,31 +1,18 @@
-// import {
-//   collection,
-//   getDocs,
-//   addDoc,
-//   updateDoc,
-//   doc,
-//   query,
-//   where,
-//   orderBy,
-//   arrayUnion,
-//   arrayRemove,
-//   increment,
-// } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  doc,
+  query,
+  where,
+  orderBy,
+  arrayUnion,
+  arrayRemove,
+  increment,
+} from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../../../core/firebase/firebaseConfig';
-import type { Post, Restaurant, PostFilter, Comment } from '../types/quest.types';
-
-// Stubs for firebase functions since they are commented out above
-const collection = (...args: any[]) => ({}) as any;
-const query = (...args: any[]) => ({}) as any;
-const orderBy = (...args: any[]) => ({}) as any;
-const where = (...args: any[]) => ({}) as any;
-const getDocs = (...args: any[]) => ({ docs: [] }) as any;
-const addDoc = (...args: any[]) => ({ id: 'new-id' }) as any;
-const doc = (...args: any[]) => ({}) as any;
-const updateDoc = (...args: any[]) => Promise.resolve();
-const arrayUnion = (...args: any[]) => [];
-const arrayRemove = (...args: any[]) => [];
-const increment = (...args: any[]) => 0;
+import type { Post, Restaurant, PostFilter, BlogComment } from '../types/quest.types';
 
 
 export const firebaseBlogService = {
@@ -108,7 +95,7 @@ export const firebaseBlogService = {
      }
   },
 
-  addComment: async (postId: string, comment: Comment): Promise<void> => {
+  addComment: async (postId: string, comment: BlogComment): Promise<void> => {
     if (!isFirebaseConfigured || !db) return;
 
     try {

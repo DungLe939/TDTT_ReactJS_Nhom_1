@@ -7,6 +7,8 @@ import Select from 'react-select';
 import { Image as ImageIcon, Users, MapPin, Smile, MoreHorizontal, X } from 'lucide-react';
 import type { Tag, Restaurant, DemoUser } from '../../types/quest.types';
 import type { CreatePostDto } from '../../types/blog.types';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router';
 
 interface CreatePostFormProps {
   currentUser: DemoUser;
@@ -14,12 +16,30 @@ interface CreatePostFormProps {
   onSubmit: (dto: Omit<CreatePostDto, 'authorId'>) => void;
 }
 
-/** Chỉ hiển thị subset tags phổ biến để UI không quá dài */
-const POPULAR_TAGS: Tag[] = [
-  'vietnamese', 'japanese', 'korean', 'italian', 'thai',
-  'budget', 'mid-range', 'fine-dining',
-  'breakfast', 'lunch', 'dinner', 'street-food', 'cafe',
+/** Danh sách thẻ đầy đủ cho hệ thống tìm kiếm */
+const ALL_TAGS: Tag[] = [
+  // Ẩm thực
+  'vietnamese', 'japanese', 'korean', 'chinese', 'italian', 'french', 'thai', 'indian', 'american',
+  // Loại món
+  'street-food', 'cafe', 'fine-dining', 'buffet', 'fast-food', 'bbq', 'hotpot', 'bakery', 'vegan', 'seafood',
+  // Thời gian/Bữa ăn
+  'breakfast', 'lunch', 'dinner', 'brunch', 'late-night', 'all-day',
+  // Giá cả
+  'budget', 'mid-range', 'expensive', 'students',
+  // Không gian/Vibe
+  'chill', 'rooftop', 'air-conditioned', 'modern', 'vintage', 'workspace', 'pet-friendly', 'date-night', 'family',
+  // Đặc điểm
+  'halal', 'healthy', 'home-made', 'traditional', 'fusion', 'delivery',
 ];
+
+/** 5 thẻ được dùng nhiều nhất/gợi ý nhanh */
+const QUICK_TAGS: Tag[] = ['vietnamese', 'street-food', 'cafe', 'chill', 'budget'];
+
+// Format data cho react-select
+const tagOptions = ALL_TAGS.map(tag => ({
+  value: tag,
+  label: `#${tag.toUpperCase()}`
+}));
 
 const normalizeAddress = (addr: string): string => {
   if (!addr) return '';
@@ -46,6 +66,8 @@ const normalizeAddress = (addr: string): string => {
 };
 
 const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormProps) => {
+  const { isLoggedIn, login } = useAuth();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
@@ -103,7 +125,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
     setShowRestaurantSelect(true);
   };
 
-  // Memoize options — tránh tạo lại mỗi render
+  // Memoize options
   const restaurantOptions = useMemo(() =>
     restaurants.map(r => {
       const rAny = r as any;
@@ -127,41 +149,28 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
     [restaurants]
   );
 
-  const customSelectStyles = {
-    control: (provided: any, state: any) => ({
-      ...provided,
-      borderRadius: '12px',
-      borderColor: '#3a3b3c',
-      backgroundColor: '#3a3b3c',
-      color: 'white',
-      padding: '4px 8px',
-      fontSize: '0.9rem',
-      '&:hover': { borderColor: '#4e4f50' }
-    }),
-    menu: (provided: any) => ({
-      ...provided,
-      backgroundColor: '#242526',
-      border: '1px solid #3a3b3c'
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#0866ff' : state.isFocused ? '#3a3b3c' : 'transparent',
-      color: 'white',
-      cursor: 'pointer'
-    }),
-    singleValue: (provided: any) => ({
-      ...provided,
-      color: 'white'
-    }),
-    placeholder: (provided: any) => ({
-      ...provided,
-      color: '#b0b3b8'
-    }),
-    input: (provided: any) => ({
-      ...provided,
-      color: 'white'
-    })
-  };
+  if (!isLoggedIn) {
+    return (
+      <div 
+        className="bg-white rounded-3xl p-6 shadow-sm border border-neutral-100 flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-all group overflow-hidden relative"
+        onClick={() => navigate('/auth')}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-inner group-hover:scale-110 transition-transform">
+             <ImageIcon className="w-6 h-6" />
+          </div>
+          <div>
+            <h4 className="font-extrabold text-neutral-800 text-sm">Chia sẻ trải nghiệm ẩm thực của bạn</h4>
+            <p className="text-xs text-neutral-500 font-medium">Đăng bài, check-in và nhận huy hiệu ngay!</p>
+          </div>
+        </div>
+        <button className="bg-neutral-900 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-neutral-200 group-hover:bg-black transition-all relative z-10">
+           Đăng nhập ngay
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -282,21 +291,77 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                 </div>
               )}
 
-              {/* Tags Section */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {POPULAR_TAGS.map(tag => (
-                  <button 
-                    key={tag} 
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
-                      selectedTags.includes(tag) 
-                        ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20' 
-                        : 'bg-white border-neutral-200 text-neutral-600 hover:border-orange-500 hover:text-orange-500'
-                    }`}
-                    onClick={() => toggleTag(tag)}
-                  >
-                    #{tag.toUpperCase()}
-                  </button>
-                ))}
+              {/* Tags Section - Searchable & Compact */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                   <h4 className="text-[11px] font-black text-neutral-400 uppercase tracking-widest pl-1">Thẻ bài viết</h4>
+                   <span className="text-[10px] font-bold text-neutral-300 italic">Chọn nhiều thẻ...</span>
+                </div>
+                <Select
+                  isMulti
+                  options={tagOptions}
+                  placeholder="Gõ để tìm thẻ (vd: #vietnamese, #chill...)"
+                  value={tagOptions.filter(opt => selectedTags.includes(opt.value as Tag))}
+                  onChange={(opts) => setSelectedTags(opts ? opts.map(o => o.value as Tag) : [])}
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      borderRadius: '16px',
+                      borderColor: '#F3F4F6',
+                      backgroundColor: '#F9FAFB',
+                      padding: '4px',
+                      boxShadow: 'none',
+                      fontSize: '13px',
+                      minHeight: '48px',
+                      '&:hover': { borderColor: '#E5E7EB' }
+                    }),
+                    multiValue: (base) => ({
+                      ...base,
+                      backgroundColor: '#FFF5F2',
+                      borderRadius: '8px',
+                      padding: '1px 4px',
+                      border: '1px solid #FFE4D6'
+                    }),
+                    multiValueLabel: (base) => ({
+                      ...base,
+                      color: '#FF6B35',
+                      fontWeight: '800',
+                      fontSize: '11px'
+                    }),
+                    multiValueRemove: (base) => ({
+                      ...base,
+                      color: '#FFB091',
+                      '&:hover': { backgroundColor: '#FF6B35', color: 'white' }
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected ? '#FF6B35' : state.isFocused ? '#FFF5F2' : 'white',
+                      color: state.isSelected ? 'white' : '#1A1A2E',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    })
+                  }}
+                />
+                
+                {/* Gợi ý nhanh */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="text-[9px] font-black text-neutral-300 uppercase mt-1.5 mr-1">Gợi ý:</span>
+                  {QUICK_TAGS.map(tag => (
+                    <button 
+                      key={tag} 
+                      type="button"
+                      className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold transition-all border ${
+                        selectedTags.includes(tag) 
+                          ? 'bg-orange-500 border-orange-500 text-white shadow-sm' 
+                          : 'bg-white border-neutral-100 text-neutral-400 hover:border-orange-500 hover:text-orange-500'
+                      }`}
+                      onClick={() => toggleTag(tag)}
+                    >
+                      #{tag.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Action Bar */}

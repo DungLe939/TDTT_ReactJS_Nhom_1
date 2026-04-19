@@ -14,20 +14,32 @@ export type CuisineType =
 export type Tag =
   // Cuisine
   | 'japanese' | 'vietnamese' | 'italian' | 'korean'
-  | 'chinese' | 'thai' | 'french' | 'indian'
+  | 'chinese' | 'thai' | 'french' | 'indian' | 'american'
+  // Food type
+  | 'street-food' | 'cafe' | 'fine-dining' | 'buffet'
+  | 'fast-food' | 'bbq' | 'hotpot' | 'bakery' | 'seafood'
   // Price tier
-  | 'budget' | 'mid-range' | 'fine-dining'
+  | 'budget' | 'mid-range' | 'expensive' | 'students'
   // Dietary
-  | 'vegetarian' | 'vegan' | 'halal'
+  | 'vegetarian' | 'vegan' | 'halal' | 'healthy'
   // Meal type
-  | 'breakfast' | 'lunch' | 'dinner' | 'cafe' | 'street-food';
+  | 'breakfast' | 'lunch' | 'dinner' | 'brunch' | 'late-night' | 'all-day'
+  // Vibe / Space
+  | 'chill' | 'rooftop' | 'air-conditioned' | 'modern' | 'vintage'
+  | 'workspace' | 'pet-friendly' | 'date-night' | 'family'
+  // Features
+  | 'home-made' | 'traditional' | 'fusion' | 'delivery';
 
 export const ALL_TAGS: Tag[] = [
-  'japanese', 'vietnamese', 'italian', 'korean', 'chinese', 'thai', 'french', 'indian',
-  'budget', 'mid-range', 'fine-dining',
-  'vegetarian', 'vegan', 'halal',
-  'breakfast', 'lunch', 'dinner', 'cafe', 'street-food',
+  'japanese', 'vietnamese', 'italian', 'korean', 'chinese', 'thai', 'french', 'indian', 'american',
+  'street-food', 'cafe', 'fine-dining', 'buffet', 'fast-food', 'bbq', 'hotpot', 'bakery', 'seafood',
+  'budget', 'mid-range', 'expensive', 'students',
+  'vegetarian', 'vegan', 'halal', 'healthy',
+  'breakfast', 'lunch', 'dinner', 'brunch', 'late-night', 'all-day',
+  'chill', 'rooftop', 'air-conditioned', 'modern', 'vintage', 'workspace', 'pet-friendly', 'date-night', 'family',
+  'home-made', 'traditional', 'fusion', 'delivery',
 ];
+
 
 export type BlogActivityType =
   | 'POST_CREATED'
@@ -46,6 +58,16 @@ export type ActivityEventType = BlogActivityType | CrossFeatureActivityType;
 // Blog entities
 // ---------------------------------------------------------------------------
 
+export interface BlogComment {
+  id: string;
+  authorId: string;
+  content: string;
+  photoUrls?: string[];
+  createdAt: string; // ISO string
+  likesCount: number;
+  likedByUserIds: string[];
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -56,6 +78,7 @@ export interface Post {
   createdAt: string; // ISO string (JSON-serializable)
   likesCount: number;
   likedByUserIds: string[]; // track who liked for dedup
+  comments: BlogComment[];
 }
 
 export interface Restaurant {
@@ -185,8 +208,11 @@ export interface DemoUser {
   id: string;
   username: string;
   avatar: string; // emoji
-  foodPreferences: Tag[];
-  budget: 'budget' | 'mid-range' | 'fine-dining';
+  level: number;
+  points: number;
+  achievements: string[];
+  foodPreferences?: Tag[];
+  budget?: 'budget' | 'mid-range' | 'fine-dining';
 }
 
 // ---------------------------------------------------------------------------

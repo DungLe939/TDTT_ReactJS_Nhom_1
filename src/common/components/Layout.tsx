@@ -16,7 +16,6 @@ export const Layout = () => {
     { path: '/menu', label: 'Menu AI', icon: <Languages className="w-5 h-5" /> },
     { path: '/quests', label: 'Nhiệm vụ', icon: <Dices className="w-5 h-5" /> },
     { path: '/group', label: 'Nhóm ăn', icon: <Users className="w-5 h-5" /> },
-    { path: '/blogs', label: 'Cộng đồng', icon: <MessageSquare className="w-5 h-5" /> },
   ];
 
   if (isAdmin) {

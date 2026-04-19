@@ -1,5 +1,5 @@
-// import { initializeApp, getApps, getApp } from 'firebase/app';
-// import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -10,13 +10,12 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Temporarily disabled to unblock UI development without Firebase package resolution
-export const isFirebaseConfigured = false; 
+export const isFirebaseConfigured = true; 
 
 let app = null;
-// if (isFirebaseConfigured) {
-//   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-// }
+if (isFirebaseConfigured) {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+}
 
-export const db = null;
+export const db = app ? getFirestore(app) : null;
 export default app;
