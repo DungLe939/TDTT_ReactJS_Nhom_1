@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { UserCog, Lock, ShieldCheck } from 'lucide-react';
-import { useAuth } from '@/modules/auth/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import { LoadingModal } from '../common/components/LoadingModal';
 
@@ -32,7 +32,7 @@ export const AdminLogin = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full"></div>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 relative z-10 shadow-2xl"
