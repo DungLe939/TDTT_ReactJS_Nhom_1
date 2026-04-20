@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { DemoUser } from '../../types/quest.types';
-import { achievementService } from '../../services/achievementService';
+import { calculateStats } from '../../services/achievementService';
 import { Flame, Award, LogIn, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router';
@@ -20,7 +20,7 @@ const UserAchievementCard = ({ user }: UserAchievementCardProps) => {
     avatar: '👣', // Feet icon as requested in image
   };
 
-  const stats = useMemo(() => achievementService.calculateStats(displayUser.id), [displayUser.id]);
+  const stats = useMemo(() => calculateStats(displayUser.id), [displayUser.id]);
 
   const handleCardClick = () => {
     if (!isLoggedIn) navigate('/auth');

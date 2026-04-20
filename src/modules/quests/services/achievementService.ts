@@ -40,9 +40,9 @@ const LEVELS = [
   { level: 5, minXp: 1000, maxXp: 99999 },
 ];
 
-const calculateStats = (userId: string): UserStats => {
+export const calculateStats = (userId: string): UserStats => {
   const logs = blogActivityService.getActivityLogs(userId);
-  
+
   let xp = 0;
   let postCount = 0;
   let visitCount = 0;
