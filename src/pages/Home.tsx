@@ -281,19 +281,21 @@ export const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex items-center justify-between sm:justify-start sm:gap-14 pt-8 w-full border-t border-white/20 mt-6"
+              className="bg-white rounded-2xl px-8 py-6 mt-6 shadow-lg flex items-center justify-evenly w-full"
             >
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-white mb-1">10K+</div>
-                <div className="text-xs md:text-sm text-white/60 font-medium whitespace-nowrap">Món Ăn Khám Phá</div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">10K+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Món Ăn Khám Phá</div>
               </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-white mb-1">150+</div>
-                <div className="text-xs md:text-sm text-white/60 font-medium whitespace-nowrap">Quốc Gia</div>
+              <div className="w-px h-10 bg-orange-200"></div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">150+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Quốc Gia</div>
               </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-white mb-1">50K+</div>
-                <div className="text-xs md:text-sm text-white/60 font-medium whitespace-nowrap">Người Dùng</div>
+              <div className="w-px h-10 bg-orange-200"></div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">50K+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Người Dùng</div>
               </div>
             </motion.div>
           </div>
@@ -408,12 +410,12 @@ export const Home = () => {
                     key={cat.name}
                     whileHover={{ y: -8, scale: 1.05 }}
                     onClick={() => setSearchQuery(cat.name)}
-                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white/30 hover:bg-white/40 backdrop-blur-xl border-[1px] border-white/60 rounded-[2rem] px-6 py-5 lg:px-8 lg:py-6 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
+                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white hover:bg-neutral-50 border-[1px] border-neutral-200 rounded-xl px-6 py-6 lg:px-10 lg:py-8 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.10)]"
                   >
-                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-[1.25rem] overflow-hidden border-[2px] border-white/80 shadow-md">
+                    <div className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-lg overflow-hidden border-[2px] border-neutral-200 shadow-md">
                       <img src={cat.img} alt={cat.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="text-sm lg:text-base font-extrabold text-white uppercase tracking-wider drop-shadow-lg">{cat.name}</span>
+                    <span className="text-sm lg:text-base font-extrabold text-black uppercase tracking-wider">{cat.name}</span>
                   </motion.button>
                 ))}
               </div>
