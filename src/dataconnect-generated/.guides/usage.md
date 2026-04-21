@@ -12,10 +12,26 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
-import { useListPlaces } from '@dataconnect/generated/react';
+import { useCreateCategory, useCreateShop, useCreateFoodItem, useListCategories, useListFoods, useListFoodsByCategory, useGetFoodDetail, useGetShopDetail, useListShops } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
 
-const { data, isPending, isSuccess, isError, error } = useListPlaces();
+const { data, isPending, isSuccess, isError, error } = useCreateCategory(createCategoryVars);
+
+const { data, isPending, isSuccess, isError, error } = useCreateShop(createShopVars);
+
+const { data, isPending, isSuccess, isError, error } = useCreateFoodItem(createFoodItemVars);
+
+const { data, isPending, isSuccess, isError, error } = useListCategories();
+
+const { data, isPending, isSuccess, isError, error } = useListFoods(listFoodsVars);
+
+const { data, isPending, isSuccess, isError, error } = useListFoodsByCategory(listFoodsByCategoryVars);
+
+const { data, isPending, isSuccess, isError, error } = useGetFoodDetail(getFoodDetailVars);
+
+const { data, isPending, isSuccess, isError, error } = useGetShopDetail(getShopDetailVars);
+
+const { data, isPending, isSuccess, isError, error } = useListShops(listShopsVars);
 
 ```
 
@@ -54,11 +70,35 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { listPlaces } from '@dataconnect/generated';
+import { createCategory, createShop, createFoodItem, listCategories, listFoods, listFoodsByCategory, getFoodDetail, getShopDetail, listShops } from '@dataconnect/generated';
 
 
-// Operation ListPlaces: 
-const { data } = await ListPlaces(dataConnect);
+// Operation CreateCategory:  For variables, look at type CreateCategoryVars in ../index.d.ts
+const { data } = await CreateCategory(dataConnect, createCategoryVars);
+
+// Operation CreateShop:  For variables, look at type CreateShopVars in ../index.d.ts
+const { data } = await CreateShop(dataConnect, createShopVars);
+
+// Operation CreateFoodItem:  For variables, look at type CreateFoodItemVars in ../index.d.ts
+const { data } = await CreateFoodItem(dataConnect, createFoodItemVars);
+
+// Operation ListCategories: 
+const { data } = await ListCategories(dataConnect);
+
+// Operation ListFoods:  For variables, look at type ListFoodsVars in ../index.d.ts
+const { data } = await ListFoods(dataConnect, listFoodsVars);
+
+// Operation ListFoodsByCategory:  For variables, look at type ListFoodsByCategoryVars in ../index.d.ts
+const { data } = await ListFoodsByCategory(dataConnect, listFoodsByCategoryVars);
+
+// Operation GetFoodDetail:  For variables, look at type GetFoodDetailVars in ../index.d.ts
+const { data } = await GetFoodDetail(dataConnect, getFoodDetailVars);
+
+// Operation GetShopDetail:  For variables, look at type GetShopDetailVars in ../index.d.ts
+const { data } = await GetShopDetail(dataConnect, getShopDetailVars);
+
+// Operation ListShops:  For variables, look at type ListShopsVars in ../index.d.ts
+const { data } = await ListShops(dataConnect, listShopsVars);
 
 
 ```

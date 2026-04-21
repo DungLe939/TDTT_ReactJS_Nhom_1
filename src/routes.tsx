@@ -11,6 +11,7 @@ import { FileUploadDemo } from './pages/FileUploadDemo';
 import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './modules/auth/pages/Auth';
 import { Profile } from './modules/auth/pages/Profile';
+import { TestDataConnect } from './pages/TestDataConnect';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },
       { path: 'profile', Component: Profile },
+      { path: 'test', Component: TestDataConnect },
     ],
   },
 ]);
