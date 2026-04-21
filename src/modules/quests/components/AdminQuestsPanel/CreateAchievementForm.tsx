@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
+import { Sparkles, ChevronDown, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+
 import { createAchievement } from '@/modules/quests/services/achievementService';
 import type { Reward, ActivityEventType } from '@/modules/quests/types/quest.types';
 import { ACTIVITY_EVENT_TYPES, COMMON_ICONS, CUISINE_TYPES, ALL_TAGS, rewardValueLabel } from '@/modules/quests/constants/admin.constants';
 import { FieldLabel, QInput, QTextarea, QSelect, StatusBanner } from '@/modules/quests/components/AdminQuestsPanel/AdminFormAtoms';
-import { Sparkles, ChevronDown, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 
+
+/**
+ * Form tạo Achievement mới
+ */
 export function CreateAchievementForm({ rewards, onPreviewChange }: {
     rewards: Reward[];
     onPreviewChange: (p: {
@@ -85,7 +90,7 @@ export function CreateAchievementForm({ rewards, onPreviewChange }: {
                     placeholder="Mô tả chi tiết nhiệm vụ cho người dùng..." rows={2} />
             </div>
 
-            {/* condition */}
+            {/* Điều kiện */}
             <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-3 space-y-3">
                 <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Điều kiện</p>
                 <div className="grid grid-cols-2 gap-3">

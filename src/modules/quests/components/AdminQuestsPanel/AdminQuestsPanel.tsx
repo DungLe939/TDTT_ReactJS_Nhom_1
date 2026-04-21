@@ -10,6 +10,10 @@ import { rewardTypeBadge, rewardTypeIcon, rewardValueLabel, ACTIVITY_EVENT_TYPES
 import { getAllRewards } from '@/modules/quests/services/achievementService';
 import { CopyButton } from './AdminFormAtoms';
 
+/**
+ * AdminQuestsPanel bao gồm 2 sub-tab: tạo reward và tạo achievement
+ * Được export sang Admin.tsx
+ */
 type QuestSubTab = 'reward' | 'achievement';
 
 export function AdminQuestsPanel() {
@@ -31,7 +35,7 @@ export function AdminQuestsPanel() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-            {/* LEFT — rewards library ── col 1-3 */}
+            {/* Cột bên trái — Show các reward đã tạo ── col 1-3 */}
             <aside className="lg:col-span-3 flex flex-col gap-3 lg:sticky lg:top-[90px]">
                 <div className="bg-neutral-50 rounded-2xl border border-neutral-200 overflow-hidden">
                     <div className="px-3 py-2.5 border-b border-neutral-200 flex items-center gap-2">
@@ -81,9 +85,9 @@ export function AdminQuestsPanel() {
                 </div>
             </aside>
 
-            {/* CENTER — form ── col 4-9 */}
+            {/* Cột giữa — Form tạo reward và achievement mới ── col 4-9 */}
             <main className="lg:col-span-5">
-                {/* sub-tab switcher */}
+                {/* sub-tab switcher - Chuyển đổi giữa form tạo reward và achievement*/}
                 <div className="flex gap-2 mb-4">
                     {([
                         { key: 'reward', label: '🎁 Reward' },
@@ -132,7 +136,7 @@ export function AdminQuestsPanel() {
                 </AnimatePresence>
             </main>
 
-            {/* RIGHT — live preview ── col 10-12 */}
+            {/* Cột bên phải — live preview reward/achievement mới ── col 10-12 */}
             <aside className="lg:col-span-4 flex flex-col gap-3 lg:sticky lg:top-[90px]">
                 <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -155,7 +159,7 @@ export function AdminQuestsPanel() {
                     </AnimatePresence>
                 </div>
 
-                {/* event reference */}
+                {/* Giải thích các event */}
                 <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-4">
                     <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Sự kiện</p>
                     <div className="space-y-1.5">

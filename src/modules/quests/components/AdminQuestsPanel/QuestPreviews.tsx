@@ -1,7 +1,9 @@
 import type { Reward, RewardType } from '../../types/quest.types';
 import { rewardTypeBadge, rewardTypeIcon } from '../../constants/admin.constants';
 
-
+/**
+ * Thẻ xem trước Reward/Achievement sẽ được tạo
+ */
 export function PreviewQuestCard({ icon, name, description, reward, requiredCount, eventType, isActive }: {
     icon: string; name: string; description: string; reward: Reward | null;
     requiredCount: string; eventType: string; isActive: boolean;

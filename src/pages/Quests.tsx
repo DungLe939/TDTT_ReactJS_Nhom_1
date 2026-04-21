@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Trophy, Star, Flame, CheckCircle2, Lock,
-  ChevronRight, Ticket, Award, Coins, Sparkles, Target, MessageSquare,
+  Trophy, CheckCircle2, Ticket, Award, Coins, Sparkles, Target, MessageSquare,
   Tag as TagIcon, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -165,17 +164,17 @@ export const Quests = () => {
 
   return (
     <div className="max-w-[1500px] mx-auto w-full pt-4 pb-20 px-4 sm:px-6 lg:px-8">
-      
+
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+
         {/* left column - profile & stats */}
         <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[90px]">
           <UserAchievementCard user={currentUser} />
-          
+
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-neutral-100">
             <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest mb-4 flex items-center gap-2 pl-3 border-l-4 border-orange-500 h-4 min-h-[16px]">
-               Tóm tắt tiến độ
+              Tóm tắt tiến độ
             </h4>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -188,16 +187,16 @@ export const Quests = () => {
               </div>
             </div>
             <div className="mt-5 pt-5 border-t border-neutral-50 flex flex-col gap-3">
-               <p className="text-[10px] text-neutral-400 font-medium leading-relaxed">
-                 Tham gia cộng đồng và hoàn thành nhiệm vụ để nhận những ưu đãi ẩm thực hấp dẫn nhất!
-               </p>
+              <p className="text-[10px] text-neutral-400 font-medium leading-relaxed">
+                Tham gia cộng đồng và hoàn thành nhiệm vụ để nhận những ưu đãi ẩm thực hấp dẫn nhất!
+              </p>
             </div>
           </div>
         </aside>
 
-        {/* center column - feed & lists */}
+        {/* center column - feed & quest lists */}
         <main className="lg:col-span-6 flex flex-col gap-6">
-          
+
           {/* Tab Switcher */}
           <div className="bg-white/70 backdrop-blur-md p-1.5 rounded-3xl border border-white/50 shadow-sm flex gap-1 items-center sticky top-[90px] z-20">
             {TABS.map(t => (
@@ -232,18 +231,18 @@ export const Quests = () => {
             >
               {tab === 'community' ? (
                 <>
-                  <CreatePostForm 
-                    currentUser={currentUser} restaurants={restaurants} onSubmit={createPost} 
+                  <CreatePostForm
+                    currentUser={currentUser} restaurants={restaurants} onSubmit={createPost}
                   />
                   {blogLoading && posts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
-                       <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
-                       <p className="text-sm font-bold text-neutral-400">Đang kết nối cộng đồng...</p>
+                      <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+                      <p className="text-sm font-bold text-neutral-400">Đang kết nối cộng đồng...</p>
                     </div>
                   ) : posts.length === 0 ? (
                     <EmptyState tab="community" />
                   ) : (
-                    <PostList 
+                    <PostList
                       posts={posts} demoUsers={[]} restaurants={restaurants} currentUser={currentUser}
                       onLike={toggleLike} onComment={(pid, content, photos) => addComment(pid, content, photos)}
                       onLikeComment={toggleLikeComment} hasLiked={hasLiked}
@@ -252,8 +251,8 @@ export const Quests = () => {
                 </>
               ) : !isLoggedIn ? (
                 <div className="py-8">
-                  <AuthGuardCard 
-                    title="Đăng nhập để nhận nhiệm vụ" 
+                  <AuthGuardCard
+                    title="Đăng nhập để nhận nhiệm vụ"
                     description="Hãy đăng nhập để tham gia hành trình khám phá ẩm thực, chinh phục thử thách và nhận những phần quà hấp dẫn!"
                     icon={<Trophy className="w-10 h-10 text-orange-500" />}
                   />
@@ -261,9 +260,9 @@ export const Quests = () => {
               ) : (
                 <div className="space-y-4">
                   {loading ? (
-                     Array.from({ length: 3 }).map((_, i) => (
-                       <div key={i} className="bg-white h-32 rounded-3xl border border-neutral-100 animate-pulse" />
-                     ))
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="bg-white h-32 rounded-3xl border border-neutral-100 animate-pulse" />
+                    ))
                   ) : visible.length === 0 ? (
                     <EmptyState tab={tab} />
                   ) : (
@@ -279,11 +278,11 @@ export const Quests = () => {
 
         {/* right column - discovery & filters */}
         <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[90px]">
-          
+
           {/* Recommended Restaurants */}
           <div className="flex flex-col gap-3">
             <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2 pl-3 border-l-4 border-orange-500 h-4 min-h-[16px] mb-1">
-               Đề xuất cho bạn
+              Đề xuất cho bạn
             </h4>
             <div className="bg-white rounded-3xl shadow-sm border border-neutral-100 flex flex-col max-h-[460px] overflow-hidden">
               <div className="overflow-y-auto p-4 space-y-4 custom-scrollbar">
@@ -291,7 +290,7 @@ export const Quests = () => {
                   <RestaurantCard key={r.id} restaurant={r} onVisit={visitRestaurant} />
                 ))}
                 {visibleRestaurants < restaurants.length && (
-                  <button 
+                  <button
                     onClick={() => setVisibleRestaurants(prev => prev + 3)}
                     className="w-full py-2 text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors"
                   >
@@ -305,15 +304,15 @@ export const Quests = () => {
           {/* Post Filter (only for community) */}
           <div className={`transition-all duration-500 overflow-hidden flex flex-col gap-3
              ${tab === 'community' ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0 mb-[-1.5rem]'}`}>
-            
+
             <div className="flex items-center justify-between pl-3 border-l-4 border-orange-500 h-4 min-h-[16px] mb-1">
               <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2">
-                 Lọc theo thẻ
-                 {filter.tags.length > 0 && (
-                   <span className="bg-orange-500 text-white text-[9px] px-1.5 py-0.5 rounded-full rotate-3 shadow-sm">
-                     {filter.tags.length}
-                   </span>
-                 )}
+                Lọc theo thẻ
+                {filter.tags.length > 0 && (
+                  <span className="bg-orange-500 text-white text-[9px] px-1.5 py-0.5 rounded-full rotate-3 shadow-sm">
+                    {filter.tags.length}
+                  </span>
+                )}
               </h4>
               {filter.tags.length > 0 && (
                 <button
@@ -326,17 +325,17 @@ export const Quests = () => {
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden">
-               <PostFilter activeTags={filter.tags} onToggleTag={toggleFilterTag} onClear={clearFilter} />
+              <PostFilter activeTags={filter.tags} onToggleTag={toggleFilterTag} onClear={clearFilter} />
             </div>
           </div>
 
           {/* Tip of the day */}
           <div className="bg-gradient-to-br from-neutral-800 to-black rounded-3xl p-5 text-white relative overflow-hidden group mt-2">
-             <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-500/30 transition-all duration-700" />
-             <h5 className="text-[11px] font-black uppercase tracking-widest text-orange-500 mb-2 pl-3 border-l-2 border-orange-500/30">Mẹo nhỏ</h5>
-             <p className="text-[11px] font-medium leading-relaxed text-neutral-300">
-                Chụp ảnh món ăn và gắn thẻ nhà hàng khi đăng bài để tăng 50% cơ hội nhận được huy hiệu "Nhà báo ẩm thực"!
-             </p>
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-500/30 transition-all duration-700" />
+            <h5 className="text-[11px] font-black uppercase tracking-widest text-orange-500 mb-2 pl-3 border-l-2 border-orange-500/30">Mẹo nhỏ</h5>
+            <p className="text-[11px] font-medium leading-relaxed text-neutral-300">
+              Chụp ảnh món ăn và gắn thẻ nhà hàng khi đăng bài để tăng 50% cơ hội nhận được huy hiệu "Nhà báo ẩm thực"!
+            </p>
           </div>
         </aside>
 

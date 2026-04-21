@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
+
 import type { Reward, RewardType } from '../../types/quest.types';
 import { REWARD_TYPES } from '../../constants/admin.constants';
 import { rewardTypeBadge, rewardTypeIcon } from '../../constants/admin.constants';
 import { FieldLabel, QInput, StatusBanner, CopyButton } from '../../components/AdminQuestsPanel/AdminFormAtoms';
 import { createReward } from '@/modules/quests/services/achievementService';
 
+
+/**
+ * Form tạo Reward mới
+ */
 export function CreateRewardForm({ onCreated, onPreviewChange }: {
     onCreated: (r: Reward) => void;
     onPreviewChange: (p: { type: RewardType; description: string; value: string; expiresAt: string }) => void;
