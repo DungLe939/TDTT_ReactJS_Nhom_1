@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Trophy, CheckCircle2, Ticket, Award, Coins, Sparkles, Target, MessageSquare,
-  Tag as TagIcon, X
+  Trophy, CheckCircle2, Ticket, Award, Coins, Sparkles, Target, MessageSquare, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getAchievementsForUser } from '@/modules/quests/services/achievementService';
