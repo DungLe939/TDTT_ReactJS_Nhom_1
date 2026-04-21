@@ -12,6 +12,7 @@ import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './modules/auth/pages/Auth';
 import { Profile } from './modules/auth/pages/Profile';
 import { TestDataConnect } from './pages/TestDataConnect';
+import { FoodMarket } from './pages/FoodMarket';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: 'menu', Component: SmartMenu },
       { path: 'quests', Component: Quests },
       { path: 'group', Component: GroupTaste },
+      { path: 'market', Component: FoodMarket },
       { path: 'admin', Component: Admin },
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
