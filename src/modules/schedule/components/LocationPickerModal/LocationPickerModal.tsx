@@ -106,17 +106,19 @@ const LocationPickerModal = ({ isOpen, onClose, onConfirm }: LocationPickerModal
     // Xử lý khi chọn từ danh sách gợi ý hoặc bấm nút Search
     const handleSearchSelect = async (locationName: string) => {
         const shortName = locationName.split(',')[0];
-        setSearchQuery(shortName);
+        // Cập nhật giao diện với tên đầy đủ
+        setSearchQuery(locationName);
         setShowSuggestions(false);
         setIsSearching(true);
 
         try {
+            // Dùng tên ngắn để lấy toạ độ dễ dàng hơn với backend
             const res = await scheduleService.searchLocation(shortName);
             if (res?.success && res?.coords) {
                 const newPos: [number, number] = [res.coords.lat, res.coords.lng];
                 setMapCenter(newPos);
                 setSelectedPos(newPos);
-                setSelectedName(shortName);
+                setSelectedName(locationName); // Hiển thị tên đầy đủ
             } else {
                 alert('Không thể tìm thấy tọa độ cho địa điểm này!');
             }
@@ -139,11 +141,11 @@ const LocationPickerModal = ({ isOpen, onClose, onConfirm }: LocationPickerModal
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
             const data = await response.json();
             
-            if (data && data.address) {
-                // Ưu tiên lấy tên thành phố/quận/huyện để làm điểm du lịch
-                const name = data.address.city || data.address.town || data.address.county || data.address.state || data.name || 'Địa điểm không tên';
+            if (data && data.display_name) {
+                // Lấy tên đầy đủ và loại bỏ chữ "Việt Nam" cho gọn UI nếu có
+                const name = data.display_name.replace(/, Việt Nam$/i, '');
                 setSelectedName(name);
-                setSearchQuery(name); // Cập nhật lại thanh search
+                setSearchQuery(name); // Cập nhật lại thanh search bằng tên đầy đủ
             } else {
                 setSelectedName('Vị trí đã chọn (Chưa rõ tên)');
             }

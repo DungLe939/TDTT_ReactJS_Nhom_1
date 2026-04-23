@@ -52,12 +52,23 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading, prefilledLo
         if (prefilledLocation) {
             setLocation(prefilledLocation);
             
-            // Xóa cache prefetch cũ nếu có
-            setPrefetchStatus('idle');
+            // Tự động quét quán ăn tại địa điểm vừa nhận từ bản đồ để cập nhật dữ liệu mới
+            setPrefetchStatus('loading');
             prefetchCoordsRef.current = null;
             
-            // Có thể tự động gọi lại pre-fetch tại đây nếu cần thiết, 
-            // nhưng để an toàn thì đợi user bấm submit hoặc click vào autocomplete
+            const shortName = prefilledLocation.split(',')[0];
+            scheduleService.searchLocation(shortName)
+                .then((res) => {
+                    if (res?.success && res?.coords) {
+                        prefetchCoordsRef.current = res.coords;
+                        setPrefetchStatus('done');
+                    } else {
+                        setPrefetchStatus('error');
+                    }
+                })
+                .catch(() => {
+                    setPrefetchStatus('error');
+                });
         }
     }, [prefilledLocation]);
 
