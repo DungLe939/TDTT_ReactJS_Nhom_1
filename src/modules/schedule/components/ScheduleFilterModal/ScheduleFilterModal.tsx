@@ -8,6 +8,7 @@ interface ScheduleFilterModalProps {
     onClose: () => void;
     onSubmit: (data: any) => void;
     isLoading: boolean;
+    prefilledLocation?: string;
 }
 
 const TASTE_OPTIONS = [
@@ -18,7 +19,7 @@ const TASTE_OPTIONS = [
     { value: 'nhat', label: 'Thanh Nhạt' }
 ];
 
-const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleFilterModalProps) => {
+const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading, prefilledLocation }: ScheduleFilterModalProps) => {
     // ==========================================
     // LOGIC: KHÔI PHỤC DỮ LIỆU CŨ TỪ LOCALSTORAGE
     // ==========================================
@@ -43,6 +44,22 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     // Autocomplete States
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // ==========================================
+    // EFFECT: ĐỒNG BỘ LOCATION TỪ EXTERNAL PROP (Bản đồ)
+    // ==========================================
+    useEffect(() => {
+        if (prefilledLocation) {
+            setLocation(prefilledLocation);
+            
+            // Xóa cache prefetch cũ nếu có
+            setPrefetchStatus('idle');
+            prefetchCoordsRef.current = null;
+            
+            // Có thể tự động gọi lại pre-fetch tại đây nếu cần thiết, 
+            // nhưng để an toàn thì đợi user bấm submit hoặc click vào autocomplete
+        }
+    }, [prefilledLocation]);
 
     // ==========================================
     // PRE-FETCH STATE: Quét quán ăn ngầm khi chọn địa điểm

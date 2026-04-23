@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ScheduleBanner from '../../components/ScheduleBanner/ScheduleBanner';
 import ScheduleFilterModal from '../../components/ScheduleFilterModal/ScheduleFilterModal';
+import LocationPickerModal from '../../components/LocationPickerModal/LocationPickerModal';
 import DailyPlanView from '../../components/DailyPlanView/DailyPlanView';
 import { scheduleService } from '../../../../services/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,6 +15,11 @@ import './SchedulePage.css';
 const SchedulePage = () => {
     // Trạng thái đóng/mở Modal bộ lọc
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Trạng thái đóng/mở Modal chọn bản đồ và vị trí vừa chọn
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [pickedLocation, setPickedLocation] = useState<string>('');
+
     // Trạng thái loading toàn trang khi đang gọi AI
     const [isLoading, setIsLoading] = useState(false);
 
@@ -88,6 +94,15 @@ const SchedulePage = () => {
      */
     const handleFilterClick = () => {
         setIsModalOpen(true);
+    };
+
+    /**
+     * Nhận địa điểm từ Map Picker và tự động mở form Khai báo
+     */
+    const handleLocationPickerConfirm = (locName: string) => {
+        setPickedLocation(locName);
+        setIsLocationPickerOpen(false);
+        setIsModalOpen(true); // Tự động bật form bộ lọc
     };
 
     // 2. NGHIỆP VỤ - TỐI ƯU: STREAMING TẠO LỊCH TRÌNH
@@ -255,6 +270,7 @@ const SchedulePage = () => {
                         title="Lịch trình Food Tour"
                         subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`}
                         onFilterClick={handleFilterClick}
+                        onMapClick={() => setIsLocationPickerOpen(true)}
                     />
 
                     {/* Thanh cuộn Lịch có mũi tên điều hướng hai đầu */}
@@ -339,6 +355,14 @@ const SchedulePage = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleGenerateSubmit}
                 isLoading={isLoading}
+                prefilledLocation={pickedLocation}
+            />
+
+            {/* Modal Bản đồ tương tác chọn điểm đến */}
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onClose={() => setIsLocationPickerOpen(false)}
+                onConfirm={handleLocationPickerConfirm}
             />
         </div>
     );
