@@ -13,6 +13,7 @@ import { Auth } from './modules/auth/pages/Auth';
 import { Profile } from './modules/auth/pages/Profile';
 import { TestDataConnect } from './pages/TestDataConnect';
 import { FoodMarket } from './pages/FoodMarket';
+import { Store } from './pages/Store';
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: 'auth', Component: Auth },
       { path: 'profile', Component: Profile },
       { path: 'test', Component: TestDataConnect },
+      { path: 'store', Component: Store },
     ],
   },
 ]);

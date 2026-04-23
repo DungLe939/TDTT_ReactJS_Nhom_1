@@ -15,6 +15,11 @@ export interface Category_Key {
   __typename?: 'Category_Key';
 }
 
+export interface CrawlBatch_Key {
+  id: UUIDString;
+  __typename?: 'CrawlBatch_Key';
+}
+
 export interface CreateCategoryData {
   category_insert: Category_Key;
 }
@@ -85,7 +90,7 @@ export interface GetFoodDetailData {
       city: string;
       rating?: number | null;
       coverImage?: string | null;
-      url?: string | null;
+      url: string;
       openTime?: string | null;
       closeTime?: string | null;
       priceMin?: number | null;
@@ -107,13 +112,13 @@ export interface GetFoodDetailVariables {
 export interface GetShopDetailData {
   shop?: {
     id: UUIDString;
-    externalId: string;
+    externalId?: string | null;
     name: string;
     address: string;
     city: string;
     rating?: number | null;
     coverImage?: string | null;
-    url?: string | null;
+    url: string;
     openTime?: string | null;
     closeTime?: string | null;
     priceMin?: number | null;
