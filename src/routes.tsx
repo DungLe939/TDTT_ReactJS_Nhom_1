@@ -23,6 +23,7 @@ export const router = createBrowserRouter([
       { path: 'menu', Component: SmartMenu },
       { path: 'quests', Component: Quests },
       { path: 'group', Component: GroupTaste },
+      { path: 'group/:groupId', Component: GroupTaste },
       { path: 'admin', Component: Admin },
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
