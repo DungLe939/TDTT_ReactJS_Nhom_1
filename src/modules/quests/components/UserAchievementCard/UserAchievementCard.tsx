@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { DemoUser, UserStats } from '../../types/quest.types';
+import type { DemoUser, UserStats, UserRewardResolved } from '../../types/quest.types';
 import { Flame, Award } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router';
 import { getUserStats } from '../../services/achievementService';
+import { getUserRewards } from '../../services/achievementService';
 
 interface UserAchievementCardProps {
   user: DemoUser;
@@ -24,11 +25,28 @@ const UserAchievementCard = ({ user }: UserAchievementCardProps) => {
     avatar: '👣', // Feet icon as requested in image
   };
 
+  // fetch user's stats
+  // If not logged in, we use a "Guest" profile for display
   useEffect(() => {
     if (!isLoggedIn) return;
     getUserStats(displayUser.id).then(setStats).catch(() => setStats(null));
   }, [displayUser.id, isLoggedIn]);
-  // If not logged in, we use a "Guest" profile for display
+
+  // fetch badges
+  const [badges, setBadges] = useState<UserRewardResolved[]>([]);
+  const [badgeLoading, setBadgeLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setBadgeLoading(true);
+    getUserRewards(displayUser.id)
+      .then(rewards => {
+        const badgeOnly = rewards.filter(r => r.reward.type === 'badge');
+        setBadges(badgeOnly);
+      })
+      .catch(console.error)
+      .finally(() => setBadgeLoading(false));
+  }, [displayUser.id, isLoggedIn]);
 
   if (!stats) {
     return (
@@ -118,20 +136,27 @@ const UserAchievementCard = ({ user }: UserAchievementCardProps) => {
         </div>
 
         {/* Badges Section */}
-        <div className="mt-8 pt-6 border-t border-neutral-50">
-          <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 whitespace-nowrap">
+        <div className="mt-4 pt-4 border-t border-neutral-50 flex flex-col gap-3">
+          <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap flex-shrink-0">
             <Award className="w-3.5 h-3.5 text-orange-500" /> Huy hiệu đạt được
+            {badges.length > 0 && (
+              <span className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 whitespace-nowrap ml-2">
+                {badges.length}
+              </span>
+            )}
           </h4>
-          <div className="flex flex-wrap gap-2.5">
-            {stats.badges.length > 0 ? (
-              stats.badges.map(badge => (
+          <div className="flex flex-wrap gap-2.5 max-h-28 overflow-y-auto pr-1 custom-scrollbar">
+            {badges.length > 0 ? (
+              badges.map(badge => (
                 <div
-
+                  title={badge.reward.description}
                   key={badge.id}
                   className="flex flex-col items-center gap-1 px-3 py-2 bg-neutral-50/50 border border-neutral-100 rounded-2xl hover:bg-white hover:shadow-md hover:border-orange-100 transition-all duration-300 group/badge"
                 >
-                  <span className="text-xl group-hover/badge:scale-125 transition-transform">{badge.icon || '🏅'}</span>
-                  <span className="text-[9px] font-black text-neutral-500 uppercase tracking-tighter w-full text-center truncate">{badge.description}</span>
+                  <span className="text-xl group-hover/badge:scale-125 transition-transform">
+                    {badge.reward.icon || '🏅'}
+                  </span>
+                  <span className="text-[9px] font-black text-neutral-500 uppercase tracking-tighter w-full text-center truncate">{badge.reward.description}</span>
                 </div>
               ))
             ) : (
