@@ -167,6 +167,23 @@ export interface UserRewardResolved extends UserReward {
   achievementName: string;
 }
 
+export interface UserStats {
+  xp: number;
+  level: number;
+  levelTitle: string;
+  xpToNextLevel: number;
+  progressPercent: number;
+  badges: Badge[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  icon?: string;
+  description: string;
+}
+
+
 // ---------------------------------------------------------------------------
 // Activity event (fired into achievement system)
 // ---------------------------------------------------------------------------
