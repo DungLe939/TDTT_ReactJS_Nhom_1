@@ -7,6 +7,7 @@ import { REWARD_TYPES } from '../../constants/admin.constants';
 import { rewardTypeBadge, rewardTypeIcon } from '../../constants/admin.constants';
 import { FieldLabel, QInput, StatusBanner, CopyButton } from '../../components/AdminQuestsPanel/AdminFormAtoms';
 import { createReward } from '@/modules/quests/services/achievementService';
+import { COMMON_ICONS } from '@/modules/quests/constants/admin.constants';
 
 
 /**
@@ -14,7 +15,7 @@ import { createReward } from '@/modules/quests/services/achievementService';
  */
 export function CreateRewardForm({ onCreated, onPreviewChange }: {
     onCreated: (r: Reward) => void;
-    onPreviewChange: (p: { type: RewardType; description: string; value: string; expiresAt: string }) => void;
+    onPreviewChange: (p: { type: RewardType; description: string; value: string; expiresAt: string; icon: string }) => void;
 }) {
     const [type, setType] = useState<RewardType>('voucher');
     const [value, setValue] = useState('');
@@ -23,9 +24,10 @@ export function CreateRewardForm({ onCreated, onPreviewChange }: {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [createdId, setCreatedId] = useState<string | null>(null);
+    const [icon, setIcon] = useState('🏅');
 
-    useEffect(() => { onPreviewChange({ type, description, value, expiresAt }); },
-        [type, description, value, expiresAt]);
+    useEffect(() => { onPreviewChange({ type, description, value, expiresAt, icon }); },
+        [type, description, value, expiresAt, icon]);
 
     const valueHint: Record<RewardType, string> = {
         voucher: 'Phần trăm giảm (VD: 15 = 15%)',
@@ -42,12 +44,13 @@ export function CreateRewardForm({ onCreated, onPreviewChange }: {
         try {
             const reward = await createReward({
                 type, value: Number(value), description,
+                ...(type === 'badge' && icon ? { icon } : {}),
                 ...(expiresAt ? { expiresAt: new Date(expiresAt).toISOString() } : {}),
             });
             setCreatedId(reward.id);
             setStatus({ type: 'success', message: 'Reward đã được tạo thành công!' });
             onCreated(reward);
-            setValue(''); setDescription(''); setExpiresAt('');
+            setValue(''); setDescription(''); setExpiresAt(''); setIcon('🏅');
         } catch (e: any) {
             setStatus({ type: 'error', message: e?.response?.data?.message ?? 'Có lỗi xảy ra.' });
         } finally { setLoading(false); }
@@ -87,6 +90,23 @@ export function CreateRewardForm({ onCreated, onPreviewChange }: {
                     <FieldLabel>Ngày hết hạn (tùy chọn)</FieldLabel>
                     <QInput type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
                         min={new Date().toISOString().split('T')[0]} />
+                </div>
+            )}
+
+            {type === 'badge' && (
+                <div>
+                    <FieldLabel>Icon</FieldLabel>
+                    <div className="flex flex-wrap gap-1.5">
+                        {COMMON_ICONS.map(em => (
+                            <button key={em} onClick={() => setIcon(em)}
+                                className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center border-2 transition-all
+                        ${icon === em
+                                        ? 'border-orange-400 bg-orange-50 scale-110'
+                                        : 'border-neutral-200 bg-neutral-50 hover:border-neutral-300'}`}>
+                                {em}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
 
