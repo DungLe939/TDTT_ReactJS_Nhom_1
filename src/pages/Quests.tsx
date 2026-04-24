@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import {
-  Trophy, CheckCircle2, Ticket, Award, Coins, Sparkles, Target, MessageSquare, X
-} from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { Trophy, CheckCircle2, Target, MessageSquare, X, AlertCircle, Ticket } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
 import { getAchievementsForUser } from '@/modules/quests/services/achievementService';
-import type { AchievementWithProgress } from '@/modules/quests/types/quest.types';
+import type { AchievementWithProgress, UserRewardResolved } from '@/modules/quests/types/quest.types';
+import { QuestCard } from '@/modules/quests/components/QuestsCard/QuestsCard';
 import { useBlog } from '@/modules/quests/hooks/useBlog';
 import CreatePostForm from '@/modules/quests/components/CreatePostForm/CreatePostForm';
 import PostList from '@/modules/quests/components/PostList/PostList';
@@ -13,99 +13,12 @@ import PostFilter from '@/modules/quests/components/PostFilter/PostFilter';
 import RestaurantCard from '@/modules/quests/components/RestaurantCard/RestaurantCard';
 import UserAchievementCard from '@/modules/quests/components/UserAchievementCard/UserAchievementCard';
 import AuthGuardCard from '@/modules/quests/components/AuthGuardCard/AuthGuardCard';
+import VoucherTab from '@/modules/quests/components/VoucherTab/VoucherTab';
+import { getUserRewards } from '@/modules/quests/services/achievementService';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-type FilterTab = 'community' | 'all' | 'active' | 'completed';
-
-function rewardIcon(type: string) {
-  switch (type) {
-    case 'voucher': return <Ticket className="w-3.5 h-3.5" />;
-    case 'badge': return <Award className="w-3.5 h-3.5" />;
-    case 'points': return <Coins className="w-3.5 h-3.5" />;
-    default: return <Sparkles className="w-3.5 h-3.5" />;
-  }
-}
-
-function rewardColors(type: string) {
-  switch (type) {
-    case 'voucher': return 'bg-violet-50 text-violet-600 border-violet-200';
-    case 'badge': return 'bg-amber-50  text-amber-600  border-amber-200';
-    case 'points': return 'bg-sky-50    text-sky-600    border-sky-200';
-    default: return 'bg-neutral-50 text-neutral-600 border-neutral-200';
-  }
-}
-
-// ─── sub-components ──────────────────────────────────────────────────────────
-
-function QuestCard({ ach, index }: { ach: AchievementWithProgress; index: number }) {
-  const completed = ach.progress.isCompleted;
-  const pct = ach.progress.progressPercent;
-  const cur = ach.progress.currentCount;
-  const req = ach.progress.requiredCount;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
-      className={`relative overflow-hidden rounded-3xl border transition-all duration-300
-        ${completed
-          ? 'bg-gradient-to-br from-emerald-50/50 to-teal-50/50 border-emerald-100 shadow-sm'
-          : 'bg-white border-neutral-100 shadow-sm hover:shadow-md hover:border-orange-100'}`}
-    >
-      {completed && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-          <CheckCircle2 className="w-3 h-3" /> HOÀN THÀNH
-        </div>
-      )}
-
-      <div className="p-4 flex gap-4">
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 shadow-inner
-          ${completed ? 'bg-emerald-100' : 'bg-orange-50'}`}>
-          {ach.icon || '🍜'}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className={`font-extrabold text-base leading-tight
-            ${completed ? 'text-emerald-800' : 'text-neutral-800'}`}>
-            {ach.name}
-          </h3>
-          <p className="text-sm text-neutral-500 mt-1 leading-snug line-clamp-2">
-            {ach.description}
-          </p>
-          {ach.reward && (
-            <div className={`inline-flex items-center gap-1.5 mt-2.5 text-xs font-semibold
-              px-2.5 py-1 rounded-xl border ${rewardColors(ach.reward.type)}`}>
-              {rewardIcon(ach.reward.type)}
-              {ach.reward.description}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="px-4 pb-4">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-semibold text-neutral-400">Tiến độ</span>
-          <span className={`text-xs font-black tabular-nums
-            ${completed ? 'text-emerald-600' : 'text-orange-500'}`}>
-            {cur} / {req}
-          </span>
-        </div>
-        <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className={`h-full rounded-full ${completed
-              ? 'bg-gradient-to-r from-emerald-400 to-teal-400'
-              : 'bg-gradient-to-r from-orange-400 to-red-500'}`}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+type FilterTab = 'community' | 'all' | 'active' | 'completed' | 'vouchers';
 
 function EmptyState({ tab }: { tab: FilterTab }) {
   const messages: Record<string, { emoji: string; text: string }> = {
@@ -123,7 +36,7 @@ function EmptyState({ tab }: { tab: FilterTab }) {
   );
 }
 
-// ─── main page ───────────────────────────────────────────────────────────────
+// ─── main page ────────────────────────────────────────────────────────────────
 
 export const Quests = () => {
   const { user, isLoggedIn } = useAuth();
@@ -138,27 +51,63 @@ export const Quests = () => {
     toggleFilterTag, clearFilter, hasLiked,
   } = useBlog();
 
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
+  // fetch achievements
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
     getAchievementsForUser(user.id)
-      .then(setAchievements)
+      .then((data) => {
+        setAchievements(data);
+        setQuotaExceeded(false);
+      })
+      .catch((err) => {
+        if (err?.response?.status === 500 || err?.message?.includes('quota')) {
+          setQuotaExceeded(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, [user?.id]);
 
   const completed = achievements.filter(a => a.progress.isCompleted);
   const active = achievements.filter(a => !a.progress.isCompleted);
-
   const visible =
     tab === 'all' ? achievements :
       tab === 'active' ? active :
         tab === 'completed' ? completed : [];
 
+  // fetch vouchers
+  const [vouchers, setVouchers] = useState<UserRewardResolved[]>([]);
+  const [voucherLoading, setVoucherLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setVoucherLoading(true);
+    getUserRewards(currentUser.id)
+      .then(rewards => {
+        const voucherOnly = rewards.filter(r => r.reward.type === 'voucher' && !r.isUsed);
+        setVouchers(voucherOnly);
+      })
+      .catch(console.error)
+      .finally(() => setVoucherLoading(false));
+  }, [currentUser.id, isLoggedIn]);
+
+  const validVoucherCount = useMemo(() =>
+    vouchers.filter(v => {
+      const ts = v.expiresAt as { _seconds: number } | undefined;
+      return !ts || new Date(ts._seconds * 1000) > new Date();
+    }).length
+    , [vouchers]);
+
+  // tabs
   const TABS: { key: FilterTab; label: string; count?: number; icon: any }[] = [
     { key: 'community', label: 'Cộng đồng', icon: <MessageSquare className="w-4 h-4" /> },
     { key: 'all', label: 'Tất cả', count: achievements.length, icon: <Trophy className="w-4 h-4" /> },
     { key: 'active', label: 'Đang làm', count: active.length, icon: <Target className="w-4 h-4" /> },
     { key: 'completed', label: 'Xong', count: completed.length, icon: <CheckCircle2 className="w-4 h-4" /> },
+    { key: 'vouchers', label: 'Voucher', count: validVoucherCount || undefined, icon: <Ticket className="w-4 h-4" /> },
+
   ];
 
   return (
@@ -202,16 +151,16 @@ export const Quests = () => {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-bold transition-all
-                  ${tab === t.key
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap
+        ${tab === t.key
                     ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
                     : 'text-neutral-500 hover:bg-neutral-50'}`}
               >
                 {t.icon}
-                <span className="hidden sm:inline">{t.label}</span>
+                <span>{t.label}</span>
                 {t.count !== undefined && (
                   <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-md font-black
-                    ${tab === t.key ? 'bg-white/20 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+          ${tab === t.key ? 'bg-white/20 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
                     {t.count}
                   </span>
                 )}
@@ -255,6 +204,20 @@ export const Quests = () => {
                     description="Hãy đăng nhập để tham gia hành trình khám phá ẩm thực, chinh phục thử thách và nhận những phần quà hấp dẫn!"
                     icon={<Trophy className="w-10 h-10 text-orange-500" />}
                   />
+                </div>
+              ) : tab === 'vouchers' ? (
+                <VoucherTab
+                  userId={currentUser.id}
+                  vouchers={vouchers}
+                  loading={voucherLoading}
+                  onVouchersChange={setVouchers}
+                />
+              ) : quotaExceeded ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                  <p className="text-xs text-amber-700">
+                    Tiến độ của bạn tạm thời không thể tải. Hãy thử lại sau ít phút nhé!
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
