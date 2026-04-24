@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeftRight, X, Copy, Check, Sparkles, Smile, Frown, Meh, Activity, Lightbulb, LightbulbOff, Bot, History, Trash2, PanelLeftClose, PanelLeftOpen, Soup, Sun, Moon, ChevronUp, ChevronDown } from 'lucide-react';
+import { useLocation } from 'react-router';
+import { LoadingModal } from '../common/components/LoadingModal';
 
 interface TranslationHistory {
   id: string;
@@ -14,7 +16,8 @@ export const SmartMenu = () => {
   // ----------------------------------------------------------------------
   // [STATE CỦA COMPONENT]
   // ----------------------------------------------------------------------
-  const [lang, setLang] = useState<'vi' | 'en'>('vi');
+  const location = useLocation();
+  const [lang, setLang] = useState<'vi' | 'en'>('en');
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -67,6 +70,13 @@ export const SmartMenu = () => {
       e.currentTarget.style.cursor = 'text';
     }
   };
+
+  // Lấy dữ liệu văn bản từ màn hình FoodScan (nếu có)
+  useEffect(() => {
+    if (location.state?.autoTranslateText) {
+      setSourceText(location.state.autoTranslateText);
+    }
+  }, [location.state]);
 
   // Theo dõi vị trí chuột
   useEffect(() => {
@@ -428,6 +438,12 @@ export const SmartMenu = () => {
         </div>
       </div>
       </div>
+      
+      <LoadingModal
+        isOpen={isTranslating}
+        message="Đang dịch văn bản..."
+        submessage="AI đang phân tích ngữ cảnh và chuyển đổi ngôn ngữ"
+      />
     </div>
   );
 };
