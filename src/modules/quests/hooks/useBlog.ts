@@ -33,14 +33,13 @@ export const useBlog = () => {
     achievements: []
   };
 
-  
   const demoUsers = DEMO_USERS;
 
   // Load ban đầu (Restaurants + Posts)
   useEffect(() => {
     const initData = async () => {
       setIsLoading(true);
-      
+
       // Fetch restaurants independently
       blogController.getRestaurants()
         .then(setRestaurants)
@@ -61,7 +60,7 @@ export const useBlog = () => {
     const hasActiveFilter = activeFilter.tags.length > 0
       || activeFilter.restaurantId
       || activeFilter.authorId;
-    
+
     try {
       const fetched = await blogController.getPosts(hasActiveFilter ? activeFilter : undefined);
       setPosts(fetched);
