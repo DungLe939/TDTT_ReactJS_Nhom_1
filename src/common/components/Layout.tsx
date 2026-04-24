@@ -5,7 +5,7 @@ import { Map, ScanFace, Languages, Dices, Menu, X, User as UserIcon, LogOut, Cod
 import { Chatbot } from './Chatbot';
 
 export const Layout = () => {
-  const { isLoggedIn, user, login, logout, isAdmin } = useAuth();
+  const { isLoggedIn, user, logout, isAdmin } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
