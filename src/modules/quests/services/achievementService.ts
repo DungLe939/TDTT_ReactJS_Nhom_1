@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ActivityLog, Tag, CuisineType } from '../types/quest.types';
+import type { Tag, CuisineType } from '../types/quest.types';
 import type {
   AchievementWithProgress,
   UserRewardResolved,
