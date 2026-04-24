@@ -304,7 +304,8 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                 type: 'snack',
                 id: selectedSnack.restaurantId,
                 name: selectedSnack.restaurantName,
-                dish: selectedSnack.name
+                dish: selectedSnack.name,
+                img: selectedSnack.imageUrl
             });
             onClose();
             setSelectedSnack(null);
@@ -383,24 +384,33 @@ const AddSnackModal = ({ isOpen, onClose, onAdd, snackCandidates, activePlan }: 
                                         className={`snack-item-card ${selectedSnack?.name === s.name && selectedSnack?.restaurantId === s.restaurantId ? 'selected' : ''}`}
                                         onClick={() => setSelectedSnack(s)}
                                     >
-                                        <div className="snack-item-info">
-                                            <div className="snack-item-name">{s.name}</div>
-                                            <div className="snack-item-res">
-                                                {s.restaurantName}
-                                                {s.displayDistance > 0 && (
-                                                    <span className="distance-tag">
-                                                        • {s.isRealDistance ? '🚗' : '📍'} {s.displayDistance > 1000 ? (s.displayDistance / 1000).toFixed(1) + 'km' : Math.round(s.displayDistance) + 'm'}
-                                                    </span>
+                                        <div className="snack-item-img">
+                                            {s.imageUrl ? (
+                                                <img src={s.imageUrl} alt={s.name} />
+                                            ) : (
+                                                <Coffee size={28} color="#c8c8d0" />
+                                            )}
+                                        </div>
+                                        <div className="snack-item-body">
+                                            <div className="snack-item-info">
+                                                <div className="snack-item-name">{s.name}</div>
+                                                <div className="snack-item-res">
+                                                    {s.restaurantName}
+                                                    {s.displayDistance > 0 && (
+                                                        <span className="distance-tag">
+                                                            • {s.isRealDistance ? '🚗' : '📍'} {s.displayDistance > 1000 ? (s.displayDistance / 1000).toFixed(1) + 'km' : Math.round(s.displayDistance) + 'm'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="snack-item-right">
+                                                <div className="snack-item-price">
+                                                    {typeof s.price === 'number' ? s.price.toLocaleString() : s.price}đ
+                                                </div>
+                                                {selectedSnack?.name === s.name && selectedSnack?.restaurantId === s.restaurantId && (
+                                                    <div className="selected-badge"><Check size={14} /></div>
                                                 )}
                                             </div>
-                                        </div>
-                                        <div className="snack-item-right">
-                                            <div className="snack-item-price">
-                                                {typeof s.price === 'number' ? s.price.toLocaleString() : s.price}đ
-                                            </div>
-                                            {selectedSnack?.name === s.name && selectedSnack?.restaurantId === s.restaurantId && (
-                                                <div className="selected-badge"><Check size={14} /></div>
-                                            )}
                                         </div>
                                     </div>
                                 ))

@@ -60,6 +60,15 @@ const SwapMealModal = ({ isOpen, onClose, options, loading, onSelect, currentMea
                                             className="swap-option-card"
                                             onClick={() => setConfirmingOption(option)}
                                         >
+                                            {/* Ảnh món ăn hoặc quán */}
+                                            <div className="option-img">
+                                                {option.img ? (
+                                                    <img src={option.img} alt={option.dish} />
+                                                ) : (
+                                                    <Utensils size={28} className="option-img-placeholder" />
+                                                )}
+                                            </div>
+
                                             <div className="option-res-meta">
                                                 <div className="option-rating">
                                                     <Star size={12} fill="currentColor" />
