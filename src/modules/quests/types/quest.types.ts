@@ -115,6 +115,7 @@ export interface Reward {
   value: number;
   description: string;
   expiresAt?: string; // ISO string, vouchers only
+  icon?: string; // emoji
 }
 
 export interface AchievementCondition {
