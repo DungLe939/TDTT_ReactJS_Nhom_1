@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layers, Ticket, Sparkles, Eye } from 'lucide-react';
+import { Layers, Ticket, Sparkles, Eye, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import type { Reward, RewardType } from '../../types/quest.types';
@@ -28,12 +28,37 @@ export function AdminQuestsPanel() {
         requiredCount: '', eventType: '', isActive: true,
     });
 
-    useEffect(() => { getAllRewards().then(setRewards).catch(() => { }); }, []);
+    const [quotaExceeded, setQuotaExceeded] = useState(false);
+
+    useEffect(() => {
+        getAllRewards()
+            .then(setRewards)
+            .catch((err) => {
+                if (err?.response?.status === 500 || err?.message?.includes('quota')) {
+                    setQuotaExceeded(true);
+                }
+            })
+            .catch(() => { });
+    }, []);
 
     const selectedReward = rewards.find(r => r.id === achPreview.rewardId) ?? null;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+            {/* Quota exceeded banner */}
+            {quotaExceeded && (
+                <div className="lg:col-span-12 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-bold text-red-700">Firebase quota exceeded</p>
+                        <p className="text-xs text-red-600 mt-0.5">
+                            Đã đạt đến giới hạn đọc dữ liệu hàng ngày trên Firestore. Các thao tác ghi sẽ thất bại cho đến khi giới hạn được đặt lại vào lúc nửa đêm theo giờ Thái Bình Dương.
+                            <br /> Hãy kiểm tra Firebase console hoặc xem xét nâng cấp gói.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Cột bên trái — Show các reward đã tạo ── col 1-3 */}
             <aside className="lg:col-span-3 flex flex-col gap-3 lg:sticky lg:top-[90px]">
