@@ -115,7 +115,7 @@ export interface Reward {
   type: RewardType;
   value: number;
   description: string;
-  expiresAt?: string; // ISO string, vouchers only
+  validForDays?: number;
   icon?: string; // emoji
 }
 
@@ -175,7 +175,6 @@ export interface UserStats {
   levelTitle: string;
   xpToNextLevel: number;
   progressPercent: number;
-  badges: Badge[];
 }
 
 export interface Badge {

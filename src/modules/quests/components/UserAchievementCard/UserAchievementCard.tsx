@@ -35,7 +35,6 @@ const UserAchievementCard = ({ user }: UserAchievementCardProps) => {
         levelTitle: 'Khách tham quan',
         xpToNextLevel: 100,
         progressPercent: 0,
-        badges: []
       });
       return;
     }

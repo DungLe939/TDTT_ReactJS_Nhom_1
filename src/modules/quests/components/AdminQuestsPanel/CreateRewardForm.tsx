@@ -15,19 +15,28 @@ import { COMMON_ICONS } from '@/modules/quests/constants/admin.constants';
  */
 export function CreateRewardForm({ onCreated, onPreviewChange }: {
     onCreated: (r: Reward) => void;
-    onPreviewChange: (p: { type: RewardType; description: string; value: string; expiresAt: string; icon: string }) => void;
+    onPreviewChange: (p: { type: RewardType; description: string; value: string; validForDays: string; icon: string }) => void;
 }) {
     const [type, setType] = useState<RewardType>('voucher');
     const [value, setValue] = useState('');
     const [description, setDescription] = useState('');
-    const [expiresAt, setExpiresAt] = useState('');
+    const [validForDays, setValidForDays] = useState('');
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [createdId, setCreatedId] = useState<string | null>(null);
     const [icon, setIcon] = useState('🏅');
 
-    useEffect(() => { onPreviewChange({ type, description, value, expiresAt, icon }); },
-        [type, description, value, expiresAt, icon]);
+    useEffect(() => { onPreviewChange({ type, description, value, validForDays, icon }); },
+        [type, description, value, validForDays, icon]);
+
+    useEffect(() => {
+        setValue('');
+        setDescription('');
+        setValidForDays('');
+        setIcon('🏅');
+        setStatus(null);
+        setCreatedId(null);
+    }, [type]);
 
     const valueHint: Record<RewardType, string> = {
         voucher: 'Phần trăm giảm (VD: 15 = 15%)',
@@ -45,12 +54,12 @@ export function CreateRewardForm({ onCreated, onPreviewChange }: {
             const reward = await createReward({
                 type, value: Number(value), description,
                 ...(type === 'badge' && icon ? { icon } : {}),
-                ...(expiresAt ? { expiresAt: new Date(expiresAt).toISOString() } : {}),
+                ...(validForDays ? { validForDays: Number(validForDays) } : {}),
             });
             setCreatedId(reward.id);
             setStatus({ type: 'success', message: 'Reward đã được tạo thành công!' });
             onCreated(reward);
-            setValue(''); setDescription(''); setExpiresAt(''); setIcon('🏅');
+            setValue(''); setDescription(''); setValidForDays(''); setIcon('🏅');
         } catch (e: any) {
             setStatus({ type: 'error', message: e?.response?.data?.message ?? 'Có lỗi xảy ra.' });
         } finally { setLoading(false); }
@@ -87,9 +96,10 @@ export function CreateRewardForm({ onCreated, onPreviewChange }: {
 
             {type === 'voucher' && (
                 <div>
-                    <FieldLabel>Ngày hết hạn (tùy chọn)</FieldLabel>
-                    <QInput type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]} />
+                    <FieldLabel>Thời hạn sử dụng (tùy chọn)</FieldLabel>
+                    <QInput type="number" min={1} value={validForDays}
+                        onChange={e => setValidForDays(e.target.value)} placeholder="Số ngày còn hiệu lực của voucher" />
+                    <p className="text-xs text-neutral-400 mt-1">Số ngày còn hiệu lực của voucher</p>
                 </div>
             )}
 

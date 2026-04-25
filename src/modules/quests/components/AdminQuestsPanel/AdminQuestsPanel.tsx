@@ -21,7 +21,7 @@ export function AdminQuestsPanel() {
     const [rewards, setRewards] = useState<Reward[]>([]);
 
     const [rewardPreview, setRewardPreview] = useState({
-        type: 'voucher' as RewardType, description: '', value: '', expiresAt: '',
+        type: 'voucher' as RewardType, description: '', value: '', validForDays: '',
     });
     const [achPreview, setAchPreview] = useState({
         icon: '🍜', name: '', description: '', rewardId: '',

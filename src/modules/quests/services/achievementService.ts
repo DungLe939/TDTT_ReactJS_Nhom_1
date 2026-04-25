@@ -49,7 +49,7 @@ export async function createReward(payload: {
   type: RewardType;
   value: number;
   description: string;
-  expiresAt?: string; // ISO string
+  validForDays?: number;
 }): Promise<Reward> {
   const { data } = await api.post<Reward>('/rewards', payload);
   return data;

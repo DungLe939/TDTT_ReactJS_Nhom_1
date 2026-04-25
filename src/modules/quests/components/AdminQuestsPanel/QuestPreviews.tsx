@@ -63,8 +63,8 @@ export function PreviewQuestCard({ icon, name, description, reward, requiredCoun
     );
 }
 
-export function PreviewRewardCard({ type, description, value, expiresAt }: {
-    type: RewardType; description: string; value: string; expiresAt: string;
+export function PreviewRewardCard({ type, description, value, validForDays }: {
+    type: RewardType; description: string; value: string; validForDays: string;
 }) {
     return (
         <div className={`rounded-2xl border p-4 ${rewardTypeBadge(type)}`}>
@@ -80,9 +80,9 @@ export function PreviewRewardCard({ type, description, value, expiresAt }: {
             <p className="text-sm font-semibold leading-snug">
                 {description || <span className="opacity-40">Mô tả reward...</span>}
             </p>
-            {expiresAt && (
+            {validForDays && (
                 <p className="text-[11px] opacity-60 mt-2 font-medium">
-                    Hết hạn: {new Date(expiresAt).toLocaleDateString('vi-VN')}
+                    Thời hạn: {validForDays} ngày
                 </p>
             )}
         </div>
