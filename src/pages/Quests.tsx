@@ -43,7 +43,7 @@ export const Quests = () => {
   const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<FilterTab>('community');
-  const [visibleRestaurants, setVisibleRestaurants] = useState(2);
+  const [visibleRestaurants, setVisibleRestaurants] = useState(10);
 
   const {
     posts, restaurants, filter, currentUser, isLoading: blogLoading,
@@ -192,7 +192,7 @@ export const Quests = () => {
                   ) : (
                     <PostList
                       posts={posts} demoUsers={[]} restaurants={restaurants} currentUser={currentUser}
-                      onLike={toggleLike} onComment={(pid, content, photos) => addComment(pid, content, photos)}
+                      onLike={toggleLike} onComment={(pid, content, photos, parentId) => addComment(pid, content, photos, parentId)}
                       onLikeComment={toggleLikeComment} hasLiked={hasLiked}
                     />
                   )}

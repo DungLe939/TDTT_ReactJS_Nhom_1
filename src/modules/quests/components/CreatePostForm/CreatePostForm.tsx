@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useRef, useMemo } from 'react';
 import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import { Image as ImageIcon, Users, MapPin, Smile, MoreHorizontal, X } from 'lucide-react';
 import type { Tag, Restaurant, DemoUser } from '../../types/quest.types';
 import type { CreatePostDto } from '../../types/blog.types';
@@ -90,11 +91,56 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
     setShowEmojiPicker(false);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800; // Giới hạn chiều rộng để giảm dung lượng
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Nén ảnh xuống chất lượng 0.6 (JPEG)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          resolve(dataUrl);
+        };
+      };
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      const newPreviews = filesArray.map(file => URL.createObjectURL(file));
-      setPhotoPreviews(prev => [...prev, ...newPreviews]);
+      for (const file of filesArray) {
+        try {
+          const compressed = await compressImage(file);
+          setPhotoPreviews(prev => [...prev, compressed]);
+        } catch (error) {
+          console.error("Lỗi nén ảnh:", error);
+        }
+      }
     }
   };
 
@@ -125,8 +171,8 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
     setShowRestaurantSelect(true);
   };
 
-  // Memoize options
-  const restaurantOptions = useMemo(() =>
+  // Pre-calculate options only once when restaurants change
+  const allRestaurantOptions = useMemo(() =>
     restaurants.map(r => {
       const rAny = r as any;
       let addrRaw = rAny.address || rAny.Address || rAny.diaChi || rAny.location;
@@ -143,11 +189,30 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
 
       return {
         value: r.id,
-        label: `${r.name} • ${finalAddress}`
+        label: `${r.name} • ${finalAddress}`,
+        searchText: `${r.name} ${finalAddress}`.toLowerCase()
       };
     }),
     [restaurants]
   );
+
+  // Search function for AsyncSelect
+  const loadRestaurantOptions = (
+    inputValue: string,
+    callback: (options: any[]) => void
+  ) => {
+    if (!inputValue) {
+      callback(allRestaurantOptions.slice(0, 50));
+      return;
+    }
+
+    const search = inputValue.toLowerCase();
+    const filtered = allRestaurantOptions
+      .filter(opt => opt.searchText.includes(search))
+      .slice(0, 50); // Limit to 50 results for performance
+
+    callback(filtered);
+  };
 
   if (!isLoggedIn) {
     return (
@@ -265,9 +330,10 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
               {/* Restaurant Select */}
               {showRestaurantSelect && (
                 <div className="mb-4">
-                  <Select
-                    options={restaurantOptions.slice(0, 100)}
-                    isSearchable
+                  <AsyncSelect
+                    cacheOptions
+                    defaultOptions={allRestaurantOptions.slice(0, 50)}
+                    loadOptions={loadRestaurantOptions}
                     placeholder="Tìm kiếm nhà hàng..."
                     styles={{
                       control: (base) => ({
@@ -286,7 +352,7 @@ const CreatePostForm = ({ currentUser, restaurants, onSubmit }: CreatePostFormPr
                         cursor: 'pointer'
                       })
                     }}
-                    onChange={(opt) => setSelectedRestaurant(opt ? opt.value : '')}
+                    onChange={(opt: any) => setSelectedRestaurant(opt ? opt.value : '')}
                   />
                 </div>
               )}

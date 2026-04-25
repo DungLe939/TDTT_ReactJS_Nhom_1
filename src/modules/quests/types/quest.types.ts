@@ -65,6 +65,7 @@ export interface BlogComment {
   createdAt: string; // ISO string
   likesCount: number;
   likedByUserIds: string[];
+  parentId?: string;
 }
 
 export interface Post {

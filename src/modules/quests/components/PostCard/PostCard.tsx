@@ -10,7 +10,7 @@ interface PostCardProps {
   currentUser: DemoUser;
   demoUsers: DemoUser[];
   onLike: (postId: string) => void;
-  onComment: (postId: string, content: string, photos: string[]) => void;
+  onComment: (postId: string, content: string, photos: string[], parentId?: string) => void;
   onLikeComment: (postId: string, commentId: string) => void;
 }
 
@@ -40,7 +40,9 @@ const PostCard = ({
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
   const [commentPhotos, setCommentPhotos] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string, username: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const QUICK_EMOJIS = ['😊', '😍', '👍', '🔥', '👏', '🤤', '💯', '❤️'];
 
@@ -77,9 +79,10 @@ const PostCard = ({
 
   const handleSubmitComment = () => {
     if (!commentText.trim() && commentPhotos.length === 0) return;
-    onComment(post.id, commentText.trim(), commentPhotos);
+    onComment(post.id, commentText.trim(), commentPhotos, replyingTo?.id);
     setCommentText('');
     setCommentPhotos([]);
+    setReplyingTo(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -105,7 +108,7 @@ const PostCard = ({
           </div>
           <div>
             <h4 className="font-bold text-neutral-900 text-sm leading-tight">
-              {author?.username ?? 'Unknown User'}
+              {author?.username ?? 'Người dùng ẩn danh'}
             </h4>
             <span className="text-xs text-neutral-400 font-medium">
               {formatRelativeTime(post.createdAt)}
@@ -120,6 +123,20 @@ const PostCard = ({
       {/* Content */}
       <div className="px-4 pb-3">
         <p className="text-neutral-800 text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>
+        
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {tags.map((tag) => (
+              <span 
+                key={tag} 
+                className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-1 rounded-lg uppercase tracking-wider"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Photos */}
@@ -151,24 +168,28 @@ const PostCard = ({
         </div>
       )}
 
-      {/* Meta (Tags & Restaurant) */}
-      <div className="px-4 flex flex-wrap gap-2 mb-3">
-        {tags.map((tag) => (
-          <span key={tag} className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-lg">#{tag.toUpperCase()}</span>
-        ))}
-        {restaurant && (
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-            <MapPin className="w-3 h-3" /> {restaurant.name}
+      {restaurant && (
+        <div className="px-4 mb-4 flex flex-col gap-1.5 py-1">
+          <div className="flex items-center gap-1.5 text-sm font-black text-orange-600">
+            <MapPin className="w-3.5 h-3.5 fill-orange-50" /> {restaurant.name.toUpperCase()}
           </div>
-        )}
-      </div>
+          <div className="text-[11px] text-neutral-500 font-bold ml-5 leading-tight">
+            {restaurant.address || 
+             (typeof restaurant.location === 'string' ? restaurant.location : '') || 
+             (restaurant.location as any)?.address || 
+             (restaurant.location as any)?.name || 
+             'Chưa định vị địa chỉ'}
+          </div>
+        </div>
+      )}
 
       {/* Footer Actions */}
       <div className="px-4 py-2 border-t border-neutral-50 flex items-center justify-between text-neutral-500">
         <div className="flex gap-4">
           <button 
-            className={`flex items-center gap-2 text-sm font-bold transition-all ${liked ? 'text-red-500' : 'hover:text-red-400'}`}
-            onClick={handleLike}
+            className={`flex items-center gap-2 text-sm font-bold transition-all ${liked ? 'text-red-500' : 'hover:text-red-400'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => currentUser.id !== 'guest' && handleLike()}
+            title={currentUser.id === 'guest' ? 'Đăng nhập để thích bài viết' : ''}
           >
             <div className={`transition-transform ${animating ? 'scale-150' : 'scale-100'}`}>
               <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
@@ -184,7 +205,7 @@ const PostCard = ({
           </button>
         </div>
         <div className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest hidden sm:block">
-          Cảm ơn bạn đã đóng góp
+          {currentUser.id === 'guest' ? 'Đăng nhập để tương tác' : 'Cảm ơn bạn đã đóng góp'}
         </div>
       </div>
 
@@ -192,64 +213,137 @@ const PostCard = ({
       {showComments && (
         <div className="bg-neutral-50 border-t border-neutral-100 p-4 transition-all animate-in slide-in-from-top-4 duration-300">
           <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-            {comments.map((comment) => {
+            {comments.filter(c => !c.parentId).map((comment) => {
               const commentAuthor = getUser(comment.authorId);
               const isCommentLiked = comment.likedByUserIds?.includes(currentUser.id) ?? false;
               const likesCount = comment.likesCount ?? 0;
               const commentPhotos = comment.photoUrls || [];
+              const replies = comments.filter(c => c.parentId === comment.id);
 
               return (
-                <div key={comment.id} className="flex gap-3 group">
-                  <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-xs shrink-0 mt-1 shadow-sm">
-                    {commentAuthor?.avatar ?? '👤'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-1">
-                      <div className="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm border border-neutral-100 w-fit max-w-[90%]">
-                        <span className="block font-bold text-neutral-900 text-xs mb-1">
-                          {commentAuthor?.username ?? 'Unknown'}
+                <div key={comment.id} className="flex flex-col">
+                  {/* Root Comment */}
+                  <div className="flex gap-3 group relative">
+                    {/* Connecting line for replies */}
+                    {replies.length > 0 && (
+                      <div className="absolute left-[15px] top-[40px] bottom-0 w-[2px] bg-neutral-100" />
+                    )}
+                    
+                    <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-xs shrink-0 mt-1 shadow-sm relative z-10">
+                      {commentAuthor?.avatar ?? '👤'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-1">
+                        <div className="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm border border-neutral-100 w-fit max-w-[90%]">
+                          <span className="block font-bold text-neutral-900 text-xs mb-1">
+                            {commentAuthor?.username ?? 'Người dùng ẩn danh'}
+                          </span>
+                          <p className="text-sm text-neutral-700 leading-relaxed">{comment.content}</p>
+                          
+                          {commentPhotos.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {commentPhotos.map((url, i) => (
+                                <img 
+                                  key={i} 
+                                  src={url} 
+                                  alt="Comment" 
+                                  className="w-20 h-20 object-cover rounded-xl cursor-pointer border border-neutral-100"
+                                  onClick={() => setSelectedImg(url)} 
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-neutral-500 transition-opacity p-2 self-center">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-4 mt-1.5 ml-2 pb-2">
+                        <span className="text-[10px] font-medium text-neutral-400">
+                          {formatRelativeTime(comment.createdAt)}
                         </span>
-                        <p className="text-sm text-neutral-700 leading-relaxed">{comment.content}</p>
-                        
-                        {commentPhotos.length > 0 && (
-                          <div className="flex gap-2 mt-2">
-                            {commentPhotos.map((url, i) => (
-                              <img 
-                                key={i} 
-                                src={url} 
-                                alt="Comment" 
-                                className="w-20 h-20 object-cover rounded-xl cursor-pointer border border-neutral-100"
-                                onClick={() => setSelectedImg(url)} 
-                              />
-                            ))}
+                        <button 
+                          className={`text-[11px] font-bold transition-colors ${isCommentLiked ? 'text-red-500' : 'text-neutral-500 hover:text-neutral-800'}`}
+                          onClick={() => onLikeComment(post.id, comment.id)}
+                        >
+                          Thích
+                        </button>
+                        <button 
+                          className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors"
+                          onClick={() => {
+                            setReplyingTo({ id: comment.id, username: commentAuthor?.username || 'Người dùng ẩn danh' });
+                            inputRef.current?.focus();
+                          }}
+                        >
+                          Trả lời
+                        </button>
+                        {likesCount > 0 && (
+                          <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-full shadow-sm text-[10px] font-bold text-red-500 border border-neutral-50">
+                            <Heart className="w-2.5 h-2.5 fill-current" /> {likesCount}
                           </div>
                         )}
                       </div>
-                      <button className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-neutral-500 transition-opacity p-2 self-center">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-4 mt-1.5 ml-2">
-                      <span className="text-[10px] font-medium text-neutral-400">
-                        {formatRelativeTime(comment.createdAt)}
-                      </span>
-                      <button 
-                        className={`text-[11px] font-bold transition-colors ${isCommentLiked ? 'text-red-500' : 'text-neutral-500 hover:text-neutral-800'}`}
-                        onClick={() => onLikeComment(post.id, comment.id)}
-                      >
-                        Thích
-                      </button>
-                      <button className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors">
-                        Trả lời
-                      </button>
-                      {likesCount > 0 && (
-                        <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-full shadow-sm text-[10px] font-bold text-red-500 border border-neutral-50">
-                          <Heart className="w-2.5 h-2.5 fill-current" /> {likesCount}
-                        </div>
-                      )}
                     </div>
                   </div>
+
+                  {/* Nested Replies */}
+                  {replies.length > 0 && (
+                    <div className="flex flex-col mt-1 ml-[15px]">
+                      {replies.map((reply, idx) => {
+                        const replyAuthor = getUser(reply.authorId);
+                        const isReplyLiked = reply.likedByUserIds?.includes(currentUser.id) ?? false;
+                        const isLast = idx === replies.length - 1;
+                        
+                        return (
+                          <div key={reply.id} className="flex gap-2 group relative">
+                            {/* Curved branch line */}
+                            <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-neutral-100" />
+                            <div className={`absolute -left-[14px] top-0 h-[22px] w-[14px] border-l-2 border-b-2 border-neutral-100 rounded-bl-xl`} />
+                            
+                            <div className="pl-3 flex gap-2 w-full pb-3">
+                              <div className="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-[10px] shrink-0 mt-1 shadow-sm relative z-10 border-2 border-white">
+                                {replyAuthor?.avatar ?? '👤'}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="bg-white rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-neutral-100 w-fit max-w-[95%]">
+                                  <span className="block font-bold text-neutral-900 text-[11px] mb-0.5">
+                                    {replyAuthor?.username ?? 'Người dùng ẩn danh'}
+                                  </span>
+                                  <p className="text-xs text-neutral-700 leading-relaxed">
+                                    <span className="font-bold text-neutral-900 mr-1.5 cursor-pointer hover:underline">
+                                      {commentAuthor?.username}
+                                    </span>
+                                    {reply.content}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-3 mt-1 ml-2">
+                                  <span className="text-[9px] font-medium text-neutral-400">
+                                    {formatRelativeTime(reply.createdAt)}
+                                  </span>
+                                  <button 
+                                    className={`text-[10px] font-bold transition-colors ${isReplyLiked ? 'text-orange-500' : 'text-neutral-500 hover:text-neutral-800'}`}
+                                    onClick={() => onLikeComment(post.id, reply.id)}
+                                  >
+                                    Thích
+                                  </button>
+                                  <button 
+                                    className="text-[10px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors"
+                                    onClick={() => {
+                                      setReplyingTo({ id: comment.id, username: replyAuthor?.username || 'Người dùng ẩn danh' });
+                                      inputRef.current?.focus();
+                                    }}
+                                  >
+                                    Trả lời
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -261,7 +355,20 @@ const PostCard = ({
               {currentUser.avatar}
             </div>
             <div className="flex-1 flex flex-col pt-0.5">
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden relative group-focus-within:border-orange-300 transition-colors">
+              {replyingTo && (
+                <div className="flex items-center justify-between px-3 py-1 bg-neutral-100 rounded-t-xl text-[10px] border-x border-t border-neutral-200">
+                  <span className="text-neutral-500 font-bold">
+                    Đang trả lời <span className="text-orange-500">@{replyingTo.username}</span>
+                  </span>
+                  <button 
+                    onClick={() => setReplyingTo(null)}
+                    className="text-neutral-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              <div className={`bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden relative group-focus-within:border-orange-300 transition-colors ${replyingTo ? 'rounded-t-none' : ''}`}>
                 {/* Preview Photos */}
                 {commentPhotos.length > 0 && (
                   <div className="flex gap-2 p-3 bg-neutral-50/50 border-b border-neutral-100 items-center overflow-x-auto">
@@ -287,19 +394,22 @@ const PostCard = ({
 
                 <div className="flex items-center pr-2 group">
                   <input
+                    ref={inputRef}
                     type="text"
-                    className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none placeholder-neutral-400"
-                    placeholder="Viết bình luận..."
+                    className={`flex-1 bg-transparent px-4 py-2.5 text-sm outline-none placeholder-neutral-400 ${currentUser.id === 'guest' ? 'cursor-not-allowed' : ''}`}
+                    placeholder={currentUser.id === 'guest' ? 'Đăng nhập để bình luận...' : (replyingTo ? `Trả lời @${replyingTo.username}...` : "Viết bình luận...")}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    disabled={currentUser.id === 'guest'}
                   />
                   
                   <div className="flex items-center gap-0.5">
                     <div className="relative">
                       <button 
-                        className={`p-2 transition-colors ${showEmojiPicker ? 'text-orange-500' : 'text-neutral-400 hover:text-neutral-600'}`}
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`p-2 transition-colors ${showEmojiPicker ? 'text-orange-500' : 'text-neutral-400 hover:text-neutral-600'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => currentUser.id !== 'guest' && setShowEmojiPicker(!showEmojiPicker)}
+                        disabled={currentUser.id === 'guest'}
                       >
                         <Smile className="w-5 h-5" />
                       </button>
@@ -321,15 +431,16 @@ const PostCard = ({
                       )}
                     </div>
                     <button 
-                      className="p-2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                      onClick={handlePhotoUpload}
+                      className={`p-2 text-neutral-400 hover:text-neutral-600 transition-colors ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => currentUser.id !== 'guest' && handlePhotoUpload()}
+                      disabled={currentUser.id === 'guest'}
                     >
                       <Camera className="w-5 h-5" />
                     </button>
                     <button
-                      className={`p-2 transition-all ${(!commentText.trim() && commentPhotos.length === 0) ? 'text-neutral-200 cursor-not-allowed' : 'text-orange-500 hover:scale-110 active:scale-95'}`}
+                      className={`p-2 transition-all ${(!commentText.trim() && commentPhotos.length === 0) || currentUser.id === 'guest' ? 'text-neutral-200 cursor-not-allowed' : 'text-orange-500 hover:scale-110 active:scale-95'}`}
                       onClick={handleSubmitComment}
-                      disabled={!commentText.trim() && commentPhotos.length === 0}
+                      disabled={(!commentText.trim() && commentPhotos.length === 0) || currentUser.id === 'guest'}
                     >
                       <Send className="w-5 h-5 fill-current" />
                     </button>

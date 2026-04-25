@@ -14,13 +14,14 @@ import type {
 import type { CreatePostDto } from '../types/blog.types';
 
 import { SEED_POSTS, SEED_RESTAURANTS } from './mockData';
-import { blogActivityService } from './blogActivityService';
-import { firebaseBlogService } from './firebaseBlogService';
 import { isFirebaseConfigured } from '../../../core/firebase/firebaseConfig';
+import * as dbService from './dbService';
+import { firebaseBlogService } from './firebaseBlogService';
+import { blogActivityService } from './blogActivityService';
 
 const API_URL = 'http://localhost:3000/blog';
 
-const localRestaurants: Restaurant[] = [...SEED_RESTAURANTS];
+// const localRestaurants: Restaurant[] = [...SEED_RESTAURANTS];
 
 const createPost = async (dto: CreatePostDto): Promise<Post> => {
   // Bước 1: Thử NestJS API
@@ -89,7 +90,7 @@ const createPost = async (dto: CreatePostDto): Promise<Post> => {
 
 const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
   // Helper: normalize posts from API (ensure comments array exists)
-  const normalizePosts = (posts: any[]): Post[] =>
+  const normalizePosts = (posts: Post[]): Post[] =>
     posts.map(p => ({
       ...p,
       tags: Array.isArray(p.tags) ? p.tags : [],
@@ -130,34 +131,14 @@ const getPosts = async (filter?: PostFilter): Promise<Post[]> => {
   if (isFirebaseConfigured) {
     try {
       const fbPosts = await firebaseBlogService.getPosts(filter);
-      if (fbPosts.length > 0) {
-        console.log(`[Firebase] Fetched ${fbPosts.length} posts`);
-        return normalizePosts(fbPosts);
-      }
+      console.log(`[Firebase] Fetched ${fbPosts.length} posts`);
+      return normalizePosts(fbPosts);
     } catch (e) {
       console.warn("[Firebase] getPosts failed", e);
     }
   }
 
-  // Bước 3: Local fallback with filtering logic
-  console.log(`[Mock] Dùng ${SEED_POSTS.length} posts từ mock data`);
-  let filtered = [...SEED_POSTS];
-
-  if (filter) {
-    if (filter.authorId) {
-      filtered = filtered.filter(p => p.authorId === filter.authorId);
-    }
-    if (filter.restaurantId) {
-      filtered = filtered.filter(p => p.restaurantId === filter.restaurantId);
-    }
-    if (filter.tags && filter.tags.length > 0) {
-      filtered = filtered.filter(p =>
-        filter.tags!.every(tag => p.tags.includes(tag))
-      );
-    }
-  }
-
-  return filtered;
+  return [];
 };
 
 
@@ -215,14 +196,15 @@ const addComment = async (
   postId: string,
   content: string,
   post: Post,
-  photoUrls?: string[]
+  photoUrls?: string[],
+  parentId?: string
 ): Promise<Post> => {
   // Bước 1: Thử NestJS API
   try {
     const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, content, photoUrls }),
+      body: JSON.stringify({ userId, content, photoUrls, parentId }),
     });
     if (response.ok) {
       const result = await response.json();
@@ -244,6 +226,7 @@ const addComment = async (
         likesCount: 0,
         likedByUserIds: [],
         createdAt: new Date().toISOString(),
+        parentId: parentId || undefined
       };
       await firebaseBlogService.addComment(postId, newComment);
       return {
@@ -255,32 +238,7 @@ const addComment = async (
     }
   }
 
-  // Bước 3: Local fallback
-  console.log("[Mock] Adding comment locally");
-  const newComment: BlogComment = {
-    id: `cmt-${Date.now()}`,
-    authorId: userId,
-    content,
-    photoUrls: photoUrls || [],
-    likesCount: 0,
-    likedByUserIds: [],
-    createdAt: new Date().toISOString(),
-  };
-
-  const postIndex = SEED_POSTS.findIndex(p => p.id === postId);
-  if (postIndex !== -1) {
-    const updatedPost = {
-      ...SEED_POSTS[postIndex],
-      comments: [...SEED_POSTS[postIndex].comments, newComment]
-    };
-    SEED_POSTS[postIndex] = updatedPost;
-    return updatedPost;
-  }
-
-  return {
-    ...post,
-    comments: [...post.comments, newComment],
-  };
+  throw new Error("Không thể thêm bình luận. Vui lòng kiểm tra kết nối.");
 };
 
 
@@ -328,41 +286,35 @@ const toggleLikeComment = async (
     // Firebase fallback logic could be added here if needed
   }
 
-  // Bước 3: Cập nhật Mock Data (Fallback cuối cùng)
-  const postIndex = SEED_POSTS.findIndex(p => p.id === postId);
-  if (postIndex !== -1) {
-    SEED_POSTS[postIndex] = optimisticPost;
-  }
-
+  // Bước 3: Cập nhật (Fallback cuối cùng)
   return optimisticPost;
 };
 
 // ---------------------------------------------------------------------------
 // Restaurant Cache — localStorage + incremental sync
 // ---------------------------------------------------------------------------
-const CACHE_KEY = 'cached_restaurants';
-
 /**
- * Đọc restaurants từ localStorage (instant, không cần mạng)
+ * Đọc restaurants từ IndexedDB (Tốc độ cao, không nghẽn UI)
  */
-const getCachedRestaurants = (): Restaurant[] => {
+const getCachedRestaurants = async (): Promise<Restaurant[]> => {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as Restaurant[];
-  } catch {
+    const all = await dbService.getAllItems<Restaurant>();
+    // Filter out mock IDs if they somehow persisted in cache (rest- or v7-)
+    return all.filter(r => !r.id.startsWith('rest-') && !r.id.startsWith('v7-'));
+  } catch (e) {
+    console.error('Failed to get restaurants from IndexedDB', e);
     return [];
   }
 };
 
 /**
- * Lưu restaurants vào localStorage
+ * Lưu restaurants vào IndexedDB
  */
-const setCachedRestaurants = (restaurants: Restaurant[]): void => {
+const setCachedRestaurants = async (restaurants: Restaurant[]): Promise<void> => {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(restaurants));
+    await dbService.saveItems(restaurants);
   } catch (e) {
-    console.warn('Failed to cache restaurants to localStorage', e);
+    console.warn('Failed to cache restaurants to IndexedDB', e);
   }
 };
 
@@ -376,64 +328,48 @@ const LAST_SYNCED_KEY = 'restaurants_last_synced';
  * 4. Fallback Firebase/Mock nếu API lỗi
  */
 const getRestaurants = async (): Promise<Restaurant[]> => {
-  // Bước 1: Đọc từ cache cục bộ trước (để UI có dữ liệu ngay lập tức)
-  let cached = getCachedRestaurants();
+  // Bước 1: Đọc từ cache cục bộ trước (Sử dụng IndexedDB)
+  const cached = await getCachedRestaurants();
   const lastSyncedAt = localStorage.getItem(LAST_SYNCED_KEY) || '';
 
-  // Bước 2: Thử NestJS API lấy các bản ghi thay đổi (Incremental Sync)
-  try {
-    let url = `${API_URL}/restaurants`;
-    if (lastSyncedAt) {
-      url += `?since=${encodeURIComponent(lastSyncedAt)}`;
-    }
-
-    const response = await fetch(url);
-    if (response.ok) {
-      const apiUpdates = await response.json();
-
-      if (Array.isArray(apiUpdates) && apiUpdates.length > 0) {
-
-        // Hợp nhất dữ liệu: Dùng Map để ghi đè các ID cũ bằng dữ liệu mới hoặc thêm ID mới
-        const restaurantMap = new Map(cached.map(r => [r.id, r]));
-        apiUpdates.forEach(r => restaurantMap.set(r.id, r));
-
-        const merged = Array.from(restaurantMap.values());
-
-        // Lưu lại vào cache
-        setCachedRestaurants(merged);
-        localStorage.setItem(LAST_SYNCED_KEY, new Date().toISOString());
-
-        return merged;
-      } else {
-        console.log(`[API] Không có cập nhật mới nào từ ${lastSyncedAt}`);
-        if (cached.length > 0) return cached;
+  // Trigger background sync WITHOUT awaiting it for the caller
+  // This allows the UI to render the 8,500 cached items instantly
+  (async () => {
+    try {
+      let url = `${API_URL}/restaurants`;
+      if (lastSyncedAt) {
+        url += `?since=${encodeURIComponent(lastSyncedAt)}`;
       }
-    }
-  } catch (e) {
-    console.warn("[API] NestJS incremental sync failed, trying fallback...", e);
-  }
 
-  // Bước 3: Thử Firebase (nếu được cấu hình và API thất bại)
-  try {
-    if (isFirebaseConfigured) {
-      const fbRestaurants = await firebaseBlogService.getRestaurants();
-      if (fbRestaurants && fbRestaurants.length > 0) {
-        setCachedRestaurants(fbRestaurants);
-        return fbRestaurants;
+      const response = await fetch(url);
+      if (response.ok) {
+        const apiUpdates = await response.json();
+
+        if (Array.isArray(apiUpdates) && apiUpdates.length > 0) {
+          console.log(`[API] Received ${apiUpdates.length} updates for restaurants`);
+          await setCachedRestaurants(apiUpdates);
+          localStorage.setItem(LAST_SYNCED_KEY, new Date().toISOString());
+        } else if (cached.length < 10 && lastSyncedAt) {
+           // Fallback for missing updatedAt field
+           const fullResponse = await fetch(`${API_URL}/restaurants`);
+           if (fullResponse.ok) {
+             const allRests = await fullResponse.json();
+             if (Array.isArray(allRests)) await setCachedRestaurants(allRests);
+           }
+        }
       }
+    } catch (e) {
+      console.warn("[Background Sync] Failed", e);
     }
-  } catch (e) {
-    console.warn("[Firebase] getRestaurants failed", e);
-  }
+  })();
 
-  // Bước 4: Trả về kết quả cuối cùng (Cache hoặc Mock)
+  // Return the cached data immediately for fast load
   if (cached.length > 0) {
-    console.log(`[Cache] Dùng ${cached.length} nhà hàng từ localStorage`);
     return cached;
   }
 
-  console.log(`[Mock] Dùng ${localRestaurants.length} nhà hàng từ mock data`);
-  return [...localRestaurants];
+  // Final fallback (Mock/Static list)
+  return [];
 };
 
 

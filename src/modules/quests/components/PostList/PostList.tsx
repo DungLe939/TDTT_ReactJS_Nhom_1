@@ -11,7 +11,7 @@ interface PostListProps {
   restaurants: Restaurant[];
   currentUser: DemoUser;
   onLike: (postId: string) => void;
-  onComment: (postId: string, content: string, photoUrls?: string[]) => void;
+  onComment: (postId: string, content: string, photoUrls?: string[], parentId?: string) => void;
   onLikeComment: (postId: string, commentId: string) => void;
   hasLiked: (post: Post) => boolean;
 }

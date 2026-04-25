@@ -47,53 +47,7 @@ export const DEMO_USERS: DemoUser[] = [
 // Seed restaurants
 // ---------------------------------------------------------------------------
 
-export const SEED_RESTAURANTS: Restaurant[] = [
-  {
-    id: 'rest-1',
-    name: 'Phở Thìn',
-    cuisineType: 'vietnamese',
-    location: '13 Lò Đúc, Hai Bà Trưng, Hà Nội',
-    priceRange: 'budget',
-    rating: 4.7,
-    openingHours: '06:00 – 22:00',
-  },
-  {
-    id: 'rest-2',
-    name: 'Sushi Tei',
-    cuisineType: 'japanese',
-    location: '72 Trần Hưng Đạo, Q1, TP.HCM',
-    priceRange: 'mid-range',
-    rating: 4.4,
-    openingHours: '11:00 – 22:00',
-  },
-  {
-    id: 'rest-3',
-    name: 'Bún Chả Hương Liên',
-    cuisineType: 'vietnamese',
-    location: '24 Lê Văn Hưu, Hai Bà Trưng, Hà Nội',
-    priceRange: 'budget',
-    rating: 4.8,
-    openingHours: '08:00 – 20:00',
-  },
-  {
-    id: 'rest-4',
-    name: 'Sakura Japanese Restaurant',
-    cuisineType: 'japanese',
-    location: '55 Pasteur, Q3, TP.HCM',
-    priceRange: 'fine-dining',
-    rating: 4.6,
-    openingHours: '11:30 – 22:30',
-  },
-  {
-    id: 'rest-5',
-    name: 'Cơm Tấm Sài Gòn',
-    cuisineType: 'vietnamese',
-    location: '84 Đinh Tiên Hoàng, Q1, TP.HCM',
-    priceRange: 'budget',
-    rating: 4.5,
-    openingHours: '07:00 – 21:00',
-  },
-];
+export const SEED_RESTAURANTS: Restaurant[] = [];
 
 // ---------------------------------------------------------------------------
 // Seed rewards
@@ -174,60 +128,4 @@ export const SEED_ACHIEVEMENTS: Achievement[] = [
 
 const now = Date.now();
 
-export const SEED_POSTS: Post[] = [
-  {
-    id: 'post-1',
-    authorId: 'user-2',
-    content: 'Vừa thử sushi ở Sushi Tei, ngon tuyệt vời! Cá hồi tươi, cơm dẻo vừa phải 🍣. Giá hơi cao nhưng xứng đáng!',
-    tags: ['japanese', 'fine-dining'],
-    restaurantId: 'rest-2',
-    createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
-    likesCount: 3,
-    likedByUserIds: ['user-1', 'user-3', 'user-2'],
-    comments: [],
-  },
-  {
-    id: 'post-2',
-    authorId: 'user-1',
-    content: 'Phở Thìn buổi sáng là không thể thiếu ☀️ Nước dùng đậm đà, thịt bò mềm. Chỉ 50k/bát mà no đến tận trưa!',
-    tags: ['vietnamese', 'budget', 'breakfast'],
-    restaurantId: 'rest-1',
-    createdAt: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
-    likesCount: 5,
-    likedByUserIds: ['user-2', 'user-3'],
-    comments: [],
-  },
-  {
-    id: 'post-3',
-    authorId: 'user-3',
-    content: 'Bún chả Hương Liên nổi tiếng từ thời ông Obama ghé thăm 😄 Chả nướng thơm, bún tươi, nước mắm chua ngọt rất chuẩn vị.',
-    tags: ['vietnamese', 'lunch', 'budget'],
-    restaurantId: 'rest-3',
-    createdAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
-    likesCount: 8,
-    likedByUserIds: ['user-1', 'user-2'],
-    comments: [],
-  },
-  {
-    id: 'post-4',
-    authorId: 'user-2',
-    content: 'Sakura Restaurant có set lunch khá ổn áp, khoảng 300k/người. Không gian yên tĩnh, phù hợp cho buổi ăn trưa với đối tác.',
-    tags: ['japanese', 'lunch', 'fine-dining'],
-    restaurantId: 'rest-4',
-    createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    likesCount: 2,
-    likedByUserIds: ['user-3'],
-    comments: [],
-  },
-  {
-    id: 'post-5',
-    authorId: 'user-1',
-    content: 'Cơm Tấm Sài Gòn — linh hồn của bữa sáng miền Nam 🍳 Sườn nướng vàng ươm, trứng ốp la, bì và mỡ hành. Quá đã!',
-    tags: ['vietnamese', 'street-food', 'breakfast', 'budget'],
-    restaurantId: 'rest-5',
-    createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    likesCount: 6,
-    likedByUserIds: ['user-2', 'user-3'],
-    comments: [],
-  },
-];
+export const SEED_POSTS: Post[] = [];

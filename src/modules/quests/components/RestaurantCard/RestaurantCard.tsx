@@ -49,9 +49,9 @@ const RestaurantCard = ({ restaurant, onVisit }: RestaurantCardProps) => {
     <div className="bg-white rounded-3xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group flex flex-col h-full">
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 min-w-0">
-        <div className="flex justify-between items-start gap-2 mb-1">
-          <h4 className="font-black text-neutral-800 text-sm leading-tight truncate group-hover:text-orange-500 transition-colors">
-            {restaurant.name}
+        <div className="flex justify-between items-start gap-2 mb-3">
+          <h4 className="font-black text-orange-600 text-base leading-tight truncate group-hover:scale-105 transition-transform duration-300">
+            {restaurant.name.toUpperCase()}
           </h4>
           <div className="flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-0.5 rounded-lg text-[10px] font-black shrink-0 border border-orange-100">
             <Star className="w-3 h-3 fill-current" />
@@ -59,16 +59,8 @@ const RestaurantCard = ({ restaurant, onVisit }: RestaurantCardProps) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {tags.map((tag, idx) => (
-            <span key={idx} className="text-[9px] font-black text-neutral-400 border border-neutral-100 px-1.5 py-0.5 rounded-md uppercase tracking-widest group-hover:border-orange-200 group-hover:text-orange-500 transition-colors">
-              {tag}
-            </span>
-          ))}
-        </div>
-
         <div className="space-y-1.5 mb-4 text-[12px] flex-1">
-          <div className="flex items-start gap-2 text-neutral-500 font-medium line-clamp-1">
+          <div className="flex items-start gap-2 text-neutral-500 font-bold line-clamp-1">
             <MapPin className="w-3.5 h-3.5 text-neutral-300 shrink-0 mt-0.5" />
             <span>{renderLocation(restaurant)}</span>
           </div>

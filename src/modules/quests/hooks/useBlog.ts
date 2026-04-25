@@ -39,7 +39,6 @@ export const useBlog = () => {
   useEffect(() => {
     const initData = async () => {
       setIsLoading(true);
-
       // Fetch restaurants independently
       blogController.getRestaurants()
         .then(setRestaurants)
@@ -101,12 +100,12 @@ export const useBlog = () => {
     }
   }, [currentUser.id, posts, refreshPosts]);
 
-  const addComment = useCallback(async (postId: string, content: string, photoUrls?: string[]) => {
+  const addComment = useCallback(async (postId: string, content: string, photoUrls?: string[], parentId?: string) => {
     const targetPost = posts.find((p) => p.id === postId);
     if (!targetPost) return;
 
     try {
-      await blogController.addComment(currentUser.id, postId, content, targetPost, photoUrls);
+      await blogController.addComment(currentUser.id, postId, content, targetPost, photoUrls, parentId);
       await refreshPosts(); // Fetch new comment
     } catch (e) {
       console.error(e);

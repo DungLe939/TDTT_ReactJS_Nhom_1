@@ -33,8 +33,8 @@ export const firebaseBlogService = {
       }
 
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => {
-        const data = doc.data();
+      return querySnapshot.docs.map(docSnapshot => {
+        const data = docSnapshot.data();
 
         let createdAt = data.createdAt;
         if (createdAt && typeof createdAt.toDate === 'function') {
@@ -43,14 +43,14 @@ export const firebaseBlogService = {
 
         return {
           ...data,
-          id: doc.id,
+          id: docSnapshot.id,
           createdAt: typeof createdAt === 'string' ? createdAt : new Date().toISOString(),
           tags: Array.isArray(data.tags) ? data.tags : [],
           likedByUserIds: Array.isArray(data.likedByUserIds) ? data.likedByUserIds : [],
-          comments: Array.isArray(data.comments) ? data.comments.map((c: any) => ({
+          comments: Array.isArray(data.comments) ? data.comments.map((c: BlogComment) => ({
             ...c,
-            createdAt: c.createdAt && typeof c.createdAt.toDate === 'function'
-              ? c.createdAt.toDate().toISOString()
+            createdAt: c.createdAt && typeof (c.createdAt as any).toDate === 'function'
+              ? (c.createdAt as any).toDate().toISOString()
               : (typeof c.createdAt === 'string' ? c.createdAt : new Date().toISOString())
           })) : [],
           likesCount: typeof data.likesCount === 'number' ? data.likesCount : 0

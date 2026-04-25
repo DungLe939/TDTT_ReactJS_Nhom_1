@@ -28,7 +28,17 @@ const UserAchievementCard = ({ user }: UserAchievementCardProps) => {
   // fetch user's stats
   // If not logged in, we use a "Guest" profile for display
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) {
+      setStats({
+        xp: 0,
+        level: 0,
+        levelTitle: 'Khách tham quan',
+        xpToNextLevel: 100,
+        progressPercent: 0,
+        badges: []
+      });
+      return;
+    }
     getUserStats(displayUser.id).then(setStats).catch(() => setStats(null));
   }, [displayUser.id, isLoggedIn]);
 
