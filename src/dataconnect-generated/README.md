@@ -17,10 +17,15 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetShopDetail*](#getshopdetail)
   - [*ListShops*](#listshops)
   - [*ListAllShopsWithMenu*](#listallshopswithmenu)
+  - [*GetPlanCache*](#getplancache)
 - [**Mutations**](#mutations)
   - [*CreateCategory*](#createcategory)
   - [*CreateShop*](#createshop)
   - [*CreateFoodItem*](#createfooditem)
+  - [*UpsertPlanCache*](#upsertplancache)
+  - [*DeletePlanCache*](#deleteplancache)
+  - [*UpdateDayScores*](#updatedayscores)
+  - [*UpdateUsedCategories*](#updateusedcategories)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `example`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -502,8 +507,8 @@ export interface GetFoodDetailData {
       priceMin?: number | null;
       priceMax?: number | null;
       priceDisplay?: string | null;
-      latitude: number;
-      longitude: number;
+      latitude?: number | null;
+      longitude?: number | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -633,8 +638,8 @@ export interface GetShopDetailData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
-    latitude: number;
-    longitude: number;
+    latitude?: number | null;
+    longitude?: number | null;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -772,8 +777,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
-    latitude: number;
-    longitude: number;
+    latitude?: number | null;
+    longitude?: number | null;
   } & Shop_Key)[];
 }
 ```
@@ -897,8 +902,8 @@ export interface ListAllShopsWithMenuData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
-    latitude: number;
-    longitude: number;
+    latitude?: number | null;
+    longitude?: number | null;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -967,6 +972,124 @@ console.log(data.shops);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.shops);
+});
+```
+
+## GetPlanCache
+You can execute the `GetPlanCache` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getPlanCache(vars: GetPlanCacheVariables, options?: ExecuteQueryOptions): QueryPromise<GetPlanCacheData, GetPlanCacheVariables>;
+
+interface GetPlanCacheRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPlanCacheVariables): QueryRef<GetPlanCacheData, GetPlanCacheVariables>;
+}
+export const getPlanCacheRef: GetPlanCacheRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getPlanCache(dc: DataConnect, vars: GetPlanCacheVariables, options?: ExecuteQueryOptions): QueryPromise<GetPlanCacheData, GetPlanCacheVariables>;
+
+interface GetPlanCacheRef {
+  ...
+  (dc: DataConnect, vars: GetPlanCacheVariables): QueryRef<GetPlanCacheData, GetPlanCacheVariables>;
+}
+export const getPlanCacheRef: GetPlanCacheRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getPlanCacheRef:
+```typescript
+const name = getPlanCacheRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetPlanCache` query requires an argument of type `GetPlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetPlanCacheVariables {
+  guestId: string;
+}
+```
+### Return Type
+Recall that executing the `GetPlanCache` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetPlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetPlanCacheData {
+  planCache?: {
+    id: string;
+    rawRestaurants?: unknown | null;
+    orderedPlan?: unknown | null;
+    mealBudgetConfig?: unknown | null;
+    preferences?: unknown | null;
+    usedCategories: string[];
+    dayScores?: unknown | null;
+    updatedAt: TimestampString;
+  } & PlanCache_Key;
+}
+```
+### Using `GetPlanCache`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getPlanCache, GetPlanCacheVariables } from '@dataconnect/generated';
+
+// The `GetPlanCache` query requires an argument of type `GetPlanCacheVariables`:
+const getPlanCacheVars: GetPlanCacheVariables = {
+  guestId: ..., 
+};
+
+// Call the `getPlanCache()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getPlanCache(getPlanCacheVars);
+// Variables can be defined inline as well.
+const { data } = await getPlanCache({ guestId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getPlanCache(dataConnect, getPlanCacheVars);
+
+console.log(data.planCache);
+
+// Or, you can use the `Promise` API.
+getPlanCache(getPlanCacheVars).then((response) => {
+  const data = response.data;
+  console.log(data.planCache);
+});
+```
+
+### Using `GetPlanCache`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getPlanCacheRef, GetPlanCacheVariables } from '@dataconnect/generated';
+
+// The `GetPlanCache` query requires an argument of type `GetPlanCacheVariables`:
+const getPlanCacheVars: GetPlanCacheVariables = {
+  guestId: ..., 
+};
+
+// Call the `getPlanCacheRef()` function to get a reference to the query.
+const ref = getPlanCacheRef(getPlanCacheVars);
+// Variables can be defined inline as well.
+const ref = getPlanCacheRef({ guestId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getPlanCacheRef(dataConnect, getPlanCacheVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.planCache);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.planCache);
 });
 ```
 
@@ -1381,6 +1504,466 @@ console.log(data.foodItem_insert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.foodItem_insert);
+});
+```
+
+## UpsertPlanCache
+You can execute the `UpsertPlanCache` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertPlanCache(vars: UpsertPlanCacheVariables): MutationPromise<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+
+interface UpsertPlanCacheRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertPlanCacheVariables): MutationRef<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+}
+export const upsertPlanCacheRef: UpsertPlanCacheRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertPlanCache(dc: DataConnect, vars: UpsertPlanCacheVariables): MutationPromise<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+
+interface UpsertPlanCacheRef {
+  ...
+  (dc: DataConnect, vars: UpsertPlanCacheVariables): MutationRef<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+}
+export const upsertPlanCacheRef: UpsertPlanCacheRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertPlanCacheRef:
+```typescript
+const name = upsertPlanCacheRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertPlanCache` mutation requires an argument of type `UpsertPlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertPlanCacheVariables {
+  guestId: string;
+  rawRestaurants?: unknown | null;
+  orderedPlan?: unknown | null;
+  mealBudgetConfig?: unknown | null;
+  preferences?: unknown | null;
+  usedCategories: string[];
+  dayScores?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `UpsertPlanCache` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertPlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertPlanCacheData {
+  planCache_upsert: PlanCache_Key;
+}
+```
+### Using `UpsertPlanCache`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertPlanCache, UpsertPlanCacheVariables } from '@dataconnect/generated';
+
+// The `UpsertPlanCache` mutation requires an argument of type `UpsertPlanCacheVariables`:
+const upsertPlanCacheVars: UpsertPlanCacheVariables = {
+  guestId: ..., 
+  rawRestaurants: ..., // optional
+  orderedPlan: ..., // optional
+  mealBudgetConfig: ..., // optional
+  preferences: ..., // optional
+  usedCategories: ..., 
+  dayScores: ..., // optional
+};
+
+// Call the `upsertPlanCache()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertPlanCache(upsertPlanCacheVars);
+// Variables can be defined inline as well.
+const { data } = await upsertPlanCache({ guestId: ..., rawRestaurants: ..., orderedPlan: ..., mealBudgetConfig: ..., preferences: ..., usedCategories: ..., dayScores: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertPlanCache(dataConnect, upsertPlanCacheVars);
+
+console.log(data.planCache_upsert);
+
+// Or, you can use the `Promise` API.
+upsertPlanCache(upsertPlanCacheVars).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_upsert);
+});
+```
+
+### Using `UpsertPlanCache`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertPlanCacheRef, UpsertPlanCacheVariables } from '@dataconnect/generated';
+
+// The `UpsertPlanCache` mutation requires an argument of type `UpsertPlanCacheVariables`:
+const upsertPlanCacheVars: UpsertPlanCacheVariables = {
+  guestId: ..., 
+  rawRestaurants: ..., // optional
+  orderedPlan: ..., // optional
+  mealBudgetConfig: ..., // optional
+  preferences: ..., // optional
+  usedCategories: ..., 
+  dayScores: ..., // optional
+};
+
+// Call the `upsertPlanCacheRef()` function to get a reference to the mutation.
+const ref = upsertPlanCacheRef(upsertPlanCacheVars);
+// Variables can be defined inline as well.
+const ref = upsertPlanCacheRef({ guestId: ..., rawRestaurants: ..., orderedPlan: ..., mealBudgetConfig: ..., preferences: ..., usedCategories: ..., dayScores: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertPlanCacheRef(dataConnect, upsertPlanCacheVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.planCache_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_upsert);
+});
+```
+
+## DeletePlanCache
+You can execute the `DeletePlanCache` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deletePlanCache(vars: DeletePlanCacheVariables): MutationPromise<DeletePlanCacheData, DeletePlanCacheVariables>;
+
+interface DeletePlanCacheRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlanCacheVariables): MutationRef<DeletePlanCacheData, DeletePlanCacheVariables>;
+}
+export const deletePlanCacheRef: DeletePlanCacheRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deletePlanCache(dc: DataConnect, vars: DeletePlanCacheVariables): MutationPromise<DeletePlanCacheData, DeletePlanCacheVariables>;
+
+interface DeletePlanCacheRef {
+  ...
+  (dc: DataConnect, vars: DeletePlanCacheVariables): MutationRef<DeletePlanCacheData, DeletePlanCacheVariables>;
+}
+export const deletePlanCacheRef: DeletePlanCacheRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deletePlanCacheRef:
+```typescript
+const name = deletePlanCacheRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeletePlanCache` mutation requires an argument of type `DeletePlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeletePlanCacheVariables {
+  guestId: string;
+}
+```
+### Return Type
+Recall that executing the `DeletePlanCache` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeletePlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeletePlanCacheData {
+  planCache_delete?: PlanCache_Key | null;
+}
+```
+### Using `DeletePlanCache`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deletePlanCache, DeletePlanCacheVariables } from '@dataconnect/generated';
+
+// The `DeletePlanCache` mutation requires an argument of type `DeletePlanCacheVariables`:
+const deletePlanCacheVars: DeletePlanCacheVariables = {
+  guestId: ..., 
+};
+
+// Call the `deletePlanCache()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deletePlanCache(deletePlanCacheVars);
+// Variables can be defined inline as well.
+const { data } = await deletePlanCache({ guestId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deletePlanCache(dataConnect, deletePlanCacheVars);
+
+console.log(data.planCache_delete);
+
+// Or, you can use the `Promise` API.
+deletePlanCache(deletePlanCacheVars).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_delete);
+});
+```
+
+### Using `DeletePlanCache`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deletePlanCacheRef, DeletePlanCacheVariables } from '@dataconnect/generated';
+
+// The `DeletePlanCache` mutation requires an argument of type `DeletePlanCacheVariables`:
+const deletePlanCacheVars: DeletePlanCacheVariables = {
+  guestId: ..., 
+};
+
+// Call the `deletePlanCacheRef()` function to get a reference to the mutation.
+const ref = deletePlanCacheRef(deletePlanCacheVars);
+// Variables can be defined inline as well.
+const ref = deletePlanCacheRef({ guestId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deletePlanCacheRef(dataConnect, deletePlanCacheVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.planCache_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_delete);
+});
+```
+
+## UpdateDayScores
+You can execute the `UpdateDayScores` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updateDayScores(vars: UpdateDayScoresVariables): MutationPromise<UpdateDayScoresData, UpdateDayScoresVariables>;
+
+interface UpdateDayScoresRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateDayScoresVariables): MutationRef<UpdateDayScoresData, UpdateDayScoresVariables>;
+}
+export const updateDayScoresRef: UpdateDayScoresRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateDayScores(dc: DataConnect, vars: UpdateDayScoresVariables): MutationPromise<UpdateDayScoresData, UpdateDayScoresVariables>;
+
+interface UpdateDayScoresRef {
+  ...
+  (dc: DataConnect, vars: UpdateDayScoresVariables): MutationRef<UpdateDayScoresData, UpdateDayScoresVariables>;
+}
+export const updateDayScoresRef: UpdateDayScoresRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateDayScoresRef:
+```typescript
+const name = updateDayScoresRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateDayScores` mutation requires an argument of type `UpdateDayScoresVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateDayScoresVariables {
+  guestId: string;
+  dayScores?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateDayScores` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateDayScoresData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateDayScoresData {
+  planCache_update?: PlanCache_Key | null;
+}
+```
+### Using `UpdateDayScores`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateDayScores, UpdateDayScoresVariables } from '@dataconnect/generated';
+
+// The `UpdateDayScores` mutation requires an argument of type `UpdateDayScoresVariables`:
+const updateDayScoresVars: UpdateDayScoresVariables = {
+  guestId: ..., 
+  dayScores: ..., // optional
+};
+
+// Call the `updateDayScores()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateDayScores(updateDayScoresVars);
+// Variables can be defined inline as well.
+const { data } = await updateDayScores({ guestId: ..., dayScores: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateDayScores(dataConnect, updateDayScoresVars);
+
+console.log(data.planCache_update);
+
+// Or, you can use the `Promise` API.
+updateDayScores(updateDayScoresVars).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_update);
+});
+```
+
+### Using `UpdateDayScores`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateDayScoresRef, UpdateDayScoresVariables } from '@dataconnect/generated';
+
+// The `UpdateDayScores` mutation requires an argument of type `UpdateDayScoresVariables`:
+const updateDayScoresVars: UpdateDayScoresVariables = {
+  guestId: ..., 
+  dayScores: ..., // optional
+};
+
+// Call the `updateDayScoresRef()` function to get a reference to the mutation.
+const ref = updateDayScoresRef(updateDayScoresVars);
+// Variables can be defined inline as well.
+const ref = updateDayScoresRef({ guestId: ..., dayScores: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateDayScoresRef(dataConnect, updateDayScoresVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.planCache_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_update);
+});
+```
+
+## UpdateUsedCategories
+You can execute the `UpdateUsedCategories` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updateUsedCategories(vars: UpdateUsedCategoriesVariables): MutationPromise<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
+
+interface UpdateUsedCategoriesRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateUsedCategoriesVariables): MutationRef<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
+}
+export const updateUsedCategoriesRef: UpdateUsedCategoriesRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateUsedCategories(dc: DataConnect, vars: UpdateUsedCategoriesVariables): MutationPromise<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
+
+interface UpdateUsedCategoriesRef {
+  ...
+  (dc: DataConnect, vars: UpdateUsedCategoriesVariables): MutationRef<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
+}
+export const updateUsedCategoriesRef: UpdateUsedCategoriesRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateUsedCategoriesRef:
+```typescript
+const name = updateUsedCategoriesRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateUsedCategories` mutation requires an argument of type `UpdateUsedCategoriesVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateUsedCategoriesVariables {
+  guestId: string;
+  usedCategories: string[];
+}
+```
+### Return Type
+Recall that executing the `UpdateUsedCategories` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateUsedCategoriesData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateUsedCategoriesData {
+  planCache_update?: PlanCache_Key | null;
+}
+```
+### Using `UpdateUsedCategories`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateUsedCategories, UpdateUsedCategoriesVariables } from '@dataconnect/generated';
+
+// The `UpdateUsedCategories` mutation requires an argument of type `UpdateUsedCategoriesVariables`:
+const updateUsedCategoriesVars: UpdateUsedCategoriesVariables = {
+  guestId: ..., 
+  usedCategories: ..., 
+};
+
+// Call the `updateUsedCategories()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateUsedCategories(updateUsedCategoriesVars);
+// Variables can be defined inline as well.
+const { data } = await updateUsedCategories({ guestId: ..., usedCategories: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateUsedCategories(dataConnect, updateUsedCategoriesVars);
+
+console.log(data.planCache_update);
+
+// Or, you can use the `Promise` API.
+updateUsedCategories(updateUsedCategoriesVars).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_update);
+});
+```
+
+### Using `UpdateUsedCategories`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateUsedCategoriesRef, UpdateUsedCategoriesVariables } from '@dataconnect/generated';
+
+// The `UpdateUsedCategories` mutation requires an argument of type `UpdateUsedCategoriesVariables`:
+const updateUsedCategoriesVars: UpdateUsedCategoriesVariables = {
+  guestId: ..., 
+  usedCategories: ..., 
+};
+
+// Call the `updateUsedCategoriesRef()` function to get a reference to the mutation.
+const ref = updateUsedCategoriesRef(updateUsedCategoriesVars);
+// Variables can be defined inline as well.
+const ref = updateUsedCategoriesRef({ guestId: ..., usedCategories: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateUsedCategoriesRef(dataConnect, updateUsedCategoriesVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.planCache_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.planCache_update);
 });
 ```
 
