@@ -64,6 +64,8 @@ export interface CreateShopVariables {
   priceMin?: number | null;
   priceMax?: number | null;
   priceDisplay?: string | null;
+  latitude: number;
+  longitude: number;
 }
 
 export interface FoodItem_Key {
@@ -96,6 +98,8 @@ export interface GetFoodDetailData {
       priceMin?: number | null;
       priceMax?: number | null;
       priceDisplay?: string | null;
+      latitude: number;
+      longitude: number;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -124,6 +128,8 @@ export interface GetShopDetailData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -146,6 +152,43 @@ export interface GetShopDetailData {
 
 export interface GetShopDetailVariables {
   id: UUIDString;
+}
+
+export interface ListAllShopsWithMenuData {
+  shops: ({
+    id: UUIDString;
+    externalId?: string | null;
+    name: string;
+    address: string;
+    city: string;
+    rating?: number | null;
+    coverImage?: string | null;
+    url: string;
+    openTime?: string | null;
+    closeTime?: string | null;
+    priceMin?: number | null;
+    priceMax?: number | null;
+    priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
+    foodItems_on_shop: ({
+      id: UUIDString;
+      name: string;
+      description?: string | null;
+      price: number;
+      priceDisplay?: string | null;
+      imageUrl?: string | null;
+      thumbnailUrl?: string | null;
+      groupName?: string | null;
+      isPopular: boolean;
+      totalLike: number;
+      category: {
+        id: UUIDString;
+        name: string;
+        slug: string;
+      } & Category_Key;
+    } & FoodItem_Key)[];
+  } & Shop_Key)[];
 }
 
 export interface ListCategoriesData {
@@ -228,6 +271,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
+    latitude: number;
+    longitude: number;
   } & Shop_Key)[];
 }
 
@@ -240,42 +285,6 @@ export interface Shop_Key {
   id: UUIDString;
   __typename?: 'Shop_Key';
 }
-
-interface CreateCategoryRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateCategoryVariables): MutationRef<CreateCategoryData, CreateCategoryVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateCategoryVariables): MutationRef<CreateCategoryData, CreateCategoryVariables>;
-  operationName: string;
-}
-export const createCategoryRef: CreateCategoryRef;
-
-export function createCategory(vars: CreateCategoryVariables): MutationPromise<CreateCategoryData, CreateCategoryVariables>;
-export function createCategory(dc: DataConnect, vars: CreateCategoryVariables): MutationPromise<CreateCategoryData, CreateCategoryVariables>;
-
-interface CreateShopRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateShopVariables): MutationRef<CreateShopData, CreateShopVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateShopVariables): MutationRef<CreateShopData, CreateShopVariables>;
-  operationName: string;
-}
-export const createShopRef: CreateShopRef;
-
-export function createShop(vars: CreateShopVariables): MutationPromise<CreateShopData, CreateShopVariables>;
-export function createShop(dc: DataConnect, vars: CreateShopVariables): MutationPromise<CreateShopData, CreateShopVariables>;
-
-interface CreateFoodItemRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateFoodItemVariables): MutationRef<CreateFoodItemData, CreateFoodItemVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateFoodItemVariables): MutationRef<CreateFoodItemData, CreateFoodItemVariables>;
-  operationName: string;
-}
-export const createFoodItemRef: CreateFoodItemRef;
-
-export function createFoodItem(vars: CreateFoodItemVariables): MutationPromise<CreateFoodItemData, CreateFoodItemVariables>;
-export function createFoodItem(dc: DataConnect, vars: CreateFoodItemVariables): MutationPromise<CreateFoodItemData, CreateFoodItemVariables>;
 
 interface ListCategoriesRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -348,4 +357,52 @@ export const listShopsRef: ListShopsRef;
 
 export function listShops(vars?: ListShopsVariables, options?: ExecuteQueryOptions): QueryPromise<ListShopsData, ListShopsVariables>;
 export function listShops(dc: DataConnect, vars?: ListShopsVariables, options?: ExecuteQueryOptions): QueryPromise<ListShopsData, ListShopsVariables>;
+
+interface ListAllShopsWithMenuRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllShopsWithMenuData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllShopsWithMenuData, undefined>;
+  operationName: string;
+}
+export const listAllShopsWithMenuRef: ListAllShopsWithMenuRef;
+
+export function listAllShopsWithMenu(options?: ExecuteQueryOptions): QueryPromise<ListAllShopsWithMenuData, undefined>;
+export function listAllShopsWithMenu(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllShopsWithMenuData, undefined>;
+
+interface CreateCategoryRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateCategoryVariables): MutationRef<CreateCategoryData, CreateCategoryVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateCategoryVariables): MutationRef<CreateCategoryData, CreateCategoryVariables>;
+  operationName: string;
+}
+export const createCategoryRef: CreateCategoryRef;
+
+export function createCategory(vars: CreateCategoryVariables): MutationPromise<CreateCategoryData, CreateCategoryVariables>;
+export function createCategory(dc: DataConnect, vars: CreateCategoryVariables): MutationPromise<CreateCategoryData, CreateCategoryVariables>;
+
+interface CreateShopRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateShopVariables): MutationRef<CreateShopData, CreateShopVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateShopVariables): MutationRef<CreateShopData, CreateShopVariables>;
+  operationName: string;
+}
+export const createShopRef: CreateShopRef;
+
+export function createShop(vars: CreateShopVariables): MutationPromise<CreateShopData, CreateShopVariables>;
+export function createShop(dc: DataConnect, vars: CreateShopVariables): MutationPromise<CreateShopData, CreateShopVariables>;
+
+interface CreateFoodItemRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateFoodItemVariables): MutationRef<CreateFoodItemData, CreateFoodItemVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateFoodItemVariables): MutationRef<CreateFoodItemData, CreateFoodItemVariables>;
+  operationName: string;
+}
+export const createFoodItemRef: CreateFoodItemRef;
+
+export function createFoodItem(vars: CreateFoodItemVariables): MutationPromise<CreateFoodItemData, CreateFoodItemVariables>;
+export function createFoodItem(dc: DataConnect, vars: CreateFoodItemVariables): MutationPromise<CreateFoodItemData, CreateFoodItemVariables>;
 

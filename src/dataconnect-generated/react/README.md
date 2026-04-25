@@ -23,6 +23,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*GetFoodDetail*](#getfooddetail)
   - [*GetShopDetail*](#getshopdetail)
   - [*ListShops*](#listshops)
+  - [*ListAllShopsWithMenu*](#listallshopswithmenu)
 - [**Mutations**](#mutations)
   - [*CreateCategory*](#createcategory)
   - [*CreateShop*](#createshop)
@@ -460,6 +461,8 @@ export interface GetFoodDetailData {
       priceMin?: number | null;
       priceMax?: number | null;
       priceDisplay?: string | null;
+      latitude: number;
+      longitude: number;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -562,6 +565,8 @@ export interface GetShopDetailData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -672,6 +677,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
+    latitude: number;
+    longitude: number;
   } & Shop_Key)[];
 }
 ```
@@ -716,6 +723,108 @@ export default function ListShopsComponent() {
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
   const query = useListShops(dataConnect, listShopsVars /** or undefined */, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.shops);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListAllShopsWithMenu
+You can execute the `ListAllShopsWithMenu` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListAllShopsWithMenu(dc: DataConnect, options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListAllShopsWithMenu(options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
+```
+
+### Variables
+The `ListAllShopsWithMenu` Query has no variables.
+### Return Type
+Recall that calling the `ListAllShopsWithMenu` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListAllShopsWithMenu` Query is of type `ListAllShopsWithMenuData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListAllShopsWithMenuData {
+  shops: ({
+    id: UUIDString;
+    externalId?: string | null;
+    name: string;
+    address: string;
+    city: string;
+    rating?: number | null;
+    coverImage?: string | null;
+    url: string;
+    openTime?: string | null;
+    closeTime?: string | null;
+    priceMin?: number | null;
+    priceMax?: number | null;
+    priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
+    foodItems_on_shop: ({
+      id: UUIDString;
+      name: string;
+      description?: string | null;
+      price: number;
+      priceDisplay?: string | null;
+      imageUrl?: string | null;
+      thumbnailUrl?: string | null;
+      groupName?: string | null;
+      isPopular: boolean;
+      totalLike: number;
+      category: {
+        id: UUIDString;
+        name: string;
+        slug: string;
+      } & Category_Key;
+    } & FoodItem_Key)[];
+  } & Shop_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListAllShopsWithMenu`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@dataconnect/generated';
+import { useListAllShopsWithMenu } from '@dataconnect/generated/react'
+
+export default function ListAllShopsWithMenuComponent() {
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListAllShopsWithMenu();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListAllShopsWithMenu(dataConnect);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListAllShopsWithMenu(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListAllShopsWithMenu(dataConnect, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -882,6 +991,8 @@ export interface CreateShopVariables {
   priceMin?: number | null;
   priceMax?: number | null;
   priceDisplay?: string | null;
+  latitude: number;
+  longitude: number;
 }
 ```
 ### Return Type
@@ -943,10 +1054,12 @@ export default function CreateShopComponent() {
     priceMin: ..., // optional
     priceMax: ..., // optional
     priceDisplay: ..., // optional
+    latitude: ..., 
+    longitude: ..., 
   };
   mutation.mutate(createShopVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., });
+  mutation.mutate({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., latitude: ..., longitude: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {

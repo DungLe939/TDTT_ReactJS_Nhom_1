@@ -16,6 +16,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetFoodDetail*](#getfooddetail)
   - [*GetShopDetail*](#getshopdetail)
   - [*ListShops*](#listshops)
+  - [*ListAllShopsWithMenu*](#listallshopswithmenu)
 - [**Mutations**](#mutations)
   - [*CreateCategory*](#createcategory)
   - [*CreateShop*](#createshop)
@@ -501,6 +502,8 @@ export interface GetFoodDetailData {
       priceMin?: number | null;
       priceMax?: number | null;
       priceDisplay?: string | null;
+      latitude: number;
+      longitude: number;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -630,6 +633,8 @@ export interface GetShopDetailData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -767,6 +772,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
+    latitude: number;
+    longitude: number;
   } & Shop_Key)[];
 }
 ```
@@ -825,6 +832,130 @@ const ref = listShopsRef();
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = listShopsRef(dataConnect, listShopsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.shops);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.shops);
+});
+```
+
+## ListAllShopsWithMenu
+You can execute the `ListAllShopsWithMenu` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listAllShopsWithMenu(options?: ExecuteQueryOptions): QueryPromise<ListAllShopsWithMenuData, undefined>;
+
+interface ListAllShopsWithMenuRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllShopsWithMenuData, undefined>;
+}
+export const listAllShopsWithMenuRef: ListAllShopsWithMenuRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listAllShopsWithMenu(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllShopsWithMenuData, undefined>;
+
+interface ListAllShopsWithMenuRef {
+  ...
+  (dc: DataConnect): QueryRef<ListAllShopsWithMenuData, undefined>;
+}
+export const listAllShopsWithMenuRef: ListAllShopsWithMenuRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listAllShopsWithMenuRef:
+```typescript
+const name = listAllShopsWithMenuRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListAllShopsWithMenu` query has no variables.
+### Return Type
+Recall that executing the `ListAllShopsWithMenu` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListAllShopsWithMenuData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListAllShopsWithMenuData {
+  shops: ({
+    id: UUIDString;
+    externalId?: string | null;
+    name: string;
+    address: string;
+    city: string;
+    rating?: number | null;
+    coverImage?: string | null;
+    url: string;
+    openTime?: string | null;
+    closeTime?: string | null;
+    priceMin?: number | null;
+    priceMax?: number | null;
+    priceDisplay?: string | null;
+    latitude: number;
+    longitude: number;
+    foodItems_on_shop: ({
+      id: UUIDString;
+      name: string;
+      description?: string | null;
+      price: number;
+      priceDisplay?: string | null;
+      imageUrl?: string | null;
+      thumbnailUrl?: string | null;
+      groupName?: string | null;
+      isPopular: boolean;
+      totalLike: number;
+      category: {
+        id: UUIDString;
+        name: string;
+        slug: string;
+      } & Category_Key;
+    } & FoodItem_Key)[];
+  } & Shop_Key)[];
+}
+```
+### Using `ListAllShopsWithMenu`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listAllShopsWithMenu } from '@dataconnect/generated';
+
+
+// Call the `listAllShopsWithMenu()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listAllShopsWithMenu();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listAllShopsWithMenu(dataConnect);
+
+console.log(data.shops);
+
+// Or, you can use the `Promise` API.
+listAllShopsWithMenu().then((response) => {
+  const data = response.data;
+  console.log(data.shops);
+});
+```
+
+### Using `ListAllShopsWithMenu`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listAllShopsWithMenuRef } from '@dataconnect/generated';
+
+
+// Call the `listAllShopsWithMenuRef()` function to get a reference to the query.
+const ref = listAllShopsWithMenuRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listAllShopsWithMenuRef(dataConnect);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -1012,6 +1143,8 @@ export interface CreateShopVariables {
   priceMin?: number | null;
   priceMax?: number | null;
   priceDisplay?: string | null;
+  latitude: number;
+  longitude: number;
 }
 ```
 ### Return Type
@@ -1043,13 +1176,15 @@ const createShopVars: CreateShopVariables = {
   priceMin: ..., // optional
   priceMax: ..., // optional
   priceDisplay: ..., // optional
+  latitude: ..., 
+  longitude: ..., 
 };
 
 // Call the `createShop()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createShop(createShopVars);
 // Variables can be defined inline as well.
-const { data } = await createShop({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., });
+const { data } = await createShop({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., latitude: ..., longitude: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1084,12 +1219,14 @@ const createShopVars: CreateShopVariables = {
   priceMin: ..., // optional
   priceMax: ..., // optional
   priceDisplay: ..., // optional
+  latitude: ..., 
+  longitude: ..., 
 };
 
 // Call the `createShopRef()` function to get a reference to the mutation.
 const ref = createShopRef(createShopVars);
 // Variables can be defined inline as well.
-const ref = createShopRef({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., });
+const ref = createShopRef({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., latitude: ..., longitude: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
