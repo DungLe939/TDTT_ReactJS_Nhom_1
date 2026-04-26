@@ -1,0 +1,35 @@
+.form-section-container {
+    background-color: transparent; /* Remove solid background to show parent image */
+    padding-bottom: 5rem;
+    position: relative;
+    z-index: 10;
+}
+
+.section-title-premium {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.form-card-plain .floating-form-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 2.5rem;
+    border-radius: 32px;
+}
+
+.form-card-plain .floating-form-wrapper {
+    padding: 0;
+    max-width: none;
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .section-title-premium {
+        font-size: 1.8rem;
+    }
+}
