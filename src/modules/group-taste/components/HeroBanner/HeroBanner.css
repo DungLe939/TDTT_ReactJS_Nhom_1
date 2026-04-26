@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@600;700;800&display=swap');
 
 /**
  * HeroBanner Premium Cinematic Styles
@@ -7,7 +7,7 @@
 .hero-banner-container {
   position: relative;
   width: 100vw;
-  height: 90vh;
+  height: 100vh;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
@@ -16,10 +16,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0 0 80px 80px;
+  border-radius: 0;
   background-color: #080808;
-  margin-bottom: 4rem;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  margin-bottom: 0;
+  box-shadow: none;
 }
 
 /* Background Slider layer */
@@ -124,7 +124,7 @@
 }
 
 .hero-title-top {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 600;
   color: #f8fafc;
@@ -136,7 +136,7 @@
 }
 
 .hero-title-main {
-  font-family: 'Poppins', 'Playfair Display', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: clamp(3rem, 10vw, 6.5rem);
   font-weight: 800;
   margin: 0;

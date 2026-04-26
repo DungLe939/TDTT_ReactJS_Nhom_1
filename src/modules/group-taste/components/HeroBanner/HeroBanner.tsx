@@ -96,9 +96,9 @@ export const HeroBanner: React.FC = () => {
   }, []);
 
   const handleCTAClick = () => {
-    const nextSection = containerRef.current?.nextElementSibling;
-    if (nextSection) {
-      nextSection.scrollIntoView({ behavior: 'smooth' });
+    const scanSection = document.getElementById('scan-section');
+    if (scanSection) {
+      scanSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
