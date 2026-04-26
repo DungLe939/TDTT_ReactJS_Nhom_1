@@ -9,6 +9,7 @@ export interface GroupUser {
   tasteVector: number[];
   budget: number;
   location: { lat: number; lng: number };
+  allergies: string[];
 }
 
 interface UseGroupTasteReturn {
@@ -148,6 +149,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
         tasteVector: u.tasteVector,
         budget: u.budget,
         location: u.location,
+        allergies: u.allergies,
       }));
 
       const data = await groupTasteApiService.getRecommendations(
@@ -155,18 +157,25 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
         effectiveCoords ?? undefined,
       );
 
-      // Kiểm tra kết quả
-      if (data.totalCandidates === 0) {
+
+      // Kiểm tra kết quả an toàn
+      const dishes = data?.dishes || [];
+      const totalCandidates = data?.totalCandidates ?? 0;
+      const filteredCount = data?.filteredCount ?? 0;
+
+      if (totalCandidates === 0) {
+        setResult(data); // Vẫn set để xóa loading
         setError(
-          'Không tìm thấy nhà hàng nào trong khu vực. ' +
+          'Không tìm thấy món ăn nào trong khu vực. ' +
           'Hãy thử tìm kiếm một khu vực khác (ví dụ: "Quận 1", "Đà Nẵng").',
         );
         return;
       }
 
-      if (data.recommendations.length === 0 && data.filteredCount === 0) {
+      if (dishes.length === 0 && filteredCount === 0) {
+        setResult(data);
         setError(
-          `Tìm thấy ${data.totalCandidates} nhà hàng nhưng không có quán nào phù hợp với tất cả thành viên. ` +
+          `Tìm thấy các nhà hàng nhưng không có món nào phù hợp với tất cả thành viên. ` +
           'Hãy thử điều chỉnh ngân sách hoặc khẩu vị.',
         );
         return;
@@ -181,6 +190,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
       setLoading(false);
     }
   }, [users, hasSearchedLocation, locationKeyword, searchCoords]);
+
 
   const resetAll = useCallback(() => {
     setUsers([]);
