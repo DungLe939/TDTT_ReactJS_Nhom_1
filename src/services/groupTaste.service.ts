@@ -2,13 +2,14 @@ import { apiClient } from './api';
 import { scheduleService } from './api';
 import { retryRequest } from '../utils/retryRequest';
 import { generateId } from '../modules/group-taste/utils/math.utils';
-import type { GroupRecommendationResponse } from '../modules/group-taste/types';
+import type { GroupRecommendationResponse, DishDetailResponse } from '../modules/group-taste/types';
 
 export interface GroupUserPayload {
   id?: string;
   tasteVector: number[];
   budget: number;
   location?: { lat: number; lng: number };
+  allergies?: string[];
 }
 
 /** Toạ độ mặc định: Quận 1, TP.HCM */
@@ -97,6 +98,7 @@ export const groupTasteApiService = {
       userId: u.id,
       tasteVector: u.tasteVector,
       budget: u.budget,
+      allergies: u.allergies,
     }));
 
     // Ưu tiên tọa độ khu vực đã quét để đồng bộ với tập nhà hàng backend.
@@ -111,6 +113,50 @@ export const groupTasteApiService = {
       2,
     );
 
+    return response.data;
+  },
+
+  /**
+   * Lấy chi tiết đầy đủ của một món ăn: địa chỉ nhà hàng, toạ độ, Google Maps links.
+   * Gọi endpoint POST /group/dish-detail.
+   *
+   * @param restaurantId - ID nhà hàng (từ dish.restaurant.id)
+   * @param dishId       - ID món ăn (từ dish.id, format: restaurantId_dish_index)
+   * @param currentLocation - Toạ độ hiện tại để tính khoảng cách
+   */
+  getDishDetail: async (
+    restaurantId: string,
+    dishId: string,
+    currentLocation: { lat: number; lng: number },
+    users?: GroupUserPayload[],
+  ): Promise<DishDetailResponse> => {
+    const backendUsers = users?.map((u) => ({
+      userId: u.id,
+      tasteVector: u.tasteVector,
+      budget: u.budget,
+      allergies: u.allergies,
+    }));
+
+    const response = await apiClient.post('/group/dish-detail', {
+      restaurantId,
+      dishId,
+      currentLocation,
+      users: backendUsers,
+    });
+    return response.data;
+  },
+
+  getRestaurantDetail: async (id: string, lat?: number, lng?: number): Promise<any> => {
+    const response = await apiClient.get(`/group/restaurant/${id}`, {
+      params: { lat, lng }
+    });
+    return response.data;
+  },
+
+  getSimilarRestaurants: async (restaurantId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/group/recommend/similar-restaurants`, {
+      params: { restaurantId }
+    });
     return response.data;
   },
 
@@ -144,5 +190,30 @@ export const groupTasteApiService = {
     } catch {
       return { success: true };
     }
+  },
+
+  getAllRestaurants: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/group/restaurants');
+      return response.data || [];
+    } catch (err) {
+      console.error('Error fetching all restaurants:', err);
+      return [];
+    }
+  },
+
+  getTopRecommendations: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/group/recommend/top');
+      return response.data || [];
+    } catch (err) {
+      console.error('Error fetching top recommendations:', err);
+      return [];
+    }
+  },
+
+  getDishById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/group/dish/${id}`);
+    return response.data;
   },
 };
