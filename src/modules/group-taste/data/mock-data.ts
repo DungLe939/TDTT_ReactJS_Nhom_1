@@ -6,8 +6,7 @@
  *   [3] Chua      - Sour
  *   [4] Béo       - Rich/Fatty
  *   [5] Thanh đạm - Light/Fresh
- *   [6] Hải sản   - Seafood
- *   [7] Chay      - Vegetarian
+ *   [6] Chay      - Vegetarian
  *
  * Mapping đồng bộ với backend scoring.ts → TASTE_DIMENSIONS
  */
@@ -18,6 +17,5 @@ export const TASTE_LABELS = [
   'Chua',
   'Béo',
   'Thanh đạm',
-  'Hải sản',
   'Chay',
 ] as const;
