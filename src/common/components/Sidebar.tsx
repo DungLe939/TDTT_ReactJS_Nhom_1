@@ -142,12 +142,12 @@ export const DesktopSidebar = () => {
 
     return (
         <aside
-            className={`hidden border-r border-border bg-muted dark:bg-slate-900 dark:border-white/10 lg:flex lg:flex-col transition-all duration-300 ease-in-out z-50 ${isExpanded ? 'w-[280px]' : 'w-[88px]'
+            className={`hidden border-r border-gray-200 bg-white lg:flex lg:flex-col transition-all duration-300 ease-in-out z-50 ${isExpanded ? 'w-[280px]' : 'w-[88px]'
                 }`}
         >
             <div className="sticky top-0 flex h-screen flex-col">
                 {/* Header */}
-                <div className="relative flex items-center justify-between border-b border-border dark:border-white/10 px-4 py-5 h-[85px]">
+                <div className="relative flex items-center justify-between border-b border-gray-200 px-4 py-5 h-[85px]">
                     <button onClick={() => navigate('/')} className={`group flex items-center gap-3 text-left w-full ${isExpanded ? '' : 'justify-center'}`}>
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-xl font-bold text-white shadow-lg shadow-orange-200 dark:shadow-none transition-transform group-hover:scale-105">
                             T
