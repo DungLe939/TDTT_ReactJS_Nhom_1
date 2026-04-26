@@ -70,16 +70,16 @@ export const Layout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#fff7ed_0%,_#fff_42%,_#f8fafc_100%)] dark:bg-none dark:bg-slate-900 transition-colors duration-200">
+        <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors duration-200">
             <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
                 <DesktopSidebar />
 
                 <div className="flex min-h-screen flex-1 flex-col">
-                    <header className="sticky top-0 z-40 border-b border-orange-100/80 bg-rose-50 dark:bg-slate-900 dark:border-white/10 transition-colors duration-200">
+                    <header className="sticky top-0 z-40 border-b border-border bg-white dark:bg-slate-900 dark:border-white/10 transition-colors duration-200 shadow-sm">
                         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
                             <button
                                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                                className="rounded-xl p-2 text-neutral-600 transition-colors hover:bg-orange-50 hover:text-orange-600 lg:hidden"
+                                className="rounded-xl p-2 text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground lg:hidden"
                                 aria-label="Mở menu điều hướng"
                             >
                                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
