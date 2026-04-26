@@ -28,11 +28,13 @@ if (typeof document !== 'undefined' && !document.getElementById('icon-draw-style
   document.head.appendChild(s);
 }
 
-/* ── individual feature card with hover animations ── */
 interface Feature {
   title: string;
   description: string;
   icon: React.ReactNode;
+  iconClass?: string;
+  image?: string;
+  imageClass?: string;
   color: string;
   borderColor: string;
   bgLight: string;
@@ -49,69 +51,68 @@ const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
     setDrawKey(k => k + 1);
   };
 
+  const isLarge = idx === 0;
+
   return (
     <motion.div
+      className={isLarge ? "md:col-span-1 lg:col-span-1 lg:row-span-2 h-full" : "h-90"}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.3 + idx * 0.1 }}
     >
       <Link
         to={feature.path}
-        className="block h-full bg-white rounded-[2rem] p-8 border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)] transition-all group relative overflow-hidden"
+        className="block h-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 lg:p-8 hover:bg-white/20 hover:border-white/40 transition-all duration-300 group relative overflow-hidden flex flex-col shadow-2xl"
         onMouseEnter={handleEnter}
         onMouseLeave={() => setHovered(false)}
       >
         <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem]"
-          style={{ background: `radial-gradient(ellipse at top left, ${feature.color}12 0%, transparent 65%)` }}
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+          style={{ background: `radial-gradient(circle at top right, ${feature.color}15 0%, transparent 60%)` }}
         />
 
-        <motion.div
-          className="mb-6 relative w-fit"
-          animate={
-            hovered
-              ? { y: [0, -7, 0, -4, 0], rotate: [0, -5, 5, -3, 0] }
-              : { y: 0, rotate: 0 }
-          }
-          transition={
-            hovered
-              ? { duration: 1.8, ease: 'easeInOut', repeat: Infinity }
-              : { duration: 0.35, ease: 'easeOut' }
-          }
-        >
-          <motion.div
-            className="absolute -inset-2 rounded-3xl pointer-events-none"
-            style={{ border: `2px solid ${feature.color}` }}
-            animate={hovered ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.7 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-          />
-
-          <div
-            className={`w-16 h-16 rounded-2xl ${feature.bgLight} border-2 ${feature.borderColor} ${feature.iconColor} flex items-center justify-center relative transition-all duration-300`}
-            style={{ boxShadow: hovered ? `0 8px 24px -4px ${feature.color}40` : 'none' }}
-          >
-            <div key={drawKey} className={hovered ? 'icon-draw' : ''}>
-              {feature.icon}
-            </div>
+        {/* Small icon top left */}
+        <div className="flex items-start justify-between relative z-10 w-full mb-2">
+          <div className={`w-14 h-14 rounded-2xl border border-white/50 bg-white/80 flex items-center justify-center ${feature.iconColor} shadow-sm ${feature.iconClass || ''}`}>
+             <div key={drawKey} className={hovered ? 'icon-draw' : ''}>
+               {feature.icon}
+             </div>
           </div>
-        </motion.div>
+        </div>
 
-        <h3 className="text-xl font-bold text-neutral-900 mb-3 group-hover:text-orange-500 transition-colors relative z-10">
-          {feature.title}
-        </h3>
-        <p className="text-neutral-600 mb-6 line-clamp-2 relative z-10">
-          {feature.description}
-        </p>
-
-        <div className="flex items-center text-sm font-bold text-neutral-900 group-hover:text-orange-500 transition-colors mt-auto pt-4 border-t border-neutral-100 relative z-10">
-          Trải nghiệm ngay
-          <motion.span
-            animate={hovered ? { x: [0, 5, 0] } : { x: 0 }}
-            transition={hovered ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' } : {}}
-            className="ml-2"
+        {/* Large Decorative Icon Area */}
+        <div className={`relative w-full ${isLarge ? 'flex-1 min-h-[260px] mt-8 mb-10' : 'h-48 mt-10 mb-6'} flex items-center justify-center`}>
+          <motion.div
+            animate={hovered ? { y: -8, scale: 1.05 } : { y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="absolute inset-0 flex items-center justify-center"
           >
-            <ArrowRight className="w-4 h-4" />
-          </motion.span>
+            <div
+              className="rounded-full flex items-center justify-center blur-[40px] absolute opacity-40 transition-opacity duration-500 group-hover:opacity-70"
+              style={{ width: isLarge ? '200px' : '120px', height: isLarge ? '200px' : '120px', background: feature.color }}
+            />
+            {feature.image ? (
+              <img src={feature.image} alt={feature.title} className={`relative object-contain drop-shadow-2xl z-10 ${isLarge ? 'w-64 h-64' : 'w-40 h-40'} ${feature.imageClass || ''}`} />
+            ) : (
+              <div className={`relative ${feature.iconColor} ${isLarge ? 'scale-[4]' : 'scale-[2.5]'} opacity-90 drop-shadow-2xl z-10`}>
+                {feature.icon}
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        <div className="mt-auto relative z-10 pt-12">
+          <h3 className="text-xl md:text-[22px] font-bold text-white mb-2 group-hover:text-orange-500 transition-colors">
+            {feature.title}
+          </h3>
+          <p className="text-white/70 mb-2 text-sm line-clamp-2 leading-relaxed font-medium">
+            {feature.description}
+          </p>
+
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#F97316] hover:bg-[#EA580C] text-white text-sm font-bold rounded-full transition-all w-fit shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] hover:-translate-y-0.5">
+            Trải nghiệm ngay
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
         </div>
       </Link>
     </motion.div>
@@ -158,6 +159,8 @@ export const Home = () => {
       title: 'Lịch trình Food Tour',
       description: 'Lên lịch trình khám phá ẩm thực tự động dành riêng cho bạn một cách thông minh.',
       icon: <Map className="w-8 h-8" strokeWidth={1.5} />,
+      image: '/features/tour.png',
+      imageClass: 'scale-130',
       color: '#F97316',
       borderColor: 'border-orange-300',
       bgLight: 'bg-orange-50',
@@ -168,6 +171,8 @@ export const Home = () => {
       title: 'Quét Món Ăn',
       description: 'Sử dụng AI để nhận diện món ăn tại địa phương chỉ bằng một cú chụp.',
       icon: <ScanFace className="w-8 h-8" strokeWidth={1.5} />,
+      image: '/features/scan.png',
+      imageClass: '-translate-y-9 -translate-x--3 scale-150',
       color: '#F43F5E',
       borderColor: 'border-rose-300',
       bgLight: 'bg-rose-50',
@@ -175,19 +180,11 @@ export const Home = () => {
       path: '/scan'
     },
     {
-      title: 'Menu Đa Ngôn Ngữ',
-      description: 'Dịch thuật menu qua nhiều ngôn ngữ một cách chính xác và nhanh chóng.',
-      icon: <Languages className="w-8 h-8" strokeWidth={1.5} />,
-      color: '#10B981',
-      borderColor: 'border-emerald-300',
-      bgLight: 'bg-emerald-50',
-      iconColor: 'text-emerald-500',
-      path: '/menu'
-    },
-    {
       title: 'Nhiệm Vụ Ẩm Thực',
       description: 'Hoàn thành các nhiệm vụ khám phá để nhận phần thưởng thú vị và hấp dẫn.',
       icon: <Dices className="w-8 h-8" strokeWidth={1.5} />,
+      image: '/features/quests.png',
+      imageClass: '-translate-y-5 -translate-x--2 scale-[1.3]',
       color: '#8B5CF6',
       borderColor: 'border-violet-300',
       bgLight: 'bg-violet-50',
@@ -198,11 +195,25 @@ export const Home = () => {
       title: 'Nhóm Ăn',
       description: 'Tìm kiếm mạng lưới những người đam mê ẩm thực và cùng nhau khám phá.',
       icon: <Users className="w-8 h-8" strokeWidth={1.5} />,
+      image: '/features/group.png',
+      imageClass: '-translate-y-2 -translate-x--7 scale-150',
       color: '#3B82F6',
       borderColor: 'border-blue-300',
       bgLight: 'bg-blue-50',
       iconColor: 'text-blue-500',
       path: '/group'
+    },
+    {
+      title: 'Menu Đa Ngôn Ngữ',
+      description: 'Dịch thuật menu qua nhiều ngôn ngữ một cách chính xác và nhanh chóng.',
+      icon: <Languages className="w-8 h-8" strokeWidth={1.5} />,
+      image: '/features/translate.png',
+      imageClass: '-translate-y-5 -translate-x--5 scale-[1.3]',
+      color: '#10B981',
+      borderColor: 'border-emerald-300',
+      bgLight: 'bg-emerald-50',
+      iconColor: 'text-emerald-500',
+      path: '/menu'
     }
   ];
 
@@ -221,7 +232,7 @@ export const Home = () => {
         <div 
           className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')] bg-cover bg-center"
         />
-        <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-neutral-950/60" />
       </div>
 
       <div className="w-full">
@@ -269,12 +280,12 @@ export const Home = () => {
                 <ScanFace className="w-5 h-5" />
                 Quét Món Ăn Ngay
               </Link>
-              <Link 
-                to="/itinerary"
+              <button 
+                onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}
                 className="flex items-center justify-center bg-white/10 text-white border border-white/20 backdrop-blur-sm shadow-sm px-8 py-4 rounded-xl font-bold hover:bg-white/20 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
               >
                 Khám Phá Tính Năng
-              </Link>
+              </button>
             </motion.div>
 
             <motion.div 
@@ -364,7 +375,7 @@ export const Home = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative my-16 lg:my-24 rounded-[3rem] overflow-hidden border border-white/40 bg-white/30 backdrop-blur-md shadow-2xl shadow-black/30 w-full"
+          className="relative my-16 lg:my-24 rounded-[3rem] overflow-hidden border border-white/40 bg-white/10 backdrop-blur-md shadow-2xl shadow-black/30 w-full"
         >
           <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 md:px-16 lg:px-20 py-12 lg:py-20 w-full">
             <div className="flex-1 z-10 w-full">
@@ -383,18 +394,18 @@ export const Home = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden mb-8"
+                className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/40 rounded-2xl shadow-2xl mb-8"
               >
-                <Search className="absolute left-5 w-5 h-5 text-neutral-400" />
+                <Search className="absolute left-5 w-5 h-5 text-white/70" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm món ăn yêu thích..."
-                  className="flex-1 pl-14 pr-4 py-5 text-neutral-800 outline-none font-medium"
+                  className="flex-1 pl-14 pr-4 py-5 bg-transparent text-white placeholder-white/70 outline-none font-medium"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="mr-2 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-400">
+                  <button onClick={() => setSearchQuery('')} className="mr-2 p-1.5 rounded-full hover:bg-white/20 text-white/70 transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 )}
@@ -410,12 +421,12 @@ export const Home = () => {
                     key={cat.name}
                     whileHover={{ y: -8, scale: 1.05 }}
                     onClick={() => setSearchQuery(cat.name)}
-                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white hover:bg-neutral-50 border-[1px] border-neutral-200 rounded-xl px-6 py-6 lg:px-10 lg:py-8 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.10)]"
+                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 border-[1px] border-white/20 hover:border-white/40 rounded-xl px-6 py-6 lg:px-10 lg:py-8 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.10)]"
                   >
-                    <div className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-lg overflow-hidden border-[2px] border-neutral-200 shadow-md">
+                    <div className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-lg overflow-hidden border-[2px] border-white/20 shadow-md">
                       <img src={cat.img} alt={cat.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="text-sm lg:text-base font-extrabold text-black uppercase tracking-wider">{cat.name}</span>
+                    <span className="text-sm lg:text-base font-extrabold text-white uppercase tracking-wider">{cat.name}</span>
                   </motion.button>
                 ))}
               </div>
@@ -424,7 +435,7 @@ export const Home = () => {
         </motion.div>
 
         {/* Features Section Frame */}
-        <div className="relative p-8 md:p-12 rounded-[3rem] border border-white/40 bg-white/30 backdrop-blur-md shadow-2xl shadow-black/30">
+        <div id="features-section" className="relative p-8 md:p-12 rounded-[3rem] border border-white/40 bg-white/10 backdrop-blur-md shadow-2xl shadow-black/30">
           {/* Feature Grid Header */}
           <div className="text-center md:text-left mb-10">
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3 tracking-tight">Các Tính Năng Nổi Bật</h2>
@@ -432,7 +443,7 @@ export const Home = () => {
           </div>
 
           {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:auto-rows-fr">
             {features.map((feature, idx) => (
               <FeatureCard key={feature.title} feature={feature} idx={idx} />
             ))}
@@ -445,7 +456,7 @@ export const Home = () => {
             {/* Logo & Brand */}
             <div className="flex flex-col items-center space-y-4 flex-shrink-0">
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-white mb-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center text-white mb-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                   <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-2xl" />
                 </div>
                 <h4 className="font-extrabold text-orange-600 text-lg">Hương Vị Bản Địa</h4>
