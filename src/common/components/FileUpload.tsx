@@ -3,7 +3,6 @@ import { Upload, X } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
-  onClear?: () => void;
   accept?: string;
   maxSize?: number;
   preview?: boolean;
@@ -12,7 +11,6 @@ interface FileUploadProps {
 
 export function FileUpload({
   onFileSelect,
-  onClear,
   accept = 'image/*',
   maxSize = 10 * 1024 * 1024, // 10MB default
   preview = true,
@@ -93,8 +91,7 @@ export function FileUpload({
   const clearPreview = useCallback(() => {
     setPreviewUrl(null);
     setError(null);
-    onClear?.();
-  }, [onClear]);
+  }, []);
 
   return (
     <div className={className}>
@@ -124,15 +121,17 @@ export function FileUpload({
             w-full h-64 px-6 py-8
             border-2 border-dashed rounded-lg
             cursor-pointer transition-all
-            ${isDragging
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+            ${
+              isDragging
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
             }
           `}
         >
           <Upload
-            className={`w-12 h-12 mb-4 transition-colors ${isDragging ? 'text-blue-500' : 'text-gray-400'
-              }`}
+            className={`w-12 h-12 mb-4 transition-colors ${
+              isDragging ? 'text-blue-500' : 'text-gray-400'
+            }`}
           />
           <p className="mb-2 text-sm">
             <span className="font-semibold">Click to upload</span> or drag and drop
