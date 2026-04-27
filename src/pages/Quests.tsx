@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, CheckCircle2, Target, MessageSquare, X, AlertCircle, Ticket } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
 import { getAchievementsForUser } from '@/modules/quests/services/achievementService';
 import type { AchievementWithProgress, UserRewardResolved } from '@/modules/quests/types/quest.types';

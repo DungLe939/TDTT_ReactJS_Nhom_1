@@ -1,5 +1,5 @@
 import { Lock, LogIn, Sparkles } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
 
 interface AuthGuardCardProps {

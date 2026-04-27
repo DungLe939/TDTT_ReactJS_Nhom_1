@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DemoUser, UserStats, UserRewardResolved } from '../../types/quest.types';
 import { Flame, Award } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
 import { getUserStats } from '../../services/achievementService';
 import { getUserRewards } from '../../services/achievementService';

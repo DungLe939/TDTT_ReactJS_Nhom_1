@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { blogController } from '../services/blogController';
 import { DEMO_USERS } from '../services/mockData';
 import type { Post, Restaurant, PostFilter, Tag, DemoUser } from '../types/quest.types';

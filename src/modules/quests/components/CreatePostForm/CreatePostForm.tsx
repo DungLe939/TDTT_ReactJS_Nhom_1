@@ -8,7 +8,7 @@ import AsyncSelect from 'react-select/async';
 import { Image as ImageIcon, Users, MapPin, Smile, MoreHorizontal, X } from 'lucide-react';
 import type { Tag, Restaurant, DemoUser } from '../../types/quest.types';
 import type { CreatePostDto } from '../../types/blog.types';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
 
 interface CreatePostFormProps {

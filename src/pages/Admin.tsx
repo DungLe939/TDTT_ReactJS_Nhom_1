@@ -7,7 +7,7 @@ import {
   AlertCircle, ShieldAlert, Trophy
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { AdminQuestsPanel } from '@/modules/quests/components/AdminQuestsPanel/AdminQuestsPanel';
 
 type DishFormData = {
