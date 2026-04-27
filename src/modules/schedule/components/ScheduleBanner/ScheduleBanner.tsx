@@ -15,18 +15,13 @@ interface ScheduleBannerProps {
 const ScheduleBanner = ({ title, subtitle, onFilterClick }: ScheduleBannerProps) => {
     return (
         <div className="relative h-48 bg-neutral-200">
-            {/* Map image - ảnh tĩnh theo thiết kế Figma */}
+            {/* Food image - high quality collage */}
             <img
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80"
-                alt="Map"
-                className="w-full h-full object-cover opacity-80"
+                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80"
+                alt="Food Tour"
+                className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-
-            {/* Heatmap indicators - theo đúng Figma */}
-            <div className="absolute top-10 left-1/4 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse"></div>
-            <div className="absolute top-20 left-1/2 w-4 h-4 rounded-full bg-yellow-400 border-2 border-white shadow-[0_0_10px_rgba(250,204,21,0.8)]"></div>
-            <div className="absolute bottom-12 right-1/4 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
             {/* Content ở phía dưới */}
             <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end text-white">
