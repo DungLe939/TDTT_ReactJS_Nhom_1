@@ -27,6 +27,7 @@ export const router = createBrowserRouter([
       { path: 'quests', Component: Quests },
       { path: 'group', Component: GroupTaste },
       { path: 'market', Component: FoodMarket },
+      { path: 'group/:groupId', Component: GroupTaste },
       { path: 'admin', Component: Admin },
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
