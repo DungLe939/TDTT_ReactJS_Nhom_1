@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeftRight, X, Copy, Check, Sparkles, Smile, Frown, Meh, Activity, Lightbulb, LightbulbOff, Bot, History, Trash2, PanelLeftClose, PanelLeftOpen, Soup, Sun, Moon, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeftRight, X, Copy, Check, Sparkles, Activity, Bot, History, Trash2, PanelLeftClose, PanelLeftOpen, Soup, Sun, Moon, ChevronUp, ChevronDown } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { LoadingModal } from '../common/components/LoadingModal';
 
@@ -8,7 +8,6 @@ interface TranslationHistory {
   sourceText: string;
   translatedText: string;
   lang: 'vi' | 'en';
-  sentiment: { label: string, score: number } | null;
   timestamp: Date;
 }
 
@@ -22,7 +21,8 @@ export const SmartMenu = () => {
   const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [sentiment, setSentiment] = useState<{ label: string, score: number } | null>(null);
+  // Flag đánh dấu nguồn gốc văn bản: true = từ quét Menu (FoodScan), false = người dùng tự nhập
+  const [isFromScan, setIsFromScan] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   
   // States mới cho tính năng Sidebar và History
@@ -72,9 +72,11 @@ export const SmartMenu = () => {
   };
 
   // Lấy dữ liệu văn bản từ màn hình FoodScan (nếu có)
+  // Đánh dấu isFromScan=true để truyền source="scan" cho backend
   useEffect(() => {
     if (location.state?.autoTranslateText) {
       setSourceText(location.state.autoTranslateText);
+      setIsFromScan(true);  // Văn bản đến từ quét Menu → ưu tiên RAG
     }
   }, [location.state]);
 
@@ -113,56 +115,92 @@ export const SmartMenu = () => {
     if (!sourceText.trim()) return;
     setIsTranslating(true);
 
-    // ----------------------------------------------------------------------
-    // [HƯỚNG DẪN DÀNH CHO NHÓM] - CÁCH TÍCH HỢP ĐƯỜNG DẪN PINGGY (API PATH)
-    // ----------------------------------------------------------------------
-    // 1. Nếu chạy hoàn toàn trên máy cá nhân (Localhost):
-    //    Đường dẫn mặc định sẽ là: http://localhost:3000
-    //
-    // 2. Nếu dùng Pinggy để Public server cho người khác xài qua điện thoại:
-    //    Bạn thay đường dẫn Pinggy vào cái link chữ màu đục ở dòng bên dưới, 
-    //    hoặc tốt nhất là tạo một file tên là ".env" tại thư mục TDTT_ReactJS_Nhom_1
-    //  ssh -p 443 -R0:localhost:3000 a.pinggy.io x:passpreflight
-    //    rồi ghi vào đó: VITE_API_URL=https://quyet-mat-khau-gi-do.a.pinggy.link
-    // ----------------------------------------------------------------------
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-    // ----------------------------------------------------------------------
 
     try {
-      const response = await fetch(`${API_URL}/api/translate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Pinggy-No-Screen': 'true'
-        },
-        body: JSON.stringify({
-          text: sourceText,
-          method: lang === 'vi' ? 'en2vi' : 'vi2en'
-        }),
-      });
+      // ---------------------------------------------------------------
+      // CHIẾN LƯỢC DỊCH THÔNG MINH:
+      // - source="scan" (quét menu): Gửi toàn bộ text 1 lần → Backend dùng RAG
+      // - source="chat" (tự nhập):   Tách thành từng câu → Dịch từng câu → Hiện dần kết quả (Streaming UX)
+      // ---------------------------------------------------------------
+      const currentSource = isFromScan ? 'scan' : 'chat';
 
-      const result = await response.json();
+      if (currentSource === 'chat') {
+        // === STREAMING MODE: Tách câu và dịch từng câu một ===
+        // Tách theo dấu chấm, chấm hỏi, chấm than (giữ lại dấu)
+        const sentences = sourceText.match(/[^.!?。？！]+[.!?。？！]*/g) || [sourceText];
+        let accumulatedTranslation = '';
+        setTranslatedText(''); // Reset kết quả cũ
 
-      if (result.success && result.data) {
-        const textHienThi = result.data.output || result.data.translated_text || (typeof result.data === 'string' ? result.data : "Không tìm thấy nội dung dịch");
-        setTranslatedText(textHienThi);
+        for (const sentence of sentences) {
+          if (!sentence.trim()) continue;
 
-        const currentSentiment = result.data.sentiment || null;
-        setSentiment(currentSentiment);
+          const response = await fetch(`${API_URL}/api/translate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Pinggy-No-Screen': 'true'
+            },
+            body: JSON.stringify({
+              text: sentence.trim(),
+              method: lang === 'vi' ? 'en2vi' : 'vi2en',
+              source: 'chat'
+            }),
+          });
 
-        // Lưu vào lịch sử khi dịch thành công
-        const newItem: TranslationHistory = {
-          id: Date.now().toString(),
-          sourceText,
-          translatedText: textHienThi,
-          lang,
-          sentiment: currentSentiment,
-          timestamp: new Date()
-        };
-        setHistory(prev => [newItem, ...prev]);
+          const result = await response.json();
+          if (result.success && result.data) {
+            const translated = result.data.output || result.data.translated_text || '';
+            accumulatedTranslation += (accumulatedTranslation ? ' ' : '') + translated;
+            // Cập nhật UI ngay sau mỗi câu → Người dùng thấy kết quả xuất hiện dần
+            setTranslatedText(accumulatedTranslation);
+          }
+        }
+
+        // Lưu vào lịch sử
+        if (accumulatedTranslation) {
+          const newItem: TranslationHistory = {
+            id: Date.now().toString(),
+            sourceText,
+            translatedText: accumulatedTranslation,
+            lang,
+            timestamp: new Date()
+          };
+          setHistory(prev => [newItem, ...prev]);
+        }
 
       } else {
-        setTranslatedText("Lỗi: " + (result.error || "Không có kết quả"));
+        // === SCAN MODE: Gửi toàn bộ text 1 lần, ưu tiên RAG ===
+        const response = await fetch(`${API_URL}/api/translate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Pinggy-No-Screen': 'true'
+          },
+          body: JSON.stringify({
+            text: sourceText,
+            method: lang === 'vi' ? 'en2vi' : 'vi2en',
+            source: 'scan'
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const textHienThi = result.data.output || result.data.translated_text || (typeof result.data === 'string' ? result.data : "Không tìm thấy nội dung dịch");
+          setTranslatedText(textHienThi);
+
+          const newItem: TranslationHistory = {
+            id: Date.now().toString(),
+            sourceText,
+            translatedText: textHienThi,
+            lang,
+            timestamp: new Date()
+          };
+          setHistory(prev => [newItem, ...prev]);
+        } else {
+          setTranslatedText("Lỗi: " + (result.error || "Không có kết quả"));
+        }
       }
     } catch (error: any) {
       console.error(error);
@@ -172,10 +210,11 @@ export const SmartMenu = () => {
     }
   };
 
+
   const clearText = () => {
     setSourceText('');
     setTranslatedText('');
-    setSentiment(null);
+    setIsFromScan(false);
   };
 
   const copyToClipboard = () => {
@@ -190,7 +229,7 @@ export const SmartMenu = () => {
     setSourceText(item.sourceText);
     setTranslatedText(item.translatedText);
     setLang(item.lang);
-    setSentiment(item.sentiment);
+    setIsFromScan(false);
   };
 
   return (
@@ -236,12 +275,7 @@ export const SmartMenu = () => {
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-sm">
                       {item.lang === 'vi' ? 'EN ➔ VI' : 'VI ➔ EN'}
                     </span>
-                    {item.sentiment && (
-                      <span className={`text-[10px] items-center flex gap-1 font-semibold ${item.sentiment.label === 'POS' ? 'text-emerald-500' : item.sentiment.label === 'NEG' ? 'text-rose-500' : 'text-blue-500'}`}>
-                          {item.sentiment.label === 'POS' ? <Smile className="w-3 h-3"/> : item.sentiment.label === 'NEG' ? <Frown className="w-3 h-3"/> : <Meh className="w-3 h-3"/>}
-                          {Math.round(item.sentiment.score * 100)}%
-                      </span>
-                    )}
+
                   </div>
                   <div className={`text-sm font-medium line-clamp-2 leading-relaxed ${isDarkMode ? 'text-slate-300 group-hover:text-slate-100' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
                     {item.sourceText}
@@ -342,7 +376,12 @@ export const SmartMenu = () => {
           <div style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%' }} className={`p-5 md:p-8 flex flex-col relative transition-colors duration-500 border-b md:border-b-0 md:border-r ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-orange-100/50'}`}>
             <textarea
               value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
+              onChange={(e) => {
+                setSourceText(e.target.value);
+                // Khi người dùng TỰ GÕ text mới → reset về 'chat' mode
+                // Nếu text đến từ quét menu (FoodScan), người dùng không cần gõ → isFromScan giữ nguyên true
+                setIsFromScan(false);
+              }}
               onMouseMove={handleTextareaMouseMove}
               placeholder={lang === 'vi' ? "Nhập văn bản tiếng Anh cần dịch..." : "Nhập văn bản tiếng Việt cần dịch..."}
               className={`w-full flex-1 resize-none outline-none text-base md:text-lg font-medium bg-transparent transition-colors duration-500 custom-scrollbar ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-neutral-800 placeholder-neutral-300'}`}
@@ -401,19 +440,7 @@ export const SmartMenu = () => {
               />
             </div>
 
-            {/* Sentiment Badge */}
-            {sentiment && (
-              <div className="flex justify-end mb-4 relative z-10">
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl border shadow-sm transition-all duration-500 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-orange-100/50'}`}>
-                  <span className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-neutral-400'}`}>Giọng văn</span>
-                  <div className={`flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-xl ${sentiment.label === 'POS' ? 'bg-emerald-100 text-emerald-600' : sentiment.label === 'NEG' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'}`}>
-                    {sentiment.label === 'POS' ? <Smile className="w-4 h-4"/> : sentiment.label === 'NEG' ? <Frown className="w-4 h-4"/> : <Meh className="w-4 h-4"/>}
-                    {sentiment.label === 'POS' ? 'Tích cực' : sentiment.label === 'NEG' ? 'Tiêu cực' : 'Trung lập'}
-                    <span className="opacity-70">({Math.round(sentiment.score * 100)}%)</span>
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             <textarea
               readOnly
