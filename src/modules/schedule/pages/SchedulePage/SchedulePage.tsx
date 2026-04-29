@@ -35,9 +35,6 @@ const SchedulePage = () => {
     // Mỗi phần tử chứa { day: number, meals: Meal[] }
     const [planData, setPlanData] = useState<any[] | null>(null);
 
-    // snackCandidates: Danh sách các món ăn vặt tiềm năng thu thập được khi AI phân tích
-    const [snackCandidates, setSnackCandidates] = useState<any[]>([]);
-
     // scheduleInfo: Cấu hình cơ bản của chuyến đi (Địa điểm, số ngày, ngân sách...)
     const [scheduleInfo, setScheduleInfo] = useState<any>({
         location: 'Đà Nẵng',
@@ -57,10 +54,8 @@ const SchedulePage = () => {
         // Kiểm tra xem người dùng đã có lịch trình cũ trong trình duyệt chưa
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
-        const savedSnacks = localStorage.getItem('FOOD_TOUR_SNACK_CANDIDATES');
 
         if (savedPlan) setPlanData(JSON.parse(savedPlan));
-        if (savedSnacks) setSnackCandidates(JSON.parse(savedSnacks));
 
         if (savedInfo) {
             const parsedInfo = JSON.parse(savedInfo);
@@ -116,7 +111,6 @@ const SchedulePage = () => {
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
         setPlanData(null); // Reset giao diện cũ để chuẩn bị dữ liệu mới
-        setSnackCandidates([]);
         setStreamingProgress('Đang chuẩn bị dữ liệu...');
 
         try {
@@ -171,7 +165,6 @@ const SchedulePage = () => {
             // BƯỚC 3: STREAMING - Tạo lịch trình TỪNG NGÀY 
             // Chúng ta không đợi AI tạo xong cả tuần mới hiển thị, mà render ngay khi từng ngày hoàn tất.
             const allDays: any[] = [];
-            const allSnacks: any[] = [];
 
             for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
                 setStreamingProgress(`Đang tạo lịch trình ngày ${dayIdx + 1}/${totalDays}...`);
@@ -183,11 +176,6 @@ const SchedulePage = () => {
                     const newDay = { day: dayRes.day, meals: dayRes.meals };
                     allDays.push(newDay);
 
-                    // Thu thập danh sách quán ăn vặt (Snacks) dự phòng
-                    if (dayRes.snackCandidates) {
-                        allSnacks.push(...dayRes.snackCandidates);
-                    }
-
                     // Tự động chọn xem ngày đầu tiên ngay khi có dữ liệu
                     if (dayIdx === 0 && !selectedDayISO) {
                         setSelectedDayISO(newScheduleInfo.startDate.split('T')[0]);
@@ -195,13 +183,11 @@ const SchedulePage = () => {
 
                     // Cập nhật UI ngay lập tức sau mỗi vòng lặp ngày 
                     setPlanData([...allDays]);
-                    setSnackCandidates([...allSnacks]);
                 }
             }
 
             // Lưu kết quả cuối cùng hoàn thiện
             localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(allDays));
-            localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(allSnacks));
 
             setIsModalOpen(false); // Đóng modal và hoàn tất
             setStreamingProgress('');
@@ -339,7 +325,6 @@ const SchedulePage = () => {
                         selectedDayISO={selectedDayISO}
                         startDate={scheduleInfo.startDate}
                         scheduleInfo={scheduleInfo}
-                        snackCandidates={snackCandidates}
                         onUpdatePlan={handleUpdatePlan}
                         onRegenerate={() => {
                             // TODO: Implement logic thực sự cho việc tạo lại lịch trình nếu cần

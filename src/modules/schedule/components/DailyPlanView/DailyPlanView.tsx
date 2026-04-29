@@ -14,7 +14,6 @@ interface DailyPlanViewProps {
     selectedDayISO: string;
     startDate: string; // Định dạng YYYY-MM-DD
     scheduleInfo: any;
-    snackCandidates: any[];
     onRegenerate: () => void;
     onUpdatePlan?: (newPlan: any[]) => void;
 }
@@ -27,7 +26,7 @@ interface DailyPlanViewProps {
  * 2. Tính toán thống kê ngân sách (Chi phí ngày hiện tại vs. Tổng chi phí dự kiến).
  * 3. Quản lý các hành động tương tác: Xem bản đồ, Xem chi tiết quán, Đổi món, Thêm bữa phụ.
  */
-const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
+const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
 
     // tripStart: Chuyển đổi ngày bắt đầu chuyến đi sang đối tượng Date để tính toán độ lệch ngày
     const tripStart = new Date(startDate);
@@ -331,7 +330,6 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                 isOpen={snackModalOpen}
                 onClose={() => setSnackModalOpen(false)}
                 onAdd={handleAddSnack}
-                snackCandidates={snackCandidates}
                 activePlan={activePlan}
             />
 
