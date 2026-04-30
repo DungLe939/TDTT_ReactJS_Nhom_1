@@ -147,7 +147,11 @@ export const RestaurantList: React.FC<RestaurantListProps> = ({
         const avgGroupRating = dish.avgGroupRating;
         const reasons = dish.matchedReasons ?? [];
 
-        const imageUrl = DISH_IMAGES[index % DISH_IMAGES.length];
+        // Ưu tiên ảnh từ dữ liệu thật
+        const realImageUrl = dish.image_url || dish.imageUrl;
+        const imageUrl = (realImageUrl && realImageUrl.startsWith('http')) 
+          ? realImageUrl 
+          : DISH_IMAGES[index % DISH_IMAGES.length];
 
         return (
           <motion.div
@@ -205,6 +209,10 @@ export const RestaurantList: React.FC<RestaurantListProps> = ({
                   alt={dish.name}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = DISH_IMAGES[index % DISH_IMAGES.length];
+                  }}
                 />
               </div>
 
