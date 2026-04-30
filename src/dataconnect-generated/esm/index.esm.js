@@ -5,6 +5,42 @@ export const connectorConfig = {
   service: 'smart-tourism-abf26-service',
   location: 'asia-southeast1'
 };
+export const createCategoryRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateCategory', inputVars);
+}
+createCategoryRef.operationName = 'CreateCategory';
+
+export function createCategory(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createCategoryRef(dcInstance, inputVars));
+}
+
+export const createShopRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateShop', inputVars);
+}
+createShopRef.operationName = 'CreateShop';
+
+export function createShop(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createShopRef(dcInstance, inputVars));
+}
+
+export const createFoodItemRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateFoodItem', inputVars);
+}
+createFoodItemRef.operationName = 'CreateFoodItem';
+
+export function createFoodItem(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createFoodItemRef(dcInstance, inputVars));
+}
+
 export const listCategoriesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -81,41 +117,5 @@ export function listShops(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listShopsRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
-}
-
-export const createCategoryRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateCategory', inputVars);
-}
-createCategoryRef.operationName = 'CreateCategory';
-
-export function createCategory(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createCategoryRef(dcInstance, inputVars));
-}
-
-export const createShopRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateShop', inputVars);
-}
-createShopRef.operationName = 'CreateShop';
-
-export function createShop(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createShopRef(dcInstance, inputVars));
-}
-
-export const createFoodItemRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateFoodItem', inputVars);
-}
-createFoodItemRef.operationName = 'CreateFoodItem';
-
-export function createFoodItem(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createFoodItemRef(dcInstance, inputVars));
 }
 

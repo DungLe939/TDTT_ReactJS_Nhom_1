@@ -7,6 +7,48 @@ const connectorConfig = {
 };
 exports.connectorConfig = connectorConfig;
 
+const createCategoryRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateCategory', inputVars);
+}
+createCategoryRef.operationName = 'CreateCategory';
+exports.createCategoryRef = createCategoryRef;
+
+exports.createCategory = function createCategory(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createCategoryRef(dcInstance, inputVars));
+}
+;
+
+const createShopRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateShop', inputVars);
+}
+createShopRef.operationName = 'CreateShop';
+exports.createShopRef = createShopRef;
+
+exports.createShop = function createShop(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createShopRef(dcInstance, inputVars));
+}
+;
+
+const createFoodItemRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateFoodItem', inputVars);
+}
+createFoodItemRef.operationName = 'CreateFoodItem';
+exports.createFoodItemRef = createFoodItemRef;
+
+exports.createFoodItem = function createFoodItem(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createFoodItemRef(dcInstance, inputVars));
+}
+;
+
 const listCategoriesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -94,47 +136,5 @@ exports.listShops = function listShops(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listShopsRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
-}
-;
-
-const createCategoryRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateCategory', inputVars);
-}
-createCategoryRef.operationName = 'CreateCategory';
-exports.createCategoryRef = createCategoryRef;
-
-exports.createCategory = function createCategory(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createCategoryRef(dcInstance, inputVars));
-}
-;
-
-const createShopRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateShop', inputVars);
-}
-createShopRef.operationName = 'CreateShop';
-exports.createShopRef = createShopRef;
-
-exports.createShop = function createShop(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createShopRef(dcInstance, inputVars));
-}
-;
-
-const createFoodItemRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateFoodItem', inputVars);
-}
-createFoodItemRef.operationName = 'CreateFoodItem';
-exports.createFoodItemRef = createFoodItemRef;
-
-exports.createFoodItem = function createFoodItem(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createFoodItemRef(dcInstance, inputVars));
 }
 ;

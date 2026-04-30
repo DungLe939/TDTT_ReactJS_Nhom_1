@@ -1,9 +1,18 @@
-import { ListCategoriesData, ListFoodsData, ListFoodsVariables, ListFoodsByCategoryData, ListFoodsByCategoryVariables, GetFoodDetailData, GetFoodDetailVariables, GetShopDetailData, GetShopDetailVariables, ListShopsData, ListShopsVariables, CreateCategoryData, CreateCategoryVariables, CreateShopData, CreateShopVariables, CreateFoodItemData, CreateFoodItemVariables } from '../';
+import { CreateCategoryData, CreateCategoryVariables, CreateShopData, CreateShopVariables, CreateFoodItemData, CreateFoodItemVariables, ListCategoriesData, ListFoodsData, ListFoodsVariables, ListFoodsByCategoryData, ListFoodsByCategoryVariables, GetFoodDetailData, GetFoodDetailVariables, GetShopDetailData, GetShopDetailVariables, ListShopsData, ListShopsVariables } from '../';
 import { UseDataConnectQueryResult, useDataConnectQueryOptions, UseDataConnectMutationResult, useDataConnectMutationOptions} from '@tanstack-query-firebase/react/data-connect';
 import { UseQueryResult, UseMutationResult} from '@tanstack/react-query';
 import { DataConnect } from 'firebase/data-connect';
 import { FirebaseError } from 'firebase/app';
 
+
+export function useCreateCategory(options?: useDataConnectMutationOptions<CreateCategoryData, FirebaseError, CreateCategoryVariables>): UseDataConnectMutationResult<CreateCategoryData, CreateCategoryVariables>;
+export function useCreateCategory(dc: DataConnect, options?: useDataConnectMutationOptions<CreateCategoryData, FirebaseError, CreateCategoryVariables>): UseDataConnectMutationResult<CreateCategoryData, CreateCategoryVariables>;
+
+export function useCreateShop(options?: useDataConnectMutationOptions<CreateShopData, FirebaseError, CreateShopVariables>): UseDataConnectMutationResult<CreateShopData, CreateShopVariables>;
+export function useCreateShop(dc: DataConnect, options?: useDataConnectMutationOptions<CreateShopData, FirebaseError, CreateShopVariables>): UseDataConnectMutationResult<CreateShopData, CreateShopVariables>;
+
+export function useCreateFoodItem(options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
+export function useCreateFoodItem(dc: DataConnect, options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
 
 export function useListCategories(options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, undefined>;
 export function useListCategories(dc: DataConnect, options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, undefined>;
@@ -22,12 +31,3 @@ export function useGetShopDetail(dc: DataConnect, vars: GetShopDetailVariables, 
 
 export function useListShops(vars?: ListShopsVariables, options?: useDataConnectQueryOptions<ListShopsData>): UseDataConnectQueryResult<ListShopsData, ListShopsVariables>;
 export function useListShops(dc: DataConnect, vars?: ListShopsVariables, options?: useDataConnectQueryOptions<ListShopsData>): UseDataConnectQueryResult<ListShopsData, ListShopsVariables>;
-
-export function useCreateCategory(options?: useDataConnectMutationOptions<CreateCategoryData, FirebaseError, CreateCategoryVariables>): UseDataConnectMutationResult<CreateCategoryData, CreateCategoryVariables>;
-export function useCreateCategory(dc: DataConnect, options?: useDataConnectMutationOptions<CreateCategoryData, FirebaseError, CreateCategoryVariables>): UseDataConnectMutationResult<CreateCategoryData, CreateCategoryVariables>;
-
-export function useCreateShop(options?: useDataConnectMutationOptions<CreateShopData, FirebaseError, CreateShopVariables>): UseDataConnectMutationResult<CreateShopData, CreateShopVariables>;
-export function useCreateShop(dc: DataConnect, options?: useDataConnectMutationOptions<CreateShopData, FirebaseError, CreateShopVariables>): UseDataConnectMutationResult<CreateShopData, CreateShopVariables>;
-
-export function useCreateFoodItem(options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
-export function useCreateFoodItem(dc: DataConnect, options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
