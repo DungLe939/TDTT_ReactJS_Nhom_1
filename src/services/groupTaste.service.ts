@@ -1,14 +1,17 @@
 import { apiClient } from './api';
 import { scheduleService } from './api';
 import { retryRequest } from '../utils/retryRequest';
+import type { AxiosResponse } from 'axios';
 import { generateId } from '../modules/group-taste/utils/math.utils';
-import type { GroupRecommendationResponse } from '../modules/group-taste/types';
+import type { GroupRecommendationResponse, DishDetailResponse } from '../modules/group-taste/types';
 
 export interface GroupUserPayload {
   id?: string;
+  name?: string;
   tasteVector: number[];
   budget: number;
   location?: { lat: number; lng: number };
+  allergies?: string[];
 }
 
 /** Toạ độ mặc định: Quận 1, TP.HCM */
@@ -24,6 +27,18 @@ interface SearchLocationResponse {
   coords?: { lat: number; lng: number };
   data?: unknown[];
 }
+
+/**
+ * Chuyển đổi format user từ Frontend sang DTO Backend (UserPreferenceDto).
+ */
+const mapToBackendUsers = (users: GroupUserPayload[]) => {
+  return users.map((u) => ({
+    userId: u.id,
+    tasteVector: u.tasteVector,
+    budget: u.budget,
+    allergies: u.allergies,
+  }));
+};
 
 export const groupTasteApiService = {
   /**
@@ -87,22 +102,18 @@ export const groupTasteApiService = {
   getRecommendations: async (
     users: GroupUserPayload[],
     searchCoords?: { lat: number; lng: number },
+    userLocation?: { lat: number; lng: number },
   ): Promise<GroupRecommendationResponse> => {
     if (users.length === 0) {
       throw new Error('Danh sách thành viên trống. Không thể gợi ý nhà hàng.');
     }
 
-    // Map frontend format -> backend DTO format
-    const backendUsers = users.map((u) => ({
-      userId: u.id,
-      tasteVector: u.tasteVector,
-      budget: u.budget,
-    }));
+    const backendUsers = mapToBackendUsers(users);
 
     // Ưu tiên tọa độ khu vực đã quét để đồng bộ với tập nhà hàng backend.
-    const currentLocation = searchCoords ?? DEFAULT_LOCATION;
+    const currentLocation = searchCoords ?? userLocation ?? DEFAULT_LOCATION;
 
-    const response = await retryRequest(
+    const response = await retryRequest<AxiosResponse<GroupRecommendationResponse>>(
       () =>
         apiClient.post('/group/recommend', {
           users: backendUsers,
@@ -111,6 +122,57 @@ export const groupTasteApiService = {
       2,
     );
 
+    return response.data;
+  },
+
+  /**
+   * Lấy chi tiết đầy đủ của một món ăn: địa chỉ nhà hàng, toạ độ, Google Maps links.
+   * Gọi endpoint POST /group/dish-detail.
+   *
+   * @param restaurantId - ID nhà hàng (từ dish.restaurant.id)
+   * @param dishId       - ID món ăn (từ dish.id, format: restaurantId_dish_index)
+   * @param currentLocation - Toạ độ hiện tại để tính khoảng cách
+   */
+  getDishDetail: async (
+    restaurantId: string,
+    dishId: string,
+    currentLocation: { lat: number; lng: number },
+    users?: GroupUserPayload[],
+  ): Promise<DishDetailResponse> => {
+    const backendUsers = users ? mapToBackendUsers(users) : undefined;
+
+    const response = await retryRequest<AxiosResponse<DishDetailResponse>>(
+      () =>
+        apiClient.post('/group/dish-detail', {
+          restaurantId,
+          dishId,
+          currentLocation,
+          users: backendUsers,
+        }),
+      2,
+    );
+    return response.data;
+  },
+
+  getRestaurantDetail: async (id: string, lat?: number, lng?: number): Promise<any> => {
+    const response = await retryRequest<AxiosResponse<any>>(
+      () =>
+        apiClient.get(`/group/restaurant/${id}`, {
+          params: { lat, lng }
+        }),
+      2,
+    );
+    return response.data;
+  },
+
+  getSimilarRestaurants: async (restaurantId: string): Promise<any[]> => {
+    const response = await retryRequest<AxiosResponse<any[]>>(
+      () =>
+        apiClient.get(`/group/recommend/similar-restaurants`, {
+          params: { restaurantId }
+        }),
+      2,
+    );
     return response.data;
   },
 
@@ -144,5 +206,28 @@ export const groupTasteApiService = {
     } catch {
       return { success: true };
     }
+  },
+
+  getAllRestaurants: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/group/restaurants');
+      return response.data || [];
+    } catch (err) {
+      return [];
+    }
+  },
+
+  getTopRecommendations: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/group/recommend/top');
+      return response.data || [];
+    } catch (err) {
+      return [];
+    }
+  },
+
+  getDishById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/group/dish/${id}`);
+    return response.data;
   },
 };

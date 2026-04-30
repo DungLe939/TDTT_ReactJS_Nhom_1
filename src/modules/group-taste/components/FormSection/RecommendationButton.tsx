@@ -18,7 +18,7 @@ export const RecommendationButton: React.FC<RecommendationButtonProps> = ({
   const isClickable = !disabled && !loading && userCount > 0;
 
   return (
-    <div className="my-6">
+    <div className="">
       <motion.button
         type="button"
         onClick={(e) => {
@@ -35,7 +35,7 @@ export const RecommendationButton: React.FC<RecommendationButtonProps> = ({
           w-full py-4 rounded-2xl font-bold text-base text-white transition-all 
           flex items-center justify-center gap-2.5 relative overflow-hidden
           ${isClickable
-            ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg shadow-orange-200 cursor-pointer'
+            ? 'bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg shadow-orange-200 cursor-pointer'
             : 'bg-neutral-300 cursor-not-allowed'
           }
         `}
@@ -60,7 +60,7 @@ export const RecommendationButton: React.FC<RecommendationButtonProps> = ({
         {/* Shimmer effect when clickable */}
         {isClickable && !loading && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
             initial={{ x: '-100%' }}
             animate={{ x: '200%' }}
             transition={{

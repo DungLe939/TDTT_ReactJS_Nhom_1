@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserPlus, X, ChefHat, Wallet } from 'lucide-react';
-import { TASTE_LABELS } from '../data/mock-data';
-import { formatPrice, generateId } from '../utils/math.utils';
-import type { GroupUser } from '../hooks/useGroupTaste';
-import type { GeoLocation } from '../types';
+import { TASTE_LABELS } from '../../data/mock-data';
+import { formatPrice, generateId } from '../../utils/math.utils';
+import type { GroupUser } from '../../hooks/useGroupTaste';
+import type { GeoLocation } from '../../types';
+import { AllergyInput } from './AllergyInput';
 
 interface UserInputFormProps {
   users: GroupUser[];
@@ -31,7 +32,7 @@ const BUDGET_PRESETS = [
  * - Sở thích (like/dislike từng loại ẩm thực)
  * - Vị trí (lấy từ useLocation hoặc thủ công)
  *
- * Taste vector: Đồng bộ với Backend (8 chiều)
+ * Taste vector: Đồng bộ với Backend (7 chiều)
  *   Like = 0.9, Dislike = 0.05, Trung lập = 0.4
  */
 export const UserInputForm: React.FC<UserInputFormProps> = ({
@@ -43,7 +44,8 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [budget, setBudget] = useState(200000);
-  const [tastes, setTastes] = useState<number[]>(new Array(8).fill(40));
+  const [tastes, setTastes] = useState<number[]>(new Array(7).fill(40)); // UI labels are 7
+  const [allergies, setAllergies] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
@@ -51,7 +53,24 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editBudget, setEditBudget] = useState(200000);
-  const [editTastes, setEditTastes] = useState<number[]>(new Array(8).fill(40));
+  const [editTastes, setEditTastes] = useState<number[]>(new Array(7).fill(40)); // UI labels are 7
+  const [editAllergies, setEditAllergies] = useState<string[]>([]);
+
+  // Helper: Convert 7 UI tastes to 8 Backend dimensions
+  const tastesToVector = (t: number[]): number[] => {
+    const v = new Array(8).fill(0.4); // Default neutral for seafood
+    for (let i = 0; i < 6; i++) v[i] = t[i] / 100;
+    v[7] = t[6] / 100; // Vegetarian is index 6 in UI, index 7 in Vector
+    return v;
+  };
+
+  // Helper: Convert 8 Backend dimensions to 7 UI tastes
+  const vectorToTastes = (v: number[]): number[] => {
+    const t = new Array(7).fill(40);
+    for (let i = 0; i < 6; i++) t[i] = Math.round(v[i] * 100);
+    t[6] = Math.round(v[7] * 100); // Vegetarian is index 7 in Vector, index 6 in UI
+    return t;
+  };
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -85,28 +104,28 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
     const newUser: GroupUser = {
       id: generateId('user'),
       name: name.trim(),
-      tasteVector: tastes.map(v => v / 100),
+      tasteVector: tastesToVector(tastes),
       budget: budget,
       location: userLocation ?? fallbackLocation,
+      allergies: allergies,
     };
 
-    if (addUser) {
-      addUser(newUser);
-    } else {
+    addUser?.(newUser);
+    if (!addUser) {
       setUsers((prev) => [...prev, newUser]);
     }
 
     setName('');
     setBudget(200000);
-    setTastes(new Array(8).fill(40));
+    setTastes(new Array(7).fill(40));
+    setAllergies([]);
     setUserLocation(null);
     setShowForm(false);
   };
 
   const handleRemoveUser = (id: string) => {
-    if (removeUser) {
-      removeUser(id);
-    } else {
+    removeUser?.(id);
+    if (!removeUser) {
       setUsers((prev) => prev.filter((u) => u.id !== id));
     }
     if (editingUserId === id) setEditingUserId(null);
@@ -116,14 +135,15 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
     setEditingUserId(user.id);
     setEditName(user.name);
     setEditBudget(user.budget);
-    setEditTastes(user.tasteVector.map(v => Math.round(v * 100)));
+    setEditTastes(vectorToTastes(user.tasteVector));
+    setEditAllergies(user.allergies || []);
   };
 
   const saveEditUser = () => {
     if (!editingUserId || !editName.trim()) return;
     setUsers((prev) =>
       prev.map((u) =>
-        u.id === editingUserId ? { ...u, name: editName.trim(), budget: editBudget, tasteVector: editTastes.map(v => v / 100) } : u
+        u.id === editingUserId ? { ...u, name: editName.trim(), budget: editBudget, tasteVector: tastesToVector(editTastes), allergies: editAllergies } : u
       )
     );
     setEditingUserId(null);
@@ -141,10 +161,10 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium shadow-sm shadow-orange-200 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-6 py-2.5 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95"
           >
             <UserPlus className="w-4 h-4" />
-            Thêm
+            Thêm mới
           </button>
         )}
       </div>
@@ -161,7 +181,7 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
               whileHover={editingUserId !== user.id ? { scale: 1.02, boxShadow: '0px 5px 15px rgba(0,0,0,0.05)' } : {}}
               transition={{ duration: 0.2 }}
               onClick={() => { if (editingUserId !== user.id) startEditUser(user); }}
-              className={`p-3 bg-white rounded-xl border shadow-sm transition-colors ${
+              className={`p-3 bg-white/80 backdrop-blur-md rounded-xl border shadow-sm transition-colors ${
                 editingUserId === user.id ? 'border-orange-300 ring-2 ring-orange-50' : 'border-neutral-100 cursor-pointer hover:border-orange-200'
               }`}
             >
@@ -171,8 +191,11 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                   <div className="flex gap-2">
                     <input
                       type="text"
+                      required
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
+                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng nhập tên thành viên')}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                       className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 focus:ring-1 focus:ring-orange-500 outline-none"
                       placeholder="Tên..."
                       autoFocus
@@ -208,6 +231,15 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                       </div>
                     ))}
                   </div>
+                  
+                  {/* Allergy in Edit Mode */}
+                  <div className="p-4 bg-red-50/50 rounded-xl border border-red-100">
+                    <AllergyInput 
+                      allergies={editAllergies} 
+                      onAllergiesChange={setEditAllergies} 
+                    />
+                  </div>
+
                   <div className="flex justify-end gap-1.5 pt-1">
                     <button
                       type="button"
@@ -226,9 +258,9 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                     <button
                       type="button"
                       onClick={saveEditUser}
-                      className="px-3 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
+                      className="px-4 py-1.5 text-xs font-bold text-white bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg shadow-sm transition-all hover:scale-105 active:scale-95"
                     >
-                      Lưu
+                      Lưu thay đổi
                     </button>
                   </div>
                 </div>
@@ -236,7 +268,7 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                 // Chế độ View
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-orange-400 to-red-500 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -245,6 +277,15 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                         <Wallet className="w-3 h-3" />
                         {formatPrice(user.budget)}
                       </p>
+                      {user.allergies && user.allergies.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {user.allergies.map(a => (
+                            <span key={a} className="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-bold border border-red-100">
+                              {a}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <button
@@ -277,12 +318,12 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleAddUser}
-            className="bg-white rounded-2xl border border-orange-100 shadow-sm overflow-hidden"
+            className="bg-white/90 backdrop-blur-xl rounded-2xl border border-orange-100 shadow-sm overflow-hidden"
           >
             <div className="p-5 space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1.5 flex justify-between">
+                <label className="text-sm font-medium text-neutral-700 mb-1.5 flex justify-between">
                   <span>Tên thành viên</span>
                   <button
                     type="button"
@@ -304,6 +345,8 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng nhập tên thành viên')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all text-sm"
                   placeholder="Nhập tên..."
                   autoFocus
@@ -369,20 +412,28 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                 </div>
               </div>
 
+              {/* Allergy in Add Mode */}
+              <div className="p-4 bg-red-50/30 rounded-2xl border border-red-100/50">
+                 <AllergyInput 
+                    allergies={allergies} 
+                    onAllergiesChange={setAllergies} 
+                 />
+              </div>
+
               {/* Actions */}
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium text-sm shadow-sm shadow-orange-200 transition-all active:scale-[0.98]"
+                  className="flex-1 py-3.5 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-orange-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Thêm thành viên
+                  Xác nhận thêm
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false);
                     setName('');
-                    setTastes(new Array(8).fill(40));
+                    setTastes(new Array(7).fill(40));
                   }}
                   className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl font-medium text-sm transition-colors"
                 >

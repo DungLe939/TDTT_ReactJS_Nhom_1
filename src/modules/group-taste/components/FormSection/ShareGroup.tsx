@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Share2, Copy, Check, Link2, Users } from 'lucide-react';
-import { groupTasteApiService } from '../../../services/groupTaste.service';
-import { generateId } from '../utils/math.utils';
+import { groupTasteApiService } from '../../../../services/groupTaste.service';
+import { generateId } from '../../utils/math.utils';
 
 interface ShareGroupProps {
   /** Số lượng user hiện tại trong nhóm */
