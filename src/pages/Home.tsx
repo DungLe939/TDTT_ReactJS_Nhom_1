@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
-import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X } from 'lucide-react';
+import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X, Smartphone } from 'lucide-react';
 
 /* ── CSS injected once for the stroke-draw animation ── */
 const ICON_ANIMATION_CSS = `
@@ -215,15 +215,23 @@ export const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0] py-12 px-4 sm:px-6 lg:px-8 selection:bg-orange-200">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full selection:bg-orange-200 relative pb-24">
+      {/* GLOBAL HOME BACKGROUND */}
+      <div className="fixed inset-0 z-[-1]">
+        <div 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')] bg-cover bg-center"
+        />
+        <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[2px]" />
+      </div>
+
+      <div className="w-full">
         {/* Hero Section */}
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-20 mt-4 lg:mt-8">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-16 md:mt-2">
           <div className="lg:w-[55%] flex flex-col items-start text-left space-y-6">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 text-orange-600 font-bold text-sm tracking-wide bg-orange-100/50 px-4 py-2 rounded-full border border-orange-200/50"
+              className="flex items-center gap-2 text-orange-400 font-bold text-sm tracking-wide bg-orange-500/20 px-4 py-2 rounded-full border border-orange-500/30"
             >
               <Sparkles className="w-4 h-4" />
               <span>Trợ lý Du lịch Ẩm thực AI</span>
@@ -233,7 +241,7 @@ export const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl lg:text-[4rem] font-extrabold text-[#232323] leading-[1.1] tracking-tight"
+              className="text-5xl lg:text-[4rem] font-extrabold text-white leading-[1.1] tracking-tight"
             >
               Khám Phá Thế Giới, <br/>
               <span className="text-orange-500">Qua Từng Món Ăn</span>
@@ -243,7 +251,7 @@ export const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg text-neutral-600 leading-relaxed max-w-xl"
+              className="text-lg text-white/80 leading-relaxed max-w-xl font-medium"
             >
               Hương Vị Bản Địa giúp bạn khám phá, nhận diện và tận hưởng ẩm thực đích thực ở bất cứ nơi đâu. Từ nhận diện món ăn tức thì tới dịch thuật thông minh.
             </motion.p>
@@ -263,7 +271,7 @@ export const Home = () => {
               </Link>
               <Link 
                 to="/itinerary"
-                className="flex items-center justify-center bg-white text-neutral-800 border border-neutral-100 shadow-sm px-8 py-4 rounded-xl font-bold hover:shadow hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                className="flex items-center justify-center bg-white/10 text-white border border-white/20 backdrop-blur-sm shadow-sm px-8 py-4 rounded-xl font-bold hover:bg-white/20 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
               >
                 Khám Phá Tính Năng
               </Link>
@@ -273,19 +281,21 @@ export const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex items-center justify-between sm:justify-start sm:gap-14 pt-8 w-full border-t border-orange-900/10 mt-6"
+              className="bg-white rounded-2xl px-8 py-6 mt-6 shadow-lg flex items-center justify-evenly w-full"
             >
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-1">10K+</div>
-                <div className="text-xs md:text-sm text-neutral-500 font-medium whitespace-nowrap">Món Ăn Khám Phá</div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">10K+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Món Ăn Khám Phá</div>
               </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-1">150+</div>
-                <div className="text-xs md:text-sm text-neutral-500 font-medium whitespace-nowrap">Quốc Gia</div>
+              <div className="w-px h-10 bg-orange-200"></div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">150+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Quốc Gia</div>
               </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-1">50K+</div>
-                <div className="text-xs md:text-sm text-neutral-500 font-medium whitespace-nowrap">Người Dùng</div>
+              <div className="w-px h-10 bg-orange-200"></div>
+              <div className="group/stat text-center px-4 cursor-default transition-colors">
+                <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 group-hover/stat:text-orange-500 mb-1 transition-colors">50K+</div>
+                <div className="text-xs md:text-sm text-neutral-600 group-hover/stat:text-orange-400 font-medium whitespace-nowrap transition-colors">Người Dùng</div>
               </div>
             </motion.div>
           </div>
@@ -296,7 +306,7 @@ export const Home = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="lg:w-[45%] relative w-full mt-12 lg:mt-0"
           >
-            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 aspect-[4/3] w-full bg-neutral-100">
+            <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 aspect-[4/3] w-full bg-neutral-100 border-[8px] border-white">
               {heroSlides.map((slide, idx) => (
                 <motion.img 
                   key={idx}
@@ -349,22 +359,14 @@ export const Home = () => {
           </motion.div>
         </div>
 
-        {/* ── RICH Search Banner Section with HCM Background ── */}
+        {/* ── RICH Search Banner Section ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative my-24 lg:my-32 rounded-[3rem] overflow-hidden shadow-2xl shadow-orange-900/20"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 50%',
-          }}
+          className="relative my-16 lg:my-24 rounded-[3rem] overflow-hidden border border-white/40 bg-white/30 backdrop-blur-md shadow-2xl shadow-black/30 w-full"
         >
-          {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[2px]" />
-
-          <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 md:px-16 lg:px-20 py-20 lg:py-32 w-full">
+          <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 md:px-16 lg:px-20 py-12 lg:py-20 w-full">
             <div className="flex-1 z-10 w-full">
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
@@ -408,12 +410,12 @@ export const Home = () => {
                     key={cat.name}
                     whileHover={{ y: -8, scale: 1.05 }}
                     onClick={() => setSearchQuery(cat.name)}
-                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white/30 hover:bg-white/40 backdrop-blur-xl border-[1px] border-white/60 rounded-[2rem] px-6 py-5 lg:px-8 lg:py-6 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
+                    className="flex flex-col items-center gap-3 lg:gap-4 bg-white hover:bg-neutral-50 border-[1px] border-neutral-200 rounded-xl px-6 py-6 lg:px-10 lg:py-8 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.10)]"
                   >
-                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-[1.25rem] overflow-hidden border-[2px] border-white/80 shadow-md">
+                    <div className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-lg overflow-hidden border-[2px] border-neutral-200 shadow-md">
                       <img src={cat.img} alt={cat.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="text-sm lg:text-base font-extrabold text-white uppercase tracking-wider drop-shadow-lg">{cat.name}</span>
+                    <span className="text-sm lg:text-base font-extrabold text-black uppercase tracking-wider">{cat.name}</span>
                   </motion.button>
                 ))}
               </div>
@@ -421,17 +423,96 @@ export const Home = () => {
           </div>
         </motion.div>
 
-        {/* Feature Grid Header */}
-        <div className="text-center md:text-left mb-8">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-neutral-900 mb-3">Các Tính Năng Nổi Bật</h2>
-          <p className="text-neutral-600 text-lg">Khám phá sức mạnh của AI trong trải nghiệm văn hóa và ẩm thực</p>
+        {/* Features Section Frame */}
+        <div className="relative p-8 md:p-12 rounded-[3rem] border border-white/40 bg-white/30 backdrop-blur-md shadow-2xl shadow-black/30">
+          {/* Feature Grid Header */}
+          <div className="text-center md:text-left mb-10">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3 tracking-tight">Các Tính Năng Nổi Bật</h2>
+            <p className="text-white/80 text-lg font-medium">Khám phá sức mạnh của AI trong trải nghiệm văn hóa và ẩm thực</p>
+          </div>
+
+          {/* Feature Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, idx) => (
+              <FeatureCard key={feature.title} feature={feature} idx={idx} />
+            ))}
+          </div>
         </div>
 
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, idx) => (
-            <FeatureCard key={feature.title} feature={feature} idx={idx} />
-          ))}
+        {/* Footer Section */}
+        <div className="mt-20 p-10 md:p-14 bg-[#f5f5f5] rounded-[3rem] shadow-xl text-neutral-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+            {/* Col 1 */}
+            <div className="flex flex-col space-y-3 text-sm font-medium">
+              <h4 className="font-extrabold text-neutral-900 mb-2 text-base">Công ty</h4>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Giới thiệu</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Trung tâm Trợ giúp</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Quy chế</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Điều khoản sử dụng</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Bảo mật thông tin</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Giải quyết khiếu nại</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Liên hệ</a>
+              <a href="#" className="text-blue-600 hover:text-orange-500 hover:underline transition-colors w-fit">Hợp tác cùng chúng tôi</a>
+            </div>
+
+            {/* Col 2 */}
+            <div className="flex flex-col space-y-4">
+              <h4 className="font-extrabold text-neutral-900 mb-1 text-base">Ứng dụng Hương Vị Bản Địa</h4>
+              <button className="flex items-center gap-3 bg-black text-white px-5 py-3 rounded-xl hover:bg-neutral-800 transition-all w-fit shadow-lg">
+                <Smartphone className="w-7 h-7" />
+                <div className="text-left">
+                  <div className="text-[10px] leading-none opacity-80 mb-0.5">Tải về trên</div>
+                  <div className="text-[15px] font-bold leading-tight tracking-wide">App Store</div>
+                </div>
+              </button>
+              <button className="flex items-center gap-3 bg-black text-white px-5 py-3 rounded-xl hover:bg-neutral-800 transition-all w-fit shadow-lg">
+                <Smartphone className="w-7 h-7" />
+                <div className="text-left">
+                  <div className="text-[10px] leading-none opacity-80 mb-0.5">Tải về trên</div>
+                  <div className="text-[15px] font-bold leading-tight tracking-wide">Google Play</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Col 3 */}
+            <div className="flex flex-col items-center lg:items-center space-y-4 lg:col-span-1">
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-white mb-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                  <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+                </div>
+                <h4 className="font-extrabold text-orange-600 text-lg">Hương Vị Bản Địa</h4>
+              </div>
+              <p className="text-xs text-neutral-400 font-medium tracking-wide">
+                © 2026 Hương Vị Bản Địa
+              </p>
+              <div className="flex gap-4 pt-2">
+                <button className="w-9 h-9 rounded-full bg-neutral-300/80 hover:bg-orange-500 hover:text-white transition-colors flex items-center justify-center text-neutral-700 shadow-sm">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button className="w-9 h-9 rounded-full bg-neutral-300/80 hover:bg-orange-500 hover:text-white transition-colors flex items-center justify-center text-neutral-700 shadow-sm">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Col 4 */}
+            <div className="flex flex-col space-y-1.5 text-[13px] text-neutral-600 text-left lg:text-right">
+              <h4 className="font-extrabold text-neutral-900 mb-3 text-base">Địa chỉ công ty</h4>
+              <p className="font-bold text-neutral-800">Công Ty Cổ Phần Ẩm Thực Bản Địa</p>
+              <p>Lầu G, Tòa nhà Innovation,</p>
+              <p>số 244 đường Cống Quỳnh, Phạm Ngũ Lão, Quận 1, TPHCM</p>
+              <p>Giấy CN ĐKDN số: 0311828036</p>
+              <p>do Sở Kế hoạch và Đầu tư TP.HCM cấp</p>
+              <p>sửa đổi lần thứ 23, ngày 10/12/2020</p>
+              <p className="pt-2">Chịu trách nhiệm nội dung: Nguyễn Hồ Quảng Giang</p>
+              <p>Điện thoại liên hệ: <span className="font-medium text-neutral-800">028 71096879</span></p>
+              <p>Email: <a href="mailto:cskh@support.huongvi.vn" className="text-blue-600 hover:underline">cskh@support.huongvi.vn</a></p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
