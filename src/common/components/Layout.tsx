@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-import { Chatbot } from './Chatbot';
 import { DesktopSidebar, MobileSidebar } from './Sidebar';
 import { getNavSections } from './SidebarConfig';
 import { TranslateWidget } from './TranslateWidget';
@@ -210,8 +209,7 @@ export const Layout = () => {
                 </div>
             </div>
 
-            {/* Chatbot Overlay */}
-            <Chatbot />
+            {/* Translate Widget Overlay */}
             <TranslateWidget />
         </div>
     );

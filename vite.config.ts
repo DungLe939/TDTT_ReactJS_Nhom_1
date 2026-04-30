@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
         Instead of: import MyComponent from '../../common/components/MyComponent'
         */
         '@': path.resolve(__dirname, './src'),
+        '@dataconnect/generated': path.resolve(__dirname, './src/dataconnect-generated'),
       },
     },
     server: {
