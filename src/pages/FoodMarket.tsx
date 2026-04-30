@@ -227,7 +227,7 @@ export function FoodMarket() {
           <div className="w-16 h-16 border-4 border-orange-200 rounded-full animate-spin border-t-orange-500" />
           <ShoppingBag className="w-6 h-6 text-orange-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
-        <p className="text-neutral-500 text-sm animate-pulse">Đang tải chợ ẩm thực...</p>
+        <p className="text-neutral-500 dark:text-gray-400 text-sm animate-pulse">Đang tải chợ ẩm thực...</p>
       </div>
     );
   }
@@ -239,8 +239,8 @@ export function FoodMarket() {
         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
           <ShoppingBag className="w-10 h-10 text-red-400" />
         </div>
-        <h2 className="text-xl font-semibold text-neutral-800">Không thể kết nối</h2>
-        <p className="text-neutral-500 text-sm text-center max-w-md">{error}</p>
+        <h2 className="text-xl font-semibold text-neutral-800 dark:text-white">Không thể kết nối</h2>
+        <p className="text-neutral-500 dark:text-gray-400 text-sm text-center max-w-md">{error}</p>
         <p className="text-neutral-400 text-xs text-center">
           Hãy kiểm tra Firebase Emulator đang chạy trên cổng 9399
         </p>
@@ -261,9 +261,9 @@ export function FoodMarket() {
         <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center">
           <ShoppingBag className="w-10 h-10 text-orange-400" />
         </div>
-        <h2 className="text-xl font-semibold text-neutral-800">Chợ đang trống!</h2>
-        <p className="text-neutral-500 text-sm text-center max-w-md">
-          Chưa có dữ liệu trong Data Connect. Hãy chạy seed data từ trang <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-xs">/test</code> trước.
+        <h2 className="text-xl font-semibold text-neutral-800 dark:text-white">Chợ đang trống!</h2>
+        <p className="text-neutral-500 dark:text-gray-400 text-sm text-center max-w-md">
+          Chưa có dữ liệu trong Data Connect. Hãy chạy seed data từ trang <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">/test</code> trước.
         </p>
       </div>
     );
@@ -322,7 +322,7 @@ export function FoodMarket() {
             placeholder="Tìm món ăn, quán, danh mục..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-400 transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-400 transition-all shadow-sm"
           />
           {searchQuery && (
             <button
@@ -336,13 +336,13 @@ export function FoodMarket() {
 
         {/* Tabs + Sort */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex bg-neutral-100 rounded-lg p-1">
+          <div className="flex bg-neutral-100 dark:bg-slate-800 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('foods')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === 'foods'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-700 dark:hover:text-white'
               }`}
             >
               <ShoppingBag className="w-4 h-4" />
@@ -352,8 +352,8 @@ export function FoodMarket() {
               onClick={() => setActiveTab('shops')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === 'shops'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-700 dark:hover:text-white'
               }`}
             >
               <Store className="w-4 h-4" />
@@ -363,13 +363,13 @@ export function FoodMarket() {
 
           {activeTab === 'foods' && (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-neutral-500">
+              <div className="flex items-center gap-1.5 text-neutral-500 dark:text-gray-400">
                 <Filter className="w-4 h-4" />
                 <select
                   id="food-market-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="bg-white border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                 >
                   <option value="default">Mặc định</option>
                   <option value="price-asc">Giá tăng dần</option>
@@ -379,10 +379,10 @@ export function FoodMarket() {
               </div>
 
               {/* View mode */}
-              <div className="hidden sm:flex bg-neutral-100 rounded-lg p-0.5">
+              <div className="hidden sm:flex bg-neutral-100 dark:bg-slate-800 rounded-lg p-0.5">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-neutral-400'}`}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 shadow-sm' : 'text-neutral-400 dark:text-gray-500'}`}
                   title="Xem lưới"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
@@ -394,7 +394,7 @@ export function FoodMarket() {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-neutral-400'}`}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm' : 'text-neutral-400 dark:text-gray-500'}`}
                   title="Xem danh sách"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
@@ -416,7 +416,7 @@ export function FoodMarket() {
               className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
                 !selectedCategory
                   ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20'
-                  : 'bg-white text-neutral-600 border-neutral-200 hover:border-orange-300 hover:text-orange-500'
+                  : 'bg-white dark:bg-slate-900 text-neutral-600 dark:text-gray-400 border-neutral-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500 hover:text-orange-500'
               }`}
             >
               <Flame className="w-3.5 h-3.5" />
@@ -429,7 +429,7 @@ export function FoodMarket() {
                 className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
                   selectedCategory === cat.id
                     ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20'
-                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-orange-300 hover:text-orange-500'
+                    : 'bg-white dark:bg-slate-900 text-neutral-600 dark:text-gray-400 border-neutral-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500 hover:text-orange-500'
                 }`}
               >
                 <Tag className="w-3.5 h-3.5" />
@@ -518,10 +518,10 @@ function FoodCard({ food, onClick }: { food: FoodItem; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group bg-white rounded-xl border border-neutral-100 overflow-hidden hover:shadow-lg hover:shadow-orange-500/10 hover:border-orange-200 transition-all duration-300 text-left cursor-pointer"
+      className="group bg-white dark:bg-slate-900 rounded-xl border border-neutral-100 dark:border-white/10 overflow-hidden hover:shadow-lg hover:shadow-orange-500/10 hover:border-orange-200 transition-all duration-300 text-left cursor-pointer"
     >
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+      <div className="relative aspect-square overflow-hidden bg-neutral-100 dark:bg-slate-800">
         <img
           src={food.imageUrl || food.thumbnailUrl || fallbackImg}
           alt={food.name}
@@ -538,9 +538,9 @@ function FoodCard({ food, onClick }: { food: FoodItem; onClick: () => void }) {
           )}
         </div>
         {food.totalLike > 0 && (
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+          <div className="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
             <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-            <span className="text-[10px] font-semibold text-neutral-700">{food.totalLike}</span>
+            <span className="text-[10px] font-semibold text-neutral-700 dark:text-gray-300">{food.totalLike}</span>
           </div>
         )}
         {/* Category tag */}
@@ -553,17 +553,17 @@ function FoodCard({ food, onClick }: { food: FoodItem; onClick: () => void }) {
 
       {/* Info */}
       <div className="p-3">
-        <h3 className="font-semibold text-sm text-neutral-800 line-clamp-2 group-hover:text-orange-600 transition-colors leading-snug">
+        <h3 className="font-semibold text-sm text-neutral-800 dark:text-white line-clamp-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-snug">
           {food.name}
         </h3>
-        <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1 truncate">
+        <p className="text-[11px] text-neutral-400 dark:text-gray-500 mt-1 flex items-center gap-1 truncate">
           <Store className="w-3 h-3 shrink-0" />
           {food.shop.name}
         </p>
         <div className="flex items-center justify-between mt-2">
           <span className="text-orange-600 font-bold text-sm">{formatPrice(food.price)}</span>
           {food.shop.rating && (
-            <span className="flex items-center gap-0.5 text-[11px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">
+            <span className="flex items-center gap-0.5 text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-md">
               <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
               {food.shop.rating}
             </span>
@@ -579,9 +579,9 @@ function FoodListItem({ food, onClick }: { food: FoodItem; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="w-full group bg-white rounded-xl border border-neutral-100 overflow-hidden hover:shadow-md hover:border-orange-200 transition-all p-3 flex gap-4 items-center text-left cursor-pointer"
+      className="w-full group bg-white dark:bg-slate-900 rounded-xl border border-neutral-100 dark:border-white/10 overflow-hidden hover:shadow-md hover:border-orange-200 transition-all p-3 flex gap-4 items-center text-left cursor-pointer"
     >
-      <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-neutral-100">
+      <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-slate-800">
         <img
           src={food.thumbnailUrl || food.imageUrl || fallbackImg}
           alt={food.name}
@@ -592,15 +592,15 @@ function FoodListItem({ food, onClick }: { food: FoodItem; onClick: () => void }
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-sm text-neutral-800 group-hover:text-orange-600 transition-colors line-clamp-1">
+          <h3 className="font-semibold text-sm text-neutral-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1">
             {food.name}
           </h3>
           <span className="text-orange-600 font-bold text-sm shrink-0">{formatPrice(food.price)}</span>
         </div>
         {food.description && (
-          <p className="text-xs text-neutral-400 mt-0.5 line-clamp-1">{food.description}</p>
+          <p className="text-xs text-neutral-400 dark:text-gray-500 mt-0.5 line-clamp-1">{food.description}</p>
         )}
-        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-neutral-500">
+        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-neutral-500 dark:text-gray-400">
           <span className="flex items-center gap-1">
             <Store className="w-3 h-3" /> {food.shop.name}
           </span>
@@ -614,7 +614,7 @@ function FoodListItem({ food, onClick }: { food: FoodItem; onClick: () => void }
               <Heart className="w-3 h-3 fill-red-400" /> {food.totalLike}
             </span>
           )}
-          <span className="bg-neutral-100 px-2 py-0.5 rounded text-neutral-500">{food.category.name}</span>
+          <span className="bg-neutral-100 dark:bg-slate-800 px-2 py-0.5 rounded text-neutral-500 dark:text-gray-400">{food.category.name}</span>
         </div>
       </div>
       <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-orange-400 shrink-0 transition-colors" />
@@ -627,10 +627,10 @@ function ShopCard({ shop, onClick }: { shop: ShopItem; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group bg-white rounded-xl border border-neutral-100 overflow-hidden hover:shadow-lg hover:shadow-orange-500/10 hover:border-orange-200 transition-all duration-300 text-left cursor-pointer"
+      className="group bg-white dark:bg-slate-900 rounded-xl border border-neutral-100 dark:border-white/10 overflow-hidden hover:shadow-lg hover:shadow-orange-500/10 hover:border-orange-200 transition-all duration-300 text-left cursor-pointer"
     >
       {/* Cover */}
-      <div className="relative h-36 overflow-hidden bg-neutral-100">
+      <div className="relative h-36 overflow-hidden bg-neutral-100 dark:bg-slate-800">
         {shop.coverImage ? (
           <img
             src={shop.coverImage}
@@ -646,29 +646,29 @@ function ShopCard({ shop, onClick }: { shop: ShopItem; onClick: () => void }) {
         )}
         {/* Rating badge */}
         {shop.rating && (
-          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1 shadow-sm">
+          <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1 shadow-sm">
             <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-            <span className="text-sm font-bold text-neutral-800">{shop.rating}</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-white">{shop.rating}</span>
           </div>
         )}
       </div>
 
       {/* Info */}
       <div className="p-4">
-        <h3 className="font-semibold text-base text-neutral-800 line-clamp-1 group-hover:text-orange-600 transition-colors">
+        <h3 className="font-semibold text-base text-neutral-800 dark:text-white line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
           {shop.name}
         </h3>
-        <p className="text-xs text-neutral-400 mt-1 flex items-center gap-1 line-clamp-1">
+        <p className="text-xs text-neutral-400 dark:text-gray-500 mt-1 flex items-center gap-1 line-clamp-1">
           <MapPin className="w-3 h-3 shrink-0" />
           {shop.address}
         </p>
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100 dark:border-white/10">
           {shop.priceDisplay && (
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-md font-medium">
+            <span className="text-xs text-green-600 bg-green-50 dark:bg-green-950/30 px-2 py-1 rounded-md font-medium">
               {shop.priceDisplay}
             </span>
           )}
-          <div className="flex items-center gap-3 text-[11px] text-neutral-400">
+          <div className="flex items-center gap-3 text-[11px] text-neutral-400 dark:text-gray-500">
             {shop.openTime && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
@@ -701,7 +701,7 @@ function FoodDetailModal({
 
       {/* Modal */}
       <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95"
+        className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {loading || !food ? (
@@ -739,9 +739,9 @@ function FoodDetailModal({
             {/* Body */}
             <div className="p-5 space-y-4">
               <div>
-                <h2 className="text-xl font-bold text-neutral-800">{food.name}</h2>
+                <h2 className="text-xl font-bold text-neutral-800 dark:text-white">{food.name}</h2>
                 {food.groupName && (
-                  <p className="text-xs text-neutral-400 mt-1">Nhóm: {food.groupName}</p>
+                  <p className="text-xs text-neutral-400 dark:text-gray-500 mt-1">Nhóm: {food.groupName}</p>
                 )}
               </div>
 
@@ -756,7 +756,7 @@ function FoodDetailModal({
               </div>
 
               {food.description && (
-                <p className="text-sm text-neutral-600 leading-relaxed bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-600 dark:text-gray-300 leading-relaxed bg-neutral-50 dark:bg-slate-800 p-3 rounded-lg">
                   {food.description}
                 </p>
               )}
@@ -764,16 +764,16 @@ function FoodDetailModal({
               {/* Shop Info */}
               <button
                 onClick={() => onShopClick(food.shop.id)}
-                className="w-full bg-neutral-50 hover:bg-orange-50 rounded-xl p-4 flex items-center gap-3 transition-colors group/shop border border-neutral-100 hover:border-orange-200 text-left"
+                className="w-full bg-neutral-50 dark:bg-slate-800 hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-xl p-4 flex items-center gap-3 transition-colors group/shop border border-neutral-100 dark:border-white/10 hover:border-orange-200 dark:hover:border-orange-400 text-left"
               >
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
                   <Store className="w-6 h-6 text-orange-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-neutral-800 group-hover/shop:text-orange-600 transition-colors truncate">
+                  <p className="font-semibold text-sm text-neutral-800 dark:text-white group-hover/shop:text-orange-600 dark:group-hover/shop:text-orange-400 transition-colors truncate">
                     {food.shop.name}
                   </p>
-                  <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1 truncate">
+                  <p className="text-xs text-neutral-400 dark:text-gray-500 mt-0.5 flex items-center gap-1 truncate">
                     <MapPin className="w-3 h-3 shrink-0" /> {food.shop.address}
                   </p>
                   <div className="flex items-center gap-3 mt-1 text-[11px]">
@@ -783,7 +783,7 @@ function FoodDetailModal({
                       </span>
                     )}
                     {food.shop.openTime && (
-                      <span className="text-neutral-400 flex items-center gap-0.5">
+                      <span className="text-neutral-400 dark:text-gray-500 flex items-center gap-0.5">
                         <Clock className="w-3 h-3" /> {food.shop.openTime} - {food.shop.closeTime}
                       </span>
                     )}
@@ -816,7 +816,7 @@ function ShopDetailModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95"
+        className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {loading || !shop ? (
@@ -851,10 +851,10 @@ function ShopDetailModal({
                   href={shop.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="absolute top-3 right-3 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 transition-colors"
+                  className="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-sm rounded-full p-2 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <ExternalLink className="w-4 h-4 text-neutral-600" />
+                  <ExternalLink className="w-4 h-4 text-neutral-600 dark:text-gray-400" />
                 </a>
               )}
               <div className="absolute bottom-4 left-5">
@@ -866,17 +866,17 @@ function ShopDetailModal({
             </div>
 
             {/* Stats bar */}
-            <div className="flex items-center gap-4 px-5 py-3 border-b border-neutral-100 text-sm">
+            <div className="flex items-center gap-4 px-5 py-3 border-b border-neutral-100 dark:border-white/10 text-sm">
               {shop.rating && (
                 <span className="flex items-center gap-1 text-amber-600 font-medium">
                   <Star className="w-4 h-4 fill-amber-500" /> {shop.rating}
                 </span>
               )}
               {shop.priceDisplay && (
-                <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">{shop.priceDisplay}</span>
+                <span className="text-green-600 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded">{shop.priceDisplay}</span>
               )}
               {shop.openTime && (
-                <span className="flex items-center gap-1 text-neutral-500">
+                <span className="flex items-center gap-1 text-neutral-500 dark:text-gray-400">
                   <Clock className="w-3.5 h-3.5" /> {shop.openTime} - {shop.closeTime}
                 </span>
               )}
@@ -884,7 +884,7 @@ function ShopDetailModal({
 
             {/* Foods list */}
             <div className="p-5">
-              <h3 className="font-semibold text-base text-neutral-800 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-base text-neutral-800 dark:text-white mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-orange-500" />
                 Thực đơn ({shop.foodItems_on_shop.length} món)
               </h3>
@@ -893,9 +893,9 @@ function ShopDetailModal({
                   <button
                     key={food.id}
                     onClick={() => onFoodClick(food.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-200 text-left group/item"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors border border-transparent hover:border-orange-200 dark:hover:border-orange-400 text-left group/item"
                   >
-                    <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-neutral-100">
+                    <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-slate-800">
                       <img
                         src={food.thumbnailUrl || food.imageUrl || fallbackImg}
                         alt={food.name}
@@ -905,11 +905,11 @@ function ShopDetailModal({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-neutral-800 group-hover/item:text-orange-600 transition-colors line-clamp-1">
+                      <p className="font-medium text-sm text-neutral-800 dark:text-white group-hover/item:text-orange-600 dark:group-hover/item:text-orange-400 transition-colors line-clamp-1">
                         {food.name}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 text-[11px]">
-                        <span className="text-neutral-400">{food.category.name}</span>
+                        <span className="text-neutral-400 dark:text-gray-500">{food.category.name}</span>
                         {food.totalLike > 0 && (
                           <span className="text-red-400 flex items-center gap-0.5">
                             <Heart className="w-3 h-3 fill-red-400" /> {food.totalLike}

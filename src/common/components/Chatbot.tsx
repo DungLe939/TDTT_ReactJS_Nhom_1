@@ -61,7 +61,7 @@ export const Chatbot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 w-[350px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-100px)] bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-neutral-200"
+            className="fixed bottom-6 right-6 w-[350px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-100px)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-neutral-200 dark:border-white/10"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-4 text-white flex justify-between items-center">
@@ -75,17 +75,17 @@ export const Chatbot = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto bg-neutral-50 flex flex-col gap-3">
+            <div className="flex-1 p-4 overflow-y-auto bg-neutral-50 dark:bg-slate-950 flex flex-col gap-3">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex gap-2 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.type === 'bot' && (
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-5 h-5 text-orange-600" />
+                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     </div>
                   )}
                   <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${msg.type === 'user'
                       ? 'bg-orange-500 text-white rounded-tr-none'
-                      : 'bg-white text-neutral-800 border border-neutral-200 rounded-tl-none'
+                      : 'bg-white dark:bg-slate-800 text-neutral-800 dark:text-white border border-neutral-200 dark:border-white/10 rounded-tl-none'
                     }`}>
                     <p className="text-sm">{msg.text}</p>
                   </div>
@@ -94,19 +94,19 @@ export const Chatbot = () => {
             </div>
 
             {/* Input */}
-            <div className="p-3 bg-white border-t border-neutral-200 flex items-center gap-2">
+            <div className="p-3 bg-white dark:bg-slate-900 border-t border-neutral-200 dark:border-white/10 flex items-center gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Nhập tin nhắn..."
-                className="flex-1 px-4 py-2 bg-neutral-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                className="flex-1 px-4 py-2 bg-neutral-100 dark:bg-slate-800 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 dark:text-white"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white disabled:bg-neutral-300 transition-colors"
+                className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white disabled:bg-neutral-300 dark:disabled:bg-slate-700 transition-colors"
               >
                 <Send className="w-4 h-4 ml-1" />
               </button>

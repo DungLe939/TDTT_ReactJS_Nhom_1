@@ -18,8 +18,8 @@ export const Itinerary = () => {
     <div className="max-w-4xl mx-auto pb-20">
 
       {/* Header & Map Overview */}
-      <div className="bg-white rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 mb-6">
-        <div className="relative h-48 bg-neutral-200">
+      <div className="bg-white dark:bg-slate-900 rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 dark:border-white/10 mb-6">
+        <div className="relative h-48 bg-neutral-200 dark:bg-slate-800">
           <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80" alt="Map" className="w-full h-full object-cover opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
@@ -33,7 +33,7 @@ export const Itinerary = () => {
               <h1 className="text-2xl font-bold">Lịch trình Food Tour</h1>
               <p className="text-sm opacity-90 flex items-center gap-1"><MapPin className="w-4 h-4" /> Đà Nẵng, 3 ngày</p>
             </div>
-            <button className="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/30">
+            <button className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-md p-2 rounded-xl border border-white/30 dark:border-white/20">
               <Filter className="w-5 h-5" />
             </button>
           </div>
@@ -46,12 +46,12 @@ export const Itinerary = () => {
               key={date}
               onClick={() => setActiveDay(idx)}
               className={`flex flex-col items-center min-w-[3.5rem] p-2 rounded-2xl transition-all ${activeDay === idx
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-                  : 'bg-neutral-50 text-neutral-500 hover:bg-orange-50'
+                  ? 'bg-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-none'
+                  : 'bg-neutral-50 dark:bg-slate-800 text-neutral-500 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-orange-950/30'
                 }`}
             >
               <span className="text-xs font-semibold mb-1">{DAYS[idx]}</span>
-              <span className={`text-lg font-bold ${activeDay === idx ? 'text-white' : 'text-neutral-800'}`}>{date}</span>
+              <span className={`text-lg font-bold ${activeDay === idx ? 'text-white' : 'text-neutral-800 dark:text-white'}`}>{date}</span>
             </button>
           ))}
         </div>
@@ -60,8 +60,8 @@ export const Itinerary = () => {
       {/* Plan Content */}
       <div className="px-4 space-y-4">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="font-bold text-neutral-800 text-lg">Hôm nay ăn gì?</h2>
-          <button className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 px-3 py-1.5 rounded-lg transition-colors">
+          <h2 className="font-bold text-neutral-800 dark:text-white text-lg">Hôm nay ăn gì?</h2>
+          <button className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 px-3 py-1.5 rounded-lg transition-colors">
             <RefreshCw className="w-4 h-4" /> Tạo lại
           </button>
         </div>
@@ -71,12 +71,12 @@ export const Itinerary = () => {
             key={meal.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-3 shadow-sm border border-neutral-100 flex gap-4 relative overflow-hidden"
+            className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-white/10 flex gap-4 relative overflow-hidden"
           >
             {meal.warning && (
-              <div className="absolute top-0 right-0 left-0 bg-red-50 text-red-600 text-xs px-3 py-1 flex items-center gap-1 font-medium border-b border-red-100">
+              <div className="absolute top-0 right-0 left-0 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs px-3 py-1 flex items-center gap-1 font-medium border-b border-red-100 dark:border-red-900/30">
                 <AlertTriangle className="w-3 h-3" /> Món này hơi giống món trưa qua, bạn có muốn đổi?
-                <button className="ml-auto text-red-700 underline font-bold">Đổi món</button>
+                <button className="ml-auto text-red-700 dark:text-red-300 underline font-bold">Đổi món</button>
               </div>
             )}
 
@@ -87,17 +87,17 @@ export const Itinerary = () => {
             <div className={`flex-1 py-1 flex flex-col justify-between ${meal.warning ? 'mt-6' : ''}`}>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-white bg-neutral-800 px-2 py-0.5 rounded-md uppercase tracking-wider">{meal.type}</span>
-                  <span className="text-xs text-neutral-500 flex items-center gap-0.5"><Clock className="w-3 h-3" /> {meal.time}</span>
+                  <span className="text-xs font-bold text-white bg-neutral-800 dark:bg-slate-700 px-2 py-0.5 rounded-md uppercase tracking-wider">{meal.type}</span>
+                  <span className="text-xs text-neutral-500 dark:text-gray-400 flex items-center gap-0.5"><Clock className="w-3 h-3" /> {meal.time}</span>
                 </div>
-                <h3 className="font-bold text-neutral-800 leading-tight">{meal.name}</h3>
+                <h3 className="font-bold text-neutral-800 dark:text-white leading-tight">{meal.name}</h3>
               </div>
 
               <div className="flex items-center justify-between mt-2">
-                <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                <span className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-2 py-1 rounded-lg">
                   {meal.tag}
                 </span>
-                <button className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-orange-100 hover:text-orange-600 transition-colors">
+                <button className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-slate-800 flex items-center justify-center text-neutral-600 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-orange-900/50 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                   <Navigation className="w-4 h-4" />
                 </button>
               </div>
@@ -105,7 +105,7 @@ export const Itinerary = () => {
           </motion.div>
         ))}
 
-        <button className="w-full border-2 border-dashed border-neutral-300 text-neutral-500 rounded-2xl py-4 flex items-center justify-center gap-2 font-medium hover:border-orange-300 hover:text-orange-500 transition-colors">
+        <button className="w-full border-2 border-dashed border-neutral-300 dark:border-white/20 text-neutral-500 dark:text-gray-400 rounded-2xl py-4 flex items-center justify-center gap-2 font-medium hover:border-orange-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
           <Plus className="w-5 h-5" /> Thêm bữa ăn phụ
         </button>
       </div>
