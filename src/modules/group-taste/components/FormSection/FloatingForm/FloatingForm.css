@@ -1,0 +1,191 @@
+.floating-form-wrapper {
+    position: relative;
+    z-index: 50;
+    padding: 0 1.5rem;
+    width: 100%;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.floating-form-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 32px;
+    padding: 45px 60px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.12), 0 20px 40px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.floating-form-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: -0.5rem;
+}
+
+.floating-form-title {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.02em;
+}
+
+.floating-form-content {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+}
+
+.input-group-premium {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-wrapper {
+    position: absolute;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.premium-input {
+    width: 100%;
+    padding: 1.1rem 1.1rem 1.1rem 3.5rem;
+    background: #fdfdfd;
+    border: 2px solid #f1f5f9;
+    border-radius: 20px;
+    font-size: 1rem;
+    color: #334155;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-input:focus {
+    outline: none;
+    border-color: #fb923c;
+    box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.1);
+    background: #fff;
+}
+
+.premium-submit-btn {
+    padding: 1.1rem 1.5rem;
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.premium-submit-btn:hover:not(:disabled) {
+    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.4);
+}
+
+.premium-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #94a3b8;
+    box-shadow: none;
+}
+
+.floating-form-footer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.suggestion-tag {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.suggestion-tag:hover {
+    color: #f97316;
+}
+
+.location-badge-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.25rem;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 99px;
+    color: #065f46;
+    font-size: 0.875rem;
+    align-self: flex-start;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .floating-form-wrapper {
+        margin-top: -100px;
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-form-wrapper {
+        margin-top: -80px;
+    }
+
+    .floating-form-card {
+        padding: 30px 25px;
+        border-radius: 24px;
+        gap: 1.25rem;
+    }
+
+    .floating-form-title {
+        font-size: 1.4rem;
+    }
+
+    .floating-form-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .premium-submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .premium-input {
+        padding: 1rem 1rem 1rem 3.2rem;
+    }
+}

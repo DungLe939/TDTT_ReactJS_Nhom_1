@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      allowedHosts: true, // Cho phép truy cập từ link public (localtunnel, ngrok, pinggy)
       proxy: scanApiUrl
         ? {
           '/scan-api': {
