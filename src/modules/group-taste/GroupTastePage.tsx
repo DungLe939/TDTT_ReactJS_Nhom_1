@@ -20,13 +20,17 @@ import bgImage from './assets/background.jpg';
  *   1. User nhập khu vực → searchLocation() → backend nạp nhà hàng vào Firestore
  *   2. User thêm thành viên → fetchRecommendations() → nhận DishInfo[] (không có location)
  *   3. User click món → getDishDetail() → nhận DishDetailResponse (có lat/lng/address)
- *   4. DishDetail hiển thị Google Maps iframe + nút Chỉ đường
- *   5. MapView fly đến vị trí nhà hàng được chọn
+ *   4. DishDetail hiển thị Goong Map + nút Chỉ đường (Goong Directions API)
+ *   5. Map vẽ route từ vị trí người dùng đến nhà hàng
+ *
+ * Share link flow:
+ *   - /group/:groupId → tự động gọi getGroup(groupId) → sync danh sách thành viên
  */
 export const GroupTastePage: React.FC = () => {
   const {
     location: userLocation,
   } = useLocation();
+
 
   const {
     users,
@@ -41,9 +45,8 @@ export const GroupTastePage: React.FC = () => {
     setUsers,
   } = useGroupTaste();
 
-
   // ── State ──
-  const [groupId, setGroupId] = useState<string | null>(null);
+
 
   /** Món đang được chọn trong danh sách (để highlight card) */
   const [selectedDish, setSelectedDish] = useState<DishInfo | null>(null);
@@ -72,9 +75,6 @@ export const GroupTastePage: React.FC = () => {
     }
   }, [result, loading]);
 
-  /** Cuộn xuống chi tiết khi chọn món - ĐÃ CHUYỂN SANG MODAL, KHÔNG CẦN SCROLL */
-
-
   /**
    * Click vào món ăn:
    * 1. Highlight card ngay lập tức
@@ -97,7 +97,7 @@ export const GroupTastePage: React.FC = () => {
       setDetailLoading(true);
       setCurrentView('dishDetail');
 
-      const currentLocation = searchCoords ?? userLocation ?? { lat: 10.7626, lng: 106.6602 };
+      const currentLocation = userLocation || searchCoords || { lat: 10.7626, lng: 106.6602 };
 
       try {
         const detail = await groupTasteApiService.getDishDetail(
@@ -113,7 +113,7 @@ export const GroupTastePage: React.FC = () => {
         setDetailLoading(false);
       }
     },
-    [selectedDish, searchCoords, userLocation, users],
+    [selectedDish, searchCoords, userLocation, users, currentView],
   );
 
 
@@ -125,12 +125,9 @@ export const GroupTastePage: React.FC = () => {
     setCurrentView('main');
   }, [resetAll]);
 
-  const handleGroupCreated = useCallback((newGroupId: string) => {
-    setGroupId(newGroupId);
-  }, []);
 
   return (
-    <div className="min-h-screen selection:bg-orange-200">
+    <div className="min-h-screen selection:bg-orange-200 -mt-4 sm:-mt-6 lg:-mt-8">
       {/* ─── SECTION 1: Hero + Map ─── */}
       <div className="relative w-full overflow-visible">
         {/* Background */}
@@ -146,21 +143,18 @@ export const GroupTastePage: React.FC = () => {
 
         {/* Content */}
         <div className="relative z-10">
-          <HeroBanner />
 
-          <div className="py-8">
-
-          </div>
+        <HeroBanner />
         </div>
       </div>
 
       {currentView === 'dishDetail' && (
-        <div className="w-full h-screen fixed inset-0 z-50 bg-white">
+        <div className="w-full fixed top-16 inset-x-0 bottom-0 z-50 bg-white">
           {detailLoading && !selectedDetail ? (
             <div className="flex items-center justify-center h-full bg-white">
               <div className="flex items-center gap-4 p-6 bg-white rounded-3xl shadow-2xl border border-neutral-100">
                 <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
-                <p className="font-bold text-slate-700">Đang chuẩn bị thực đơn...</p>
+                <p className="font-bold text-slate-700">Đang tải dữ liệu...</p>
               </div>
             </div>
           ) : selectedDetail ? (
@@ -185,7 +179,7 @@ export const GroupTastePage: React.FC = () => {
       )}
 
       {currentView === 'restaurantDetail' && selectedRestaurant && (
-        <div className="w-full h-screen fixed inset-0 z-50 bg-white">
+        <div className="w-full fixed top-16 inset-x-0 bottom-0 z-50 bg-white">
           <RestaurantDetail
             restaurant={selectedRestaurant}
             onClose={() => {
@@ -230,8 +224,6 @@ export const GroupTastePage: React.FC = () => {
                 removeUser={removeUser}
                 userLocation={userLocation}
                 fetchRecommendations={fetchRecommendations}
-                groupId={groupId}
-                onGroupCreated={handleGroupCreated}
               />
             </div>
 

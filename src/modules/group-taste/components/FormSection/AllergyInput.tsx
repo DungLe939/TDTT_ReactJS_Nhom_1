@@ -45,6 +45,7 @@ export const AllergyInput: React.FC<AllergyInputProps> = ({ allergies, onAllergi
           >
             {tag}
             <button
+              type="button"
               onClick={() => removeAllergy(tag)}
               className="hover:text-red-800 transition-colors"
             >
@@ -64,6 +65,7 @@ export const AllergyInput: React.FC<AllergyInputProps> = ({ allergies, onAllergi
           className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all pr-12"
         />
         <button
+          type="button"
           onClick={() => addAllergy(inputValue)}
           disabled={!inputValue.trim()}
           className="absolute right-2 top-2 w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black transition-colors disabled:opacity-30"
@@ -77,6 +79,7 @@ export const AllergyInput: React.FC<AllergyInputProps> = ({ allergies, onAllergi
         {COMMON_ALLERGIES.map((tag) => (
           <button
             key={tag}
+            type="button"
             onClick={() => addAllergy(tag)}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
               allergies.includes(tag)
