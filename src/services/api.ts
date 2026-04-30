@@ -152,13 +152,7 @@ export const scheduleService = {
         return response.data;
     },
 
-    /**
-     * Gửi toàn bộ thông tin để tạo lịch trình (Phiên bản đồng bộ )
-     */
-    generatePlan: async (payload: unknown) => {
-        const response = await apiClient.post('/schedule/generatePlan', payload);
-        return response.data;
-    },
+
 
     /**
      * Truy vấn dữ liệu bản đồ để vẽ chỉ đường giữa các món ăn.
