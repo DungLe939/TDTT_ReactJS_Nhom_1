@@ -2,11 +2,13 @@ import { createBrowserRouter } from 'react-router';
 import { Layout } from './common/components/Layout';
 
 import { Home } from './pages/Home';
+import { Itinerary } from './pages/Itinerary';
 import { FoodScan } from './pages/FoodScan';
 import { SmartMenu } from './pages/SmartMenu';
 import { Quests } from './pages/Quests';
 import { GroupTaste } from './pages/GroupTaste';
 import { Admin } from './pages/Admin';
+import { AdminLogin } from './pages/AdminLogin';
 import { FileUploadDemo } from './pages/FileUploadDemo';
 import { LoadingModalDemo } from './pages/LoadingModalDemo';
 import { Auth } from './modules/auth/pages/Auth';
@@ -22,6 +24,7 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: Home },
+      { path: 'itinerary', Component: Itinerary },
       { path: 'scan', Component: FoodScan },
       { path: 'menu', Component: SmartMenu },
       { path: 'quests', Component: Quests },
@@ -29,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'market', Component: FoodMarket },
       { path: 'group/:groupId', Component: GroupTaste },
       { path: 'admin', Component: Admin },
+      { path: 'admin-login', Component: AdminLogin },
       { path: 'upload-demo', Component: FileUploadDemo },
       { path: 'loading-demo', Component: LoadingModalDemo },
       { path: 'auth', Component: Auth },

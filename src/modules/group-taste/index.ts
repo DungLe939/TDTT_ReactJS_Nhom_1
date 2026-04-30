@@ -8,8 +8,11 @@
 export type {
   UserPreference,
   Restaurant,
+  RestaurantSummary,
+  Dish,
+  DishInfo,
+  DishDetailResponse,
   ScoreResult,
-  UserScoreDetail,
   GeoLocation,
   GroupRecommendationResponse,
 } from './types';
@@ -18,7 +21,5 @@ export type {
 export { useLocation } from './hooks/useLocation';
 export { useGroupTaste } from './hooks/useGroupTaste';
 export type { GroupUser } from './hooks/useGroupTaste';
-export { useRestaurants } from './hooks/useRestaurants';
-
 // Main Page Component
 export { GroupTastePage } from './GroupTastePage';

@@ -171,6 +171,9 @@ export interface ListFoodsByCategoryData {
       id: UUIDString;
       name: string;
       rating?: number | null;
+      coverImage?: string | null;
+      openTime?: string | null;
+      closeTime?: string | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -203,6 +206,11 @@ export interface ListFoodsData {
       name: string;
       rating?: number | null;
       address: string;
+      lat?: number | null;
+      lng?: number | null;
+      coverImage?: string | null;
+      openTime?: string | null;
+      closeTime?: string | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -228,6 +236,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
+    lat?: number | null;
+    lng?: number | null;
   } & Shop_Key)[];
 }
 

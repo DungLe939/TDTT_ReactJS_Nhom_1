@@ -1,194 +1,306 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Star, MapPin, Camera, Users, Gift, Crown } from 'lucide-react';
+import { Trophy, CheckCircle2, Target, MessageSquare, X, AlertCircle, Ticket } from 'lucide-react';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
-const MOCK_QUESTS = [
-  {
-    id: 1,
-    title: 'Thợ Săn Ẩm Thực',
-    description: 'Chụp ảnh 3 món ăn đường phố bất kỳ.',
-    reward: 'Voucher giảm 15%',
-    progress: 2,
-    total: 3,
-    icon: <Camera className="w-6 h-6 text-amber-500" />,
-    xp: 50,
-  },
-  {
-    id: 2,
-    title: 'Bậc Thầy Chợ Đêm',
-    description: 'Check-in tại Chợ Đêm Đà Lạt sau 19:00.',
-    reward: 'Free 1 Đồ uống',
-    progress: 0,
-    total: 1,
-    icon: <MapPin className="w-6 h-6 text-red-500" />,
-    xp: 100,
-  },
-  {
-    id: 3,
-    title: 'Team Sành Ăn',
-    description: 'Đi ăn cùng 3 người bạn và sử dụng tính năng "Nhóm ăn".',
-    reward: 'Giảm thêm 5% cho cả nhóm',
-    progress: 0,
-    total: 1,
-    icon: <Users className="w-6 h-6 text-blue-500" />,
-    xp: 150,
-  },
-];
+import { getAchievementsForUser } from '@/modules/quests/services/achievementService';
+import type { AchievementWithProgress, UserRewardResolved } from '@/modules/quests/types/quest.types';
+import { QuestCard } from '@/modules/quests/components/QuestsCard/QuestsCard';
+import { useBlog } from '@/modules/quests/hooks/useBlog';
+import CreatePostForm from '@/modules/quests/components/CreatePostForm/CreatePostForm';
+import PostList from '@/modules/quests/components/PostList/PostList';
+import PostFilter from '@/modules/quests/components/PostFilter/PostFilter';
+import RestaurantCard from '@/modules/quests/components/RestaurantCard/RestaurantCard';
+import UserAchievementCard from '@/modules/quests/components/UserAchievementCard/UserAchievementCard';
+import AuthGuardCard from '@/modules/quests/components/AuthGuardCard/AuthGuardCard';
+import VoucherTab from '@/modules/quests/components/VoucherTab/VoucherTab';
+import { getUserRewards } from '@/modules/quests/services/achievementService';
 
-const LEADERBOARD = [
-  { rank: 1, name: 'Linh Nguyễn', level: 24, xp: '12.4k' },
-  { rank: 2, name: 'Hoàng Trần', level: 21, xp: '10.2k' },
-  { rank: 3, name: 'Traveler (Bạn)', level: 15, xp: '7.5k', isUser: true },
-  { rank: 4, name: 'Minh Phạm', level: 14, xp: '6.8k' },
-  { rank: 5, name: 'Hương Lê', level: 12, xp: '5.1k' },
-];
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+type FilterTab = 'community' | 'all' | 'active' | 'completed' | 'vouchers';
+
+function EmptyState({ tab }: { tab: FilterTab }) {
+  const messages: Record<string, { emoji: string; text: string }> = {
+    all: { emoji: '🍽️', text: 'Chưa có nhiệm vụ nào. Quay lại sau nhé!' },
+    active: { emoji: '🎯', text: 'Bạn đã hoàn thành tất cả nhiệm vụ rồi!' },
+    completed: { emoji: '🏁', text: 'Hãy bắt đầu khám phá để nhận thưởng!' },
+    community: { emoji: '📮', text: 'Chưa có bài viết nào. Hãy viết bài đầu tiên!' },
+  };
+  const { emoji, text } = messages[tab] || messages.all;
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-3xl border border-dashed border-neutral-200">
+      <span className="text-5xl mb-4 grayscale opacity-40">{emoji}</span>
+      <p className="text-neutral-400 font-bold text-sm tracking-tight">{text}</p>
+    </div>
+  );
+}
+
+// ─── main page ────────────────────────────────────────────────────────────────
 
 export const Quests = () => {
-  const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard'>('quests');
+  const { user, isLoggedIn } = useAuth();
+  const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<FilterTab>('community');
+  const [visibleRestaurants, setVisibleRestaurants] = useState(10);
+
+  const {
+    posts, restaurants, filter, currentUser, isLoading: blogLoading,
+    createPost, toggleLike, addComment, toggleLikeComment, visitRestaurant,
+    toggleFilterTag, clearFilter, hasLiked,
+  } = useBlog();
+
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
+  // fetch achievements
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoading(true);
+    getAchievementsForUser(user.id)
+      .then((data) => {
+        setAchievements(data);
+        setQuotaExceeded(false);
+      })
+      .catch((err) => {
+        if (err?.response?.status === 500 || err?.message?.includes('quota')) {
+          setQuotaExceeded(true);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id]);
+
+  const completed = achievements.filter(a => a.progress.isCompleted);
+  const active = achievements.filter(a => !a.progress.isCompleted);
+  const visible =
+    tab === 'all' ? achievements :
+      tab === 'active' ? active :
+        tab === 'completed' ? completed : [];
+
+  // fetch vouchers
+  const [vouchers, setVouchers] = useState<UserRewardResolved[]>([]);
+  const [voucherLoading, setVoucherLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setVoucherLoading(true);
+    getUserRewards(currentUser.id)
+      .then(rewards => {
+        const voucherOnly = rewards.filter(r => r.reward.type === 'voucher' && !r.isUsed);
+        setVouchers(voucherOnly);
+      })
+      .catch(console.error)
+      .finally(() => setVoucherLoading(false));
+  }, [currentUser.id, isLoggedIn]);
+
+  const validVoucherCount = useMemo(() =>
+    vouchers.filter(v => {
+      const ts = v.expiresAt as { _seconds: number } | undefined;
+      return !ts || new Date(ts._seconds * 1000) > new Date();
+    }).length
+    , [vouchers]);
+
+  // tabs
+  const TABS: { key: FilterTab; label: string; count?: number; icon: any }[] = [
+    { key: 'community', label: 'Cộng đồng', icon: <MessageSquare className="w-4 h-4" /> },
+    { key: 'all', label: 'Tất cả', count: achievements.length, icon: <Trophy className="w-4 h-4" /> },
+    { key: 'active', label: 'Đang làm', count: active.length, icon: <Target className="w-4 h-4" /> },
+    { key: 'completed', label: 'Xong', count: completed.length, icon: <CheckCircle2 className="w-4 h-4" /> },
+    { key: 'vouchers', label: 'Voucher', count: validVoucherCount || undefined, icon: <Ticket className="w-4 h-4" /> },
+
+  ];
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-neutral-50 pb-20">
-      {/* Header & User Stats */}
-      <div className="bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white rounded-b-[2rem] shadow-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="w-6 h-6" /> Food Quests
-          </h1>
-          <div className="bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" /> 1,250 Điểm
-          </div>
-        </div>
+    <div className="max-w-[1500px] mx-auto w-full pt-4 pb-20 px-4 sm:px-6 lg:px-8">
 
-        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-md border border-white/20">
-          <div className="flex justify-between items-end mb-2">
-            <div>
-              <p className="text-white/80 text-sm">Level hiện tại</p>
-              <p className="text-3xl font-bold">15</p>
+      {/* Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        {/* left column - profile & stats */}
+        <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[90px]">
+          <UserAchievementCard user={currentUser} />
+
+          <div className="bg-white rounded-3xl p-5 shadow-sm border border-neutral-100">
+            <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest mb-4 flex items-center gap-2 pl-3 border-l-4 border-orange-500 h-4 min-h-[16px]">
+              Tóm tắt tiến độ
+            </h4>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-neutral-600">Nhiệm vụ xong</span>
+                <span className="text-sm font-black text-emerald-600">{completed.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-neutral-600">Đang thực hiện</span>
+                <span className="text-sm font-black text-orange-500">{active.length}</span>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-white/80 text-sm mb-1">Thực Thần Tập Sự</p>
-              <p className="text-xs">7,500 / 10,000 XP</p>
+            <div className="mt-5 pt-5 border-t border-neutral-50 flex flex-col gap-3">
+              <p className="text-[10px] text-neutral-400 font-medium leading-relaxed">
+                Tham gia cộng đồng và hoàn thành nhiệm vụ để nhận những ưu đãi ẩm thực hấp dẫn nhất!
+              </p>
             </div>
           </div>
-          {/* XP Bar */}
-          <div className="w-full h-3 bg-black/20 rounded-full overflow-hidden mt-2">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: '75%' }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-full"
-            />
+        </aside>
+
+        {/* center column - feed & quest lists */}
+        <main className="lg:col-span-6 flex flex-col gap-6">
+
+          {/* Tab Switcher */}
+          <div className="bg-white/70 backdrop-blur-md p-1.5 rounded-3xl border border-white/50 shadow-sm flex gap-1 items-center sticky top-[90px] z-20">
+            {TABS.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap
+        ${tab === t.key
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
+                    : 'text-neutral-500 hover:bg-neutral-50'}`}
+              >
+                {t.icon}
+                <span>{t.label}</span>
+                {t.count !== undefined && (
+                  <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-md font-black
+          ${tab === t.key ? 'bg-white/20 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+                    {t.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-        </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-4">
-        <button
-          onClick={() => setActiveTab('quests')}
-          className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'quests' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
-            }`}
-        >
-          Nhiệm vụ
-        </button>
-        <button
-          onClick={() => setActiveTab('leaderboard')}
-          className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-neutral-500 hover:bg-neutral-100'
-            }`}
-        >
-          Bảng xếp hạng
-        </button>
-      </div>
-
-      <div className="px-4">
-        <AnimatePresence mode="wait">
-          {activeTab === 'quests' ? (
+          <AnimatePresence mode="wait">
             <motion.div
-              key="quests"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-4"
+              key={tab}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-6"
             >
-              {MOCK_QUESTS.map((quest) => (
-                <div key={quest.id} className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-neutral-50 rounded-xl flex items-center justify-center shrink-0">
-                      {quest.icon}
+              {tab === 'community' ? (
+                <>
+                  <CreatePostForm
+                    currentUser={currentUser} restaurants={restaurants} onSubmit={createPost}
+                  />
+                  {blogLoading && posts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+                      <p className="text-sm font-bold text-neutral-400">Đang kết nối cộng đồng...</p>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-neutral-800">{quest.title}</h3>
-                        <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">+{quest.xp} XP</span>
-                      </div>
-                      <p className="text-sm text-neutral-500 mt-1">{quest.description}</p>
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
-                          <Gift className="w-3.5 h-3.5" /> {quest.reward}
-                        </div>
-                        <div className="text-xs font-semibold text-neutral-400">
-                          {quest.progress}/{quest.total}
-                        </div>
-                      </div>
-
-                      {/* Progress bar */}
-                      <div className="w-full h-1.5 bg-neutral-100 rounded-full mt-3">
-                        <div
-                          className="h-full bg-orange-500 rounded-full transition-all"
-                          style={{ width: `${(quest.progress / quest.total) * 100}%` }}
-                        />
-                      </div>
-
-                      <button className={`w-full mt-4 py-2 rounded-xl text-sm font-semibold transition-all ${quest.progress === quest.total
-                          ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-200'
-                          : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                        }`}>
-                        {quest.progress === quest.total ? 'Nhận thưởng' : 'Tham gia'}
-                      </button>
-                    </div>
-                  </div>
+                  ) : posts.length === 0 ? (
+                    <EmptyState tab="community" />
+                  ) : (
+                    <PostList
+                      posts={posts} demoUsers={[]} restaurants={restaurants} currentUser={currentUser}
+                      onLike={toggleLike} onComment={(pid, content, photos, parentId) => addComment(pid, content, photos, parentId)}
+                      onLikeComment={toggleLikeComment} hasLiked={hasLiked}
+                    />
+                  )}
+                </>
+              ) : !isLoggedIn ? (
+                <div className="py-8">
+                  <AuthGuardCard
+                    title="Đăng nhập để nhận nhiệm vụ"
+                    description="Hãy đăng nhập để tham gia hành trình khám phá ẩm thực, chinh phục thử thách và nhận những phần quà hấp dẫn!"
+                    icon={<Trophy className="w-10 h-10 text-orange-500" />}
+                  />
                 </div>
-              ))}
+              ) : tab === 'vouchers' ? (
+                <VoucherTab
+                  userId={currentUser.id}
+                  vouchers={vouchers}
+                  loading={voucherLoading}
+                  onVouchersChange={setVouchers}
+                />
+              ) : quotaExceeded ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                  <p className="text-xs text-amber-700">
+                    Tiến độ của bạn tạm thời không thể tải. Hãy thử lại sau ít phút nhé!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="bg-white h-32 rounded-3xl border border-neutral-100 animate-pulse" />
+                    ))
+                  ) : visible.length === 0 ? (
+                    <EmptyState tab={tab} />
+                  ) : (
+                    visible.map((ach, i) => (
+                      <QuestCard key={ach.id} ach={ach} index={i} />
+                    ))
+                  )}
+                </div>
+              )}
             </motion.div>
-          ) : (
-            <motion.div
-              key="leaderboard"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden"
-            >
-              {LEADERBOARD.map((user, index) => (
-                <div
-                  key={user.rank}
-                  className={`flex items-center gap-4 p-4 ${index !== LEADERBOARD.length - 1 ? 'border-b border-neutral-100' : ''
-                    } ${user.isUser ? 'bg-orange-50/50' : ''}`}
+          </AnimatePresence>
+        </main>
+
+        {/* right column - discovery & filters */}
+        <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[90px]">
+
+          {/* Recommended Restaurants */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2 pl-3 border-l-4 border-orange-500 h-4 min-h-[16px] mb-1">
+              Đề xuất cho bạn
+            </h4>
+            <div className="bg-white rounded-3xl shadow-sm border border-neutral-100 flex flex-col max-h-[460px] overflow-hidden">
+              <div className="overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                {restaurants.slice(0, visibleRestaurants).map((r) => (
+                  <RestaurantCard key={r.id} restaurant={r} onVisit={visitRestaurant} />
+                ))}
+                {visibleRestaurants < restaurants.length && (
+                  <button
+                    onClick={() => setVisibleRestaurants(prev => prev + 3)}
+                    className="w-full py-2 text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors"
+                  >
+                    Xem thêm địa điểm
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Post Filter (only for community) */}
+          <div className={`transition-all duration-500 overflow-hidden flex flex-col gap-3
+             ${tab === 'community' ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0 mb-[-1.5rem]'}`}>
+
+            <div className="flex items-center justify-between pl-3 border-l-4 border-orange-500 h-4 min-h-[16px] mb-1">
+              <h4 className="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2">
+                Lọc theo thẻ
+                {filter.tags.length > 0 && (
+                  <span className="bg-orange-500 text-white text-[9px] px-1.5 py-0.5 rounded-full rotate-3 shadow-sm">
+                    {filter.tags.length}
+                  </span>
+                )}
+              </h4>
+              {filter.tags.length > 0 && (
+                <button
+                  onClick={clearFilter}
+                  className="text-[9px] font-black text-neutral-400 hover:text-red-500 transition-colors uppercase tracking-widest flex items-center gap-1"
                 >
-                  <div className="w-8 text-center font-bold text-lg">
-                    {user.rank === 1 ? <Crown className="w-6 h-6 text-yellow-500 mx-auto" /> :
-                      user.rank === 2 ? <span className="text-neutral-400">2</span> :
-                        user.rank === 3 ? <span className="text-amber-600">3</span> :
-                          <span className="text-neutral-400">{user.rank}</span>}
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-300 flex items-center justify-center text-white font-bold shrink-0">
-                    {user.name.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <p className={`font-semibold ${user.isUser ? 'text-orange-600' : 'text-neutral-800'}`}>
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-neutral-500">Level {user.level}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-neutral-700">{user.xp}</p>
-                    <p className="text-[10px] text-neutral-400 uppercase">XP</p>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <X className="w-3 h-3" /> Xóa lọc
+                </button>
+              )}
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden">
+              <PostFilter activeTags={filter.tags} onToggleTag={toggleFilterTag} onClear={clearFilter} />
+            </div>
+          </div>
+
+          {/* Tip of the day */}
+          <div className="bg-gradient-to-br from-neutral-800 to-black rounded-3xl p-5 text-white relative overflow-hidden group mt-2">
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-500/30 transition-all duration-700" />
+            <h5 className="text-[11px] font-black uppercase tracking-widest text-orange-500 mb-2 pl-3 border-l-2 border-orange-500/30">Mẹo nhỏ</h5>
+            <p className="text-[11px] font-medium leading-relaxed text-neutral-300">
+              Chụp ảnh món ăn và gắn thẻ nhà hàng khi đăng bài để tăng 50% cơ hội nhận được huy hiệu "Nhà báo ẩm thực"!
+            </p>
+          </div>
+        </aside>
+
       </div>
     </div>
   );
