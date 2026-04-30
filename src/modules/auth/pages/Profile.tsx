@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   User,
@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronRight,
   Check,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
@@ -116,17 +117,23 @@ export function Profile() {
     : 'Không rõ';
 
   return (
-    <div className="max-w-2xl mx-auto py-6">
+    <div className="max-w-2xl mx-auto py-10 px-4 relative">
+      {/* Decorative Background Blur */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-orange-500/10 dark:bg-orange-500/5 blur-[100px] pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         {/* Header */}
-        <h1 className="text-2xl font-bold text-neutral-900 mb-6">Tài khoản của tôi</h1>
+        <h1 className="text-3xl font-black text-neutral-900 dark:text-white mb-8 tracking-tight">
+          Tài khoản của tôi
+        </h1>
 
         {/* Avatar & Basic Info Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 mb-4">
+        <div className="bg-white dark:bg-slate-900/50 dark:backdrop-blur-xl rounded-3xl shadow-sm border border-neutral-200 dark:border-white/10 p-8 mb-6 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors duration-500" />
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="relative group">
@@ -135,10 +142,10 @@ export function Profile() {
                   src={user.photoURL}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-20 h-20 rounded-full object-cover ring-4 ring-orange-100"
+                  className="w-20 h-20 rounded-full object-cover ring-4 ring-orange-100 dark:ring-orange-500/20"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center ring-4 ring-orange-100">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center ring-4 ring-orange-100 dark:ring-orange-500/20">
                   <span className="text-white text-2xl font-bold">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
@@ -157,7 +164,7 @@ export function Profile() {
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="flex-1 px-3 py-1.5 border border-neutral-300 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-white/20 rounded-lg text-lg font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     autoFocus
                   />
                   <button
@@ -180,38 +187,40 @@ export function Profile() {
                   }}
                   className="group/name flex items-center gap-2"
                 >
-                  <h2 className="text-xl font-bold text-neutral-900 truncate">
+                  <h2 className="text-2xl font-extrabold text-neutral-900 dark:text-white truncate tracking-tight">
                     {user.name}
                   </h2>
-                  <Save className="w-4 h-4 text-neutral-400 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                  <Save className="w-4 h-4 text-neutral-400 dark:text-gray-500 opacity-0 group-hover/name:opacity-100 transition-opacity" />
                 </button>
               )}
-              <p className="text-neutral-500 text-sm mt-1 truncate">{user.email}</p>
+              <p className="text-neutral-500 dark:text-gray-400 text-sm mt-1 truncate font-medium">{user.email}</p>
             </div>
           </div>
         </div>
 
         {/* Account Info Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden mb-4">
-          <div className="px-6 py-4 border-b border-neutral-100">
-            <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900/50 dark:backdrop-blur-xl rounded-3xl shadow-sm border border-neutral-200 dark:border-white/10 overflow-hidden mb-6">
+          <div className="px-8 py-5 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-white/5">
+            <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2.5">
               <User className="w-4 h-4 text-orange-500" />
-              Thông tin tài khoản
+              Thông tin cá nhân
             </h3>
           </div>
 
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-neutral-100 dark:divide-white/5">
             {/* Email */}
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-neutral-400" />
+            <div className="flex items-center justify-between px-8 py-5 group/item transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-500 dark:text-blue-400">
+                  <Mail className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-sm text-neutral-500">Email</p>
-                  <p className="text-neutral-900">{user.email}</p>
+                  <p className="text-[11px] font-bold text-neutral-400 dark:text-gray-500 uppercase tracking-wider">Email</p>
+                  <p className="text-neutral-900 dark:text-white font-semibold">{user.email}</p>
                 </div>
               </div>
               {firebaseUser.emailVerified && (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-full font-black flex items-center gap-1 uppercase tracking-tight">
                   <Check className="w-3 h-3" />
                   Đã xác thực
                 </span>
@@ -219,34 +228,40 @@ export function Profile() {
             </div>
 
             {/* Provider */}
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-3">
-                <Shield className="w-4 h-4 text-neutral-400" />
+            <div className="flex items-center justify-between px-8 py-5 group/item transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center text-purple-500 dark:text-purple-400">
+                  <Shield className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-sm text-neutral-500">Phương thức đăng nhập</p>
-                  <p className="text-neutral-900">{getProvider()}</p>
+                  <p className="text-[11px] font-bold text-neutral-400 dark:text-gray-500 uppercase tracking-wider">Phương thức đăng nhập</p>
+                  <p className="text-neutral-900 dark:text-white font-semibold">{getProvider()}</p>
                 </div>
               </div>
             </div>
 
             {/* Created Date */}
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-neutral-400" />
+            <div className="flex items-center justify-between px-8 py-5 group/item transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-orange-500 dark:text-orange-400">
+                  <User className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-sm text-neutral-500">Ngày tạo tài khoản</p>
-                  <p className="text-neutral-900">{createdAt}</p>
+                  <p className="text-[11px] font-bold text-neutral-400 dark:text-gray-500 uppercase tracking-wider">Ngày tạo tài khoản</p>
+                  <p className="text-neutral-900 dark:text-white font-semibold">{createdAt}</p>
                 </div>
               </div>
             </div>
 
             {/* Last Sign In */}
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-neutral-400" />
+            <div className="flex items-center justify-between px-8 py-5 group/item transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
+                  <Activity className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-sm text-neutral-500">Đăng nhập lần cuối</p>
-                  <p className="text-neutral-900">{lastSignIn}</p>
+                  <p className="text-[11px] font-bold text-neutral-400 dark:text-gray-500 uppercase tracking-wider">Đăng nhập lần cuối</p>
+                  <p className="text-neutral-900 dark:text-white font-semibold">{lastSignIn}</p>
                 </div>
               </div>
             </div>
@@ -255,9 +270,9 @@ export function Profile() {
 
         {/* Security Card */}
         {isPasswordProvider && (
-          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden mb-4">
-            <div className="px-6 py-4 border-b border-neutral-100">
-              <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900/50 dark:backdrop-blur-xl rounded-3xl shadow-sm border border-neutral-200 dark:border-white/10 overflow-hidden mb-6">
+            <div className="px-8 py-5 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-white/5">
+              <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2.5">
                 <Shield className="w-4 h-4 text-orange-500" />
                 Bảo mật
               </h3>
@@ -267,13 +282,15 @@ export function Profile() {
               <button
                 onClick={handleResetPassword}
                 disabled={isResettingPassword}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-between px-8 py-5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
-                <div className="flex items-center gap-3">
-                  <KeyRound className="w-4 h-4 text-neutral-400" />
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-500 dark:text-amber-400">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
                   <div className="text-left">
-                    <p className="text-neutral-900">Đổi mật khẩu</p>
-                    <p className="text-sm text-neutral-500">Gửi email đặt lại mật khẩu</p>
+                    <p className="text-neutral-900 dark:text-white font-semibold">Đổi mật khẩu</p>
+                    <p className="text-sm text-neutral-500 dark:text-gray-400 font-medium">Gửi email đặt lại mật khẩu</p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-neutral-400" />
@@ -283,13 +300,15 @@ export function Profile() {
         )}
 
         {/* Danger Zone */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900/50 dark:backdrop-blur-xl rounded-3xl shadow-sm border border-neutral-200 dark:border-white/10 overflow-hidden">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-6 py-4 hover:bg-red-50 transition-colors text-red-600"
+            className="w-full flex items-center gap-4 px-8 py-5 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-red-600 dark:text-red-400"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="font-medium">Đăng xuất</span>
+            <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <span className="font-bold">Đăng xuất tài khoản</span>
           </button>
         </div>
       </motion.div>
