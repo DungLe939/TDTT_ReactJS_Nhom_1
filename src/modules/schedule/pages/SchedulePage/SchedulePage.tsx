@@ -169,8 +169,19 @@ const SchedulePage = () => {
             for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
                 setStreamingProgress(`Đang tạo lịch trình ngày ${dayIdx + 1}/${totalDays}...`);
 
-                // Gọi AI xử lý lịch trình cho ngày thứ index=dayIdx
-                const dayRes = await scheduleService.generateDayPlan(dayIdx);
+                // Retry tối đa 2 lần cho mỗi ngày nếu API bị lỗi mạng
+                let dayRes = null;
+                for (let retryCount = 0; retryCount < 3; retryCount++) {
+                    try {
+                        dayRes = await scheduleService.generateDayPlan(dayIdx);
+                        if (dayRes?.success) break; // Thành công → thoát retry
+                    } catch (dayError) {
+                        console.warn(`[Retry] Ngày ${dayIdx + 1}, lần ${retryCount + 1}/3 thất bại`);
+                        if (retryCount < 2) {
+                            await new Promise(r => setTimeout(r, (retryCount + 1) * 1500));
+                        }
+                    }
+                }
 
                 if (dayRes?.success) {
                     const newDay = { day: dayRes.day, meals: dayRes.meals };

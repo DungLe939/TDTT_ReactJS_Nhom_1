@@ -190,7 +190,7 @@ export const scheduleService = {
     preparePlan: async (payload: unknown) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/preparePlan', payload),
-            2 // Thực hiện lại tối đa 2 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
+            3 // Thực hiện lại tối đa 3 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
         );
         return response.data;
     },
@@ -204,7 +204,7 @@ export const scheduleService = {
     generateDayPlan: async (dayIndex: number) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/generateDayPlan', { dayIndex }),
-            2 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI
+            3 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI (Groq + Gemini)
         );
         return response.data;
     },
