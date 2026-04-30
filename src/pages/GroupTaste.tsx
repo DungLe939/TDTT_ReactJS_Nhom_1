@@ -127,20 +127,9 @@ export const GroupTaste: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen selection:bg-orange-200 -mt-4 sm:-mt-6 lg:-mt-8">
+    <div className="min-h-screen selection:bg-orange-200 relative -mx-4 sm:-mx-6 lg:-mx-8">
       {/* ─── SECTION 1: Hero + Map ─── */}
-      <div className="relative w-full overflow-visible">
-        {/* Background */}
-        <div
-          className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundColor: '#ffffff',
-            width: '100vw',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        />
-
+      <div className="relative w-full overflow-visible -mt-6">
         {/* Content */}
         <div className="relative z-10">
 
@@ -149,7 +138,7 @@ export const GroupTaste: React.FC = () => {
       </div>
 
       {currentView === 'dishDetail' && (
-        <div className="w-full fixed top-16 inset-x-0 bottom-0 z-50 bg-white">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
           {detailLoading && !selectedDetail ? (
             <div className="flex items-center justify-center h-full bg-white">
               <div className="flex items-center gap-4 p-6 bg-white rounded-3xl shadow-2xl border border-neutral-100">
@@ -179,7 +168,7 @@ export const GroupTaste: React.FC = () => {
       )}
 
       {currentView === 'restaurantDetail' && selectedRestaurant && (
-        <div className="w-full fixed top-16 inset-x-0 bottom-0 z-50 bg-white">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
           <RestaurantDetail
             restaurant={selectedRestaurant}
             onClose={() => {
@@ -206,14 +195,11 @@ export const GroupTaste: React.FC = () => {
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bgImage})`,
-              width: '100vw',
-              left: '50%',
-              transform: 'translateX(-50%)',
               backgroundAttachment: 'fixed',
             }}
           />
 
-          <div className="relative z-10 py-32">
+          <div className="relative z-10 pt-0 pb-32">
             {/* Form */}
             <div id="scan-section">
               <FormSection
