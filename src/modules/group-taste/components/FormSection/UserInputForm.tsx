@@ -191,8 +191,11 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                   <div className="flex gap-2">
                     <input
                       type="text"
+                      required
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
+                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng nhập tên thành viên')}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                       className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 focus:ring-1 focus:ring-orange-500 outline-none"
                       placeholder="Tên..."
                       autoFocus
@@ -342,6 +345,8 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng nhập tên thành viên')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all text-sm"
                   placeholder="Nhập tên..."
                   autoFocus

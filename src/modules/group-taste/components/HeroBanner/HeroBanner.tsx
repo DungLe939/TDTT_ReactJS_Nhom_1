@@ -61,18 +61,18 @@ export const HeroBanner: React.FC = () => {
       const rect = containerRef.current.getBoundingClientRect();
       
       if (rect.bottom > 0 && rect.top < window.innerHeight) {
-        // 1. Background moves SLOW (0.2x - 0.3x)
-        const bgTranslateY = scrollY * 0.25;
-        // 2. Content moves FASTER (0.6x - 0.8x)
-        const contentTranslateY = scrollY * 0.55;
+        // 1. Background moves SLIGHTLY UP (negative translateY)
+        const bgTranslateY = -(scrollY * 0.15);
+        // 2. Content moves UP faster
+        const contentTranslateY = -(scrollY * 0.35);
         // 3. Blur & Scale subtle
-        const blurAmount = Math.min(scrollY / 150, 10); 
-        const scaleAmount = 1 + (scrollY / 6000);
+        const blurAmount = Math.min(scrollY / 150, 8); 
+        const scaleAmount = 1 + (scrollY / 5000);
         // 4. Fade
-        const contentOpacity = Math.max(1 - scrollY / (rect.height * 0.7), 0);
+        const contentOpacity = Math.max(1 - scrollY / (rect.height * 0.8), 0);
 
         bgRef.current.style.transform = `translate3d(0, ${bgTranslateY}px, 0) scale(${scaleAmount})`;
-        bgRef.current.style.filter = `blur(${blurAmount}px) brightness(0.8)`;
+        bgRef.current.style.filter = `blur(${blurAmount}px) brightness(0.85)`;
         
         contentRef.current.style.transform = `translate3d(0, ${contentTranslateY}px, 0)`;
         contentRef.current.style.opacity = contentOpacity.toString();

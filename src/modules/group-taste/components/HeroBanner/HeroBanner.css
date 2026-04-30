@@ -7,7 +7,7 @@
 .hero-banner-container {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 64px);
   left: 50%;
   right: 50%;
   margin-left: -50vw;
@@ -241,7 +241,7 @@
 @media (max-width: 768px) {
   .hero-banner-container {
     height: 75vh;
-    border-radius: 0 0 40px 40px;
+    border-radius: 0;
   }
 
   .hero-title-main {
