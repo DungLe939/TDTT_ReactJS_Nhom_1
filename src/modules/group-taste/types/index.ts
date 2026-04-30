@@ -58,6 +58,9 @@ export interface DishInfo {
   price: number;
   rating: number;
   tags?: string[];
+  image_url?: string;
+  imageUrl?: string;
+  description?: string;
   restaurant: RestaurantSummary;
   /** Score từ engine (0-1) */
   score?: number;
@@ -87,6 +90,9 @@ export interface DishDetailResponse {
     description?: string;
     rating: number;
     tags?: string[];
+    image_url?: string;
+    imageUrl?: string;
+    category?: string;
   };
   restaurant?: {
     name: string;
@@ -94,14 +100,16 @@ export interface DishDetailResponse {
     lat: number;
     lng: number;
     rating: number;
+    cover_image?: string;
+    opening_hours?: { open?: string; close?: string } | string;
     openingHours?: string;
-    totalReviews?: number;
+    price_range?: { min?: number; max?: number; display?: string };
   };
   map: {
     google_map_link: string;
     direction_link: string;
-    distance: string;   // e.g. "5.2 km"
-    duration: string;   // e.g. "15 phút"
+    distance: string;
+    duration: string;
   };
   selectedFood?: {
     id: string;
@@ -110,6 +118,10 @@ export interface DishDetailResponse {
     rating: number;
     groupName: string;
     tags?: string[];
+    image_url?: string;
+    imageUrl?: string;
+    description?: string;
+    category?: string;
   };
   shop?: {
     id: string;
@@ -118,15 +130,20 @@ export interface DishDetailResponse {
     rating: number;
     lat: number;
     lng: number;
+    cover_image?: string;
+    opening_hours?: { open?: string; close?: string } | string;
     openingHours?: string;
-    totalReviews?: number;
+    price_range?: { min?: number; max?: number; display?: string };
   };
   menu?: {
     id: string;
     name: string;
     price: number;
     rating: number;
+    image_url?: string;
     imageUrl?: string;
+    description?: string;
+    category?: string;
   }[];
   relatedFoods?: {
     id: string;
@@ -134,6 +151,8 @@ export interface DishDetailResponse {
     price: number;
     rating: number;
     groupName: string;
+    image_url?: string;
+    imageUrl?: string;
     shop: { id: string; name: string; };
   }[];
   recommendedShops?: {
@@ -143,6 +162,7 @@ export interface DishDetailResponse {
     rating: number;
     lat: number;
     lng: number;
+    cover_image?: string;
   }[];
 }
 

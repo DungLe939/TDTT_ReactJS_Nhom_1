@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { UserInputForm } from './UserInputForm';
 import { RecommendationButton } from './RecommendationButton';
-import { ShareGroup } from './ShareGroup';
 import type { GroupUser } from '../../hooks/useGroupTaste';
 import type { GeoLocation } from '../../types';
 import './FormSection.css';
@@ -14,9 +13,7 @@ interface FormSectionProps {
   addUser: (user: GroupUser) => void;
   removeUser: (id: string) => void;
   userLocation?: GeoLocation;
-  fetchRecommendations: (val?: string) => void;
-  groupId: string | null;
-  onGroupCreated: (id: string) => void;
+  fetchRecommendations: (val?: string, location?: GeoLocation) => void;
 }
 
 export const FormSection: React.FC<FormSectionProps> = ({
@@ -27,8 +24,6 @@ export const FormSection: React.FC<FormSectionProps> = ({
   removeUser,
   userLocation,
   fetchRecommendations,
-  groupId,
-  onGroupCreated,
 }) => {
   return (
     <section className="form-section-container">
@@ -87,17 +82,12 @@ export const FormSection: React.FC<FormSectionProps> = ({
                 </div>
 
                 <RecommendationButton
-                  onClick={() => fetchRecommendations()}
+                  onClick={() => fetchRecommendations(undefined, userLocation)}
                   loading={loading}
                   disabled={users.length === 0}
                   userCount={users.length}
                 />
 
-                <ShareGroup
-                  userCount={users.length}
-                  groupId={groupId}
-                  onGroupCreated={onGroupCreated}
-                />
               </div>
               
               {/* Optional Tip/Info */}

@@ -1,11 +1,13 @@
 import { apiClient } from './api';
 import { scheduleService } from './api';
 import { retryRequest } from '../utils/retryRequest';
+import type { AxiosResponse } from 'axios';
 import { generateId } from '../modules/group-taste/utils/math.utils';
 import type { GroupRecommendationResponse, DishDetailResponse } from '../modules/group-taste/types';
 
 export interface GroupUserPayload {
   id?: string;
+  name?: string;
   tasteVector: number[];
   budget: number;
   location?: { lat: number; lng: number };
@@ -25,6 +27,18 @@ interface SearchLocationResponse {
   coords?: { lat: number; lng: number };
   data?: unknown[];
 }
+
+/**
+ * Chuyển đổi format user từ Frontend sang DTO Backend (UserPreferenceDto).
+ */
+const mapToBackendUsers = (users: GroupUserPayload[]) => {
+  return users.map((u) => ({
+    userId: u.id,
+    tasteVector: u.tasteVector,
+    budget: u.budget,
+    allergies: u.allergies,
+  }));
+};
 
 export const groupTasteApiService = {
   /**
@@ -88,23 +102,18 @@ export const groupTasteApiService = {
   getRecommendations: async (
     users: GroupUserPayload[],
     searchCoords?: { lat: number; lng: number },
+    userLocation?: { lat: number; lng: number },
   ): Promise<GroupRecommendationResponse> => {
     if (users.length === 0) {
       throw new Error('Danh sách thành viên trống. Không thể gợi ý nhà hàng.');
     }
 
-    // Map frontend format -> backend DTO format
-    const backendUsers = users.map((u) => ({
-      userId: u.id,
-      tasteVector: u.tasteVector,
-      budget: u.budget,
-      allergies: u.allergies,
-    }));
+    const backendUsers = mapToBackendUsers(users);
 
     // Ưu tiên tọa độ khu vực đã quét để đồng bộ với tập nhà hàng backend.
-    const currentLocation = searchCoords ?? DEFAULT_LOCATION;
+    const currentLocation = searchCoords ?? userLocation ?? DEFAULT_LOCATION;
 
-    const response = await retryRequest(
+    const response = await retryRequest<AxiosResponse<GroupRecommendationResponse>>(
       () =>
         apiClient.post('/group/recommend', {
           users: backendUsers,
@@ -130,33 +139,40 @@ export const groupTasteApiService = {
     currentLocation: { lat: number; lng: number },
     users?: GroupUserPayload[],
   ): Promise<DishDetailResponse> => {
-    const backendUsers = users?.map((u) => ({
-      userId: u.id,
-      tasteVector: u.tasteVector,
-      budget: u.budget,
-      allergies: u.allergies,
-    }));
+    const backendUsers = users ? mapToBackendUsers(users) : undefined;
 
-    const response = await apiClient.post('/group/dish-detail', {
-      restaurantId,
-      dishId,
-      currentLocation,
-      users: backendUsers,
-    });
+    const response = await retryRequest<AxiosResponse<DishDetailResponse>>(
+      () =>
+        apiClient.post('/group/dish-detail', {
+          restaurantId,
+          dishId,
+          currentLocation,
+          users: backendUsers,
+        }),
+      2,
+    );
     return response.data;
   },
 
   getRestaurantDetail: async (id: string, lat?: number, lng?: number): Promise<any> => {
-    const response = await apiClient.get(`/group/restaurant/${id}`, {
-      params: { lat, lng }
-    });
+    const response = await retryRequest<AxiosResponse<any>>(
+      () =>
+        apiClient.get(`/group/restaurant/${id}`, {
+          params: { lat, lng }
+        }),
+      2,
+    );
     return response.data;
   },
 
   getSimilarRestaurants: async (restaurantId: string): Promise<any[]> => {
-    const response = await apiClient.get(`/group/recommend/similar-restaurants`, {
-      params: { restaurantId }
-    });
+    const response = await retryRequest<AxiosResponse<any[]>>(
+      () =>
+        apiClient.get(`/group/recommend/similar-restaurants`, {
+          params: { restaurantId }
+        }),
+      2,
+    );
     return response.data;
   },
 
@@ -197,7 +213,6 @@ export const groupTasteApiService = {
       const response = await apiClient.get('/group/restaurants');
       return response.data || [];
     } catch (err) {
-      console.error('Error fetching all restaurants:', err);
       return [];
     }
   },
@@ -207,7 +222,6 @@ export const groupTasteApiService = {
       const response = await apiClient.get('/group/recommend/top');
       return response.data || [];
     } catch (err) {
-      console.error('Error fetching top recommendations:', err);
       return [];
     }
   },

@@ -32,7 +32,7 @@ interface UseGroupTasteReturn {
   /** Xoá user khỏi nhóm */
   removeUser: (id: string) => void;
   /** Gọi API lấy recommendation */
-  fetchRecommendations: (currentInputKeyword?: string) => Promise<void>;
+  fetchRecommendations: (currentInputKeyword?: string, userLocation?: GeoLocation) => Promise<void>;
   /** Reset toàn bộ state */
   resetAll: () => void;
   /** Set danh sách users (dùng cho sync group) */
@@ -113,7 +113,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
    * Lấy gợi ý nhà hàng theo khẩu vị nhóm.
    * Input: keyword tùy chọn từ UI; Output: cập nhật `result` hoặc `error`.
    */
-  const fetchRecommendations = useCallback(async (currentInputKeyword?: string) => {
+  const fetchRecommendations = useCallback(async (currentInputKeyword?: string, userLocation?: GeoLocation) => {
     if (users.length === 0) {
       setError('Vui lòng thêm ít nhất 1 thành viên.');
       return;
@@ -146,6 +146,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
 
       const payload: GroupUserPayload[] = users.map((u) => ({
         id: u.id,
+        name: u.name,
         tasteVector: u.tasteVector,
         budget: u.budget,
         location: u.location,
@@ -155,6 +156,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
       const data = await groupTasteApiService.getRecommendations(
         payload,
         effectiveCoords ?? undefined,
+        userLocation ?? undefined,
       );
 
 
