@@ -34,6 +34,7 @@ import {
   TrendingUp,
   Tag,
 } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, animate } from 'framer-motion';
 
 // ─── Firebase Data Connect Setup ────────────────────────────────────────────
 const dc = getDataConnect(firebaseApp, connectorConfig);
@@ -56,6 +57,26 @@ const formatPrice = (price: number) => {
 };
 
 const fallbackImg = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGNUY1RjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0JEQkRCRCIgZm9udC1zaXplPSIzMiI+8J+NnTwvdGV4dD48L3N2Zz4=';
+
+// ─── Custom Hooks ──────────────────────────────────────────────────────────
+function useCountUp(target: number, duration: number = 2, delay: number = 0.5, decimals: number = 0) {
+  const count = useMotionValue(0);
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(count, target, {
+      duration,
+      delay,
+      ease: "easeOut",
+      onUpdate: (latest) => {
+        setDisplayValue(Number(latest.toFixed(decimals)));
+      },
+    });
+    return () => controls.stop();
+  }, [target, duration, delay, decimals, count]);
+
+  return displayValue;
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 //  COMPONENT: FoodMarket
@@ -219,6 +240,32 @@ export function FoodMarket() {
       : '0',
   }), [foods, shops, categories]);
 
+  // ─── Animation States ──────────────────────────────────────────────────
+  const { scrollY } = useScroll();
+  const bgY = useTransform(scrollY, [0, 500], [0, 150]);
+  const contentY = useTransform(scrollY, [0, 500], [0, -50]);
+  const opacityBanner = useTransform(scrollY, [0, 400], [1, 0.5]);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
+
   // ─── Loading State ────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -275,59 +322,65 @@ export function FoodMarket() {
   return (
     <div className="space-y-6 pb-8">
       {/* ── Hero Banner ───────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl h-64 sm:h-80 group">
-        {/* Background Image with Blur */}
-        <img
+      <motion.div 
+        style={{ opacity: opacityBanner }}
+        className="relative overflow-hidden rounded-2xl h-[280px] sm:h-[344px] group shadow-2xl"
+      >
+        {/* Background Image with Ken Burns & Parallax */}
+        <motion.img
           src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80"
           alt="Chợ Ẩm Thực"
-          className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 blur-[1px] group-hover:blur-0"
+          style={{ y: bgY }}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 blur-[0.5px] group-hover:blur-0 animate-ken-burns"
         />
         {/* Base Dark Overlay for overall contrast */}
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/40" />
         {/* Gradient Overlay from bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
         
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center gap-2.5 bg-black/50 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl">
-              <div className="relative flex h-2 w-2">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ y: contentY }}
+          className="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10"
+        >
+          <motion.div variants={itemVariants} className="flex items-center mb-4">
+            <div className="flex items-center gap-2.5 bg-black/60 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl">
+              <div className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 animate-glow"></span>
               </div>
               <span className="text-white text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap">
                 Hương Vị Bản Địa
               </span>
             </div>
-          </div>
+          </motion.div>
           
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-            Chợ Ẩm Thực <span className="text-orange-500">Việt Nam</span>
-          </h1>
-          <p className="text-gray-100 text-sm sm:text-base max-w-2xl mb-8 font-medium drop-shadow-md leading-relaxed opacity-90">
+          <motion.h1 
+            variants={itemVariants}
+            className="text-3xl sm:text-5xl font-extrabold text-white mb-2 tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+          >
+            Chợ Ẩm Thực <span className="text-orange-500 text-shimmer">Việt Nam</span>
+          </motion.h1>
+          <motion.p 
+            variants={itemVariants}
+            className="text-gray-200 text-sm sm:text-lg max-w-2xl mb-8 font-medium drop-shadow-md leading-relaxed opacity-95"
+          >
             Hành trình khám phá tinh hoa ẩm thực Việt với những hương vị bản địa đặc sắc nhất. 
             Trải nghiệm hệ thống dữ liệu thực tế được cập nhật liên tục từ khắp mọi miền Tổ quốc.
-          </p>
+          </motion.p>
 
-          {/* Stats */}
+          {/* Stats Cards with Count-up and Stagger */}
           <div className="flex flex-wrap gap-3 sm:gap-4">
-            {[
-              { icon: '🍽️', label: 'Món ăn', value: stats.totalFoods },
-              { icon: '🏪', label: 'Quán', value: stats.totalShops },
-              { icon: '🏷️', label: 'Danh mục', value: stats.totalCategories },
-              { icon: '⭐', label: 'Rating TB', value: stats.avgRating },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/10 hover:bg-white/10 transition-all hover:scale-105 hover:border-white/20">
-                <span className="text-xl">{stat.icon}</span>
-                <div>
-                  <p className="text-white font-black text-lg leading-tight">{stat.value}</p>
-                  <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">{stat.label}</p>
-                </div>
-              </div>
-            ))}
+            <StatCard icon="🍽️" label="Món ăn" value={stats.totalFoods} delay={0.8} />
+            <StatCard icon="🏪" label="Quán" value={stats.totalShops} delay={0.9} />
+            <StatCard icon="🏷️" label="Danh mục" value={stats.totalCategories} delay={1.0} />
+            <StatCard icon="⭐" label="Rating TB" value={parseFloat(stats.avgRating)} delay={1.1} decimals={1} />
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* ── Search & Filters ──────────────────────────────────────────────── */}
       <div className="space-y-4">
@@ -530,6 +583,32 @@ export function FoodMarket() {
 // ════════════════════════════════════════════════════════════════════════════
 //  SUB-COMPONENTS
 // ════════════════════════════════════════════════════════════════════════════
+
+// ── Stat Card with Animation ──────────────────────────────────────────────
+function StatCard({ icon, label, value, delay, decimals = 0 }: { icon: string, label: string, value: number, delay: number, decimals?: number }) {
+  const displayValue = useCountUp(value, 2, delay, decimals);
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5 }}
+      whileHover={{ 
+        y: -5, 
+        borderColor: "rgba(249, 115, 22, 0.4)",
+        boxShadow: "0 10px 25px -5px rgba(249, 115, 22, 0.3)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)"
+      }}
+      className="bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/10 transition-colors"
+    >
+      <span className="text-xl">{icon}</span>
+      <div>
+        <p className="text-white font-black text-lg leading-tight">{displayValue}</p>
+        <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
 
 // ── Food Card (Grid View) ─────────────────────────────────────────────────
 function FoodCard({ food, onClick }: { food: FoodItem; onClick: () => void }) {
