@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { getDataConnect, connectDataConnectEmulator } from 'firebase/data-connect';
 import {
   connectorConfig,
@@ -33,8 +33,12 @@ import {
   ExternalLink,
   TrendingUp,
   Tag,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, animate } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, animate, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 
 // ─── Firebase Data Connect Setup ────────────────────────────────────────────
 const dc = getDataConnect(firebaseApp, connectorConfig);
@@ -103,6 +107,16 @@ export function FoodMarket() {
   // Tab
   const [activeTab, setActiveTab] = useState<'foods' | 'shops'>('foods');
 
+  // Pagination - Foods
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const foodListRef = useRef<HTMLDivElement>(null);
+
+  // Pagination - Shops
+  const [shopPage, setShopPage] = useState(1);
+  const shopsPerPage = 12;
+  const shopListRef = useRef<HTMLDivElement>(null);
+
   // ─── Data Fetching ────────────────────────────────────────────────────
   const fetchData = async () => {
     try {
@@ -111,7 +125,7 @@ export function FoodMarket() {
 
       const [catResult, foodResult, shopResult] = await Promise.all([
         listCategories(dc),
-        listFoods(dc, { limit: 200 }),
+        listFoods(dc, { limit: 1000 }),
         listShops(dc, { limit: 100 }),
       ]);
 
@@ -137,7 +151,7 @@ export function FoodMarket() {
       try {
         const result = await listFoodsByCategory(dc, {
           categoryId: selectedCategory,
-          limit: 200,
+          limit: 1000,
         });
         setFoods(result.data.foodItems as unknown as FoodItem[]);
       } catch (err) {
@@ -151,7 +165,7 @@ export function FoodMarket() {
   const handleClearCategory = async () => {
     setSelectedCategory(null);
     try {
-      const result = await listFoods(dc, { limit: 200 });
+      const result = await listFoods(dc, { limit: 1000 });
       setFoods(result.data.foodItems);
     } catch (err) {
       console.error('Lỗi reload:', err);
@@ -239,6 +253,49 @@ export function FoodMarket() {
       ? (shops.reduce((sum, s) => sum + (s.rating ?? 0), 0) / shops.length).toFixed(1)
       : '0',
   }), [foods, shops, categories]);
+
+  // ─── Pagination Logic ───────────────────────────────────────────────
+  const totalFoodPages = Math.ceil(filteredFoods.length / itemsPerPage);
+  const paginatedFoods = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredFoods.slice(start, start + itemsPerPage);
+  }, [filteredFoods, currentPage, itemsPerPage]);
+
+  const totalShopPages = Math.ceil(filteredShops.length / shopsPerPage);
+  const paginatedShops = useMemo(() => {
+    const start = (shopPage - 1) * shopsPerPage;
+    return filteredShops.slice(start, start + shopsPerPage);
+  }, [filteredShops, shopPage, shopsPerPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, sortBy, itemsPerPage]);
+
+  useEffect(() => {
+    setShopPage(1);
+  }, [searchQuery]);
+
+  const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      const offset = 100; // Offset for header/banner
+      const elementPosition = ref.current.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: elementPosition - offset,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleFoodPageChange = (page: number) => {
+    setCurrentPage(page);
+    scrollToRef(foodListRef);
+  };
+
+  const handleShopPageChange = (page: number) => {
+    setShopPage(page);
+    scrollToRef(shopListRef);
+  };
 
   // ─── Animation States ──────────────────────────────────────────────────
   const { scrollY } = useScroll();
@@ -377,7 +434,7 @@ export function FoodMarket() {
             <StatCard icon="🍽️" label="Món ăn" value={stats.totalFoods} delay={0.8} />
             <StatCard icon="🏪" label="Quán" value={stats.totalShops} delay={0.9} />
             <StatCard icon="🏷️" label="Danh mục" value={stats.totalCategories} delay={1.0} />
-            <StatCard icon="⭐" label="Rating TB" value={parseFloat(stats.avgRating)} delay={1.1} decimals={1} />
+            <StatCard icon="⭐" label="Rating" value={parseFloat(stats.avgRating)} delay={1.1} decimals={1} />
           </div>
         </motion.div>
       </motion.div>
@@ -513,42 +570,67 @@ export function FoodMarket() {
 
       {/* ── Food Grid / List ──────────────────────────────────────────────── */}
       {activeTab === 'foods' && (
-        <>
+        <div ref={foodListRef} className="scroll-mt-32">
           {filteredFoods.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-neutral-400 text-sm">Không tìm thấy món ăn phù hợp</p>
             </div>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredFoods.map((food) => (
+              {paginatedFoods.map((food) => (
                 <FoodCard key={food.id} food={food} onClick={() => openFoodDetail(food.id)} />
               ))}
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredFoods.map((food) => (
+              {paginatedFoods.map((food) => (
                 <FoodListItem key={food.id} food={food} onClick={() => openFoodDetail(food.id)} />
               ))}
             </div>
           )}
-        </>
+
+          {/* Pagination for Foods */}
+          {totalFoodPages > 1 && (
+            <PaginationBar 
+              currentPage={currentPage}
+              totalPages={totalFoodPages}
+              onPageChange={handleFoodPageChange}
+              totalItems={filteredFoods.length}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={setItemsPerPage}
+              itemLabel="món ăn"
+            />
+          )}
+        </div>
       )}
 
       {/* ── Shops Grid ────────────────────────────────────────────────────── */}
       {activeTab === 'shops' && (
-        <>
+        <div ref={shopListRef} className="scroll-mt-32">
           {filteredShops.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-neutral-400 text-sm">Không tìm thấy quán phù hợp</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredShops.map((shop) => (
+              {paginatedShops.map((shop) => (
                 <ShopCard key={shop.id} shop={shop} onClick={() => openShopDetail(shop.id)} />
               ))}
             </div>
           )}
-        </>
+
+          {/* Pagination for Shops */}
+          {totalShopPages > 1 && (
+            <PaginationBar 
+              currentPage={shopPage}
+              totalPages={totalShopPages}
+              onPageChange={handleShopPageChange}
+              totalItems={filteredShops.length}
+              itemsPerPage={shopsPerPage}
+              itemLabel="quán"
+            />
+          )}
+        </div>
       )}
 
       {/* ── Food Detail Modal ─────────────────────────────────────────────── */}
@@ -1026,6 +1108,137 @@ function ShopDetailModal({
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Pagination Bar Component ──────────────────────────────────────────────
+function PaginationBar({
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalItems,
+  itemsPerPage,
+  onItemsPerPageChange,
+  itemLabel,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems: number;
+  itemsPerPage: number;
+  onItemsPerPageChange?: (size: number) => void;
+  itemLabel: string;
+}) {
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Generate page numbers to show
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  return (
+    <div className="mt-10 flex flex-col lg:flex-row items-center justify-between gap-6 bg-white dark:bg-slate-900/50 backdrop-blur-sm border border-neutral-100 dark:border-white/5 rounded-2xl p-4 sm:p-6 shadow-sm">
+      {/* Info text */}
+      <div className="text-sm text-neutral-500 dark:text-gray-400 font-medium order-2 lg:order-1">
+        Hiển thị <span className="text-neutral-900 dark:text-white font-bold">{startItem}-{endItem}</span> trong <span className="text-neutral-900 dark:text-white font-bold">{totalItems}</span> {itemLabel}
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center gap-6 order-1 lg:order-2 w-full lg:w-auto">
+        {/* Items per page selector (optional) */}
+        {onItemsPerPageChange && (
+          <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-gray-400">
+            <span>Hiển thị</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+              className="bg-neutral-100 dark:bg-slate-800 border-none rounded-lg px-2 py-1 text-sm font-bold text-neutral-900 dark:text-white focus:ring-2 focus:ring-orange-500/30 outline-none cursor-pointer"
+            >
+              {[12, 20, 40, 60].map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Page navigation */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-2 sm:pb-0">
+          {/* First page */}
+          <button
+            onClick={() => onPageChange(1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-500 dark:text-gray-400 shrink-0"
+            title="Trang đầu"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+
+          {/* Prev page */}
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-500 dark:text-gray-400 mr-1 shrink-0"
+            title="Trang trước"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Page numbers */}
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((page, idx) => (
+              <React.Fragment key={idx}>
+                {page === '...' ? (
+                  <span className="px-1 text-neutral-400 shrink-0">...</span>
+                ) : (
+                  <button
+                    onClick={() => onPageChange(page as number)}
+                    className={`min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                      currentPage === page
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 scale-105'
+                        : 'text-neutral-500 dark:text-gray-400 hover:bg-neutral-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Next page */}
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-500 dark:text-gray-400 ml-1 shrink-0"
+            title="Trang sau"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {/* Last page */}
+          <button
+            onClick={() => onPageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-500 dark:text-gray-400 shrink-0"
+            title="Trang cuối"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
