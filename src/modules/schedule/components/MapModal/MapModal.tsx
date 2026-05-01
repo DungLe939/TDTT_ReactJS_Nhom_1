@@ -85,7 +85,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
             (position) => {
                 const { latitude, longitude } = position.coords;
                 setUserLocation([latitude, longitude]);
-                calculateRoute(latitude, longitude, 'driving');
+                calculateRoute(latitude, longitude, 'car');
             },
             () => {
                 setError("Bạn đã từ chối quyền lấy Vị Trí. Vui lòng cấp quyền để xem đường đi.");
@@ -188,7 +188,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                         {error && (
                             <div className="map-error-msg">
                                 <p>{error}</p>
-                                {userLocation && <button className="retry-btn" onClick={() => calculateRoute(userLocation[0], userLocation[1], 'driving')}>Thử lại</button>}
+                                {userLocation && <button className="retry-btn" onClick={() => calculateRoute(userLocation[0], userLocation[1], 'car')}>Thử lại</button>}
                             </div>
                         )}
 
