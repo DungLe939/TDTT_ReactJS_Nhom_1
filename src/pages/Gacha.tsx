@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dices, RefreshCw, MapPin, ChefHat } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import confetti from 'canvas-confetti';
 
 const foodOptions = [

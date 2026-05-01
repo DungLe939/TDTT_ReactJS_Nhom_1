@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@600;700;800&display=swap');
+
+/**
+ * HeroBanner Premium Cinematic Styles
+ */
+
+.hero-banner-container {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 64px);
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background-color: #080808;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+/* Background Slider layer */
+.hero-banner-bg {
+  position: absolute;
+  top: -30%;
+  left: 0;
+  width: 100%;
+  height: 160%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  will-change: transform, filter, opacity;
+  z-index: 1;
+  transition: background-image 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s ease-in-out,
+    filter 0.5s ease;
+}
+
+.hero-banner-bg.slide-changing {
+  opacity: 0.8;
+  filter: blur(5px) scale(1.02);
+}
+
+/* Atmospheric Overlays */
+.hero-banner-overlay-main {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.3) 50%,
+      rgba(0, 0, 0, 0.7) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-banner-overlay-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+  z-index: 3;
+}
+
+/* Slide Arrows */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.4;
+}
+
+.nav-arrow:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow.prev {
+  left: 30px;
+}
+
+.nav-arrow.next {
+  right: 30px;
+}
+
+/* Content Layer */
+.hero-banner-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  color: #fff;
+  padding: 0 2rem;
+  max-width: 1000px;
+  will-change: transform, opacity;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* 2-line Title Styles */
+.hero-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.hero-title-top {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.hero-title-main {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ffb347 0%, #ff7a18 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.6));
+}
+
+/* Subtitle */
+.hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: #cbd5e1;
+  max-width: 750px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 1);
+}
+
+/* CTA Button */
+.hero-cta-btn {
+  padding: 1.2rem 3rem;
+  background: linear-gradient(135deg, #ff7a18 0%, #ff4b2b 100%);
+  color: white;
+  border-radius: 60px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(255, 122, 24, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-cta-btn:hover {
+  transform: scale(1.08) translateY(-5px);
+  box-shadow: 0 20px 45px rgba(255, 122, 24, 0.5);
+}
+
+/* Indicators */
+.hero-dots-container {
+  position: absolute;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 15px;
+}
+
+.hero-dot {
+  width: 14px;
+  height: 6px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.hero-dot.active {
+  background-color: #ff7a18;
+  width: 45px;
+  box-shadow: 0 0 20px rgba(255, 122, 24, 0.6);
+}
+
+/* Load Animations */
+.animate-cinematic-load {
+  opacity: 0;
+  transform: translateY(60px);
+  animation: cinematicFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.hero-subtitle.animate-cinematic-load {
+  animation-delay: 0.4s;
+}
+
+.hero-cta-btn.animate-cinematic-load {
+  animation-delay: 0.6s;
+}
+
+@keyframes cinematicFadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 1024px) {
+  .nav-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-banner-container {
+    height: 75vh;
+    border-radius: 0;
+  }
+
+  .hero-title-main {
+    font-size: 3.2rem;
+  }
+
+  .hero-title-top {
+    font-size: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+    line-height: 1.4;
+  }
+
+  .hero-cta-btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+  }
+}
