@@ -275,35 +275,53 @@ export function FoodMarket() {
   return (
     <div className="space-y-6 pb-8">
       {/* ── Hero Banner ───────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 p-6 sm:p-8">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA4Ij48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnYtNGgtNHYyaC00di0ySDRWMTBoLTJ2NEgyVjhoLTJWNGgyVjBoNHYyaDR2Mmg0djJoNFY0aDR2Mmg0djJoMnYyaDJ2NGgydjRoLTJ2NGgtMnYyaC00di0yaC00di0yTTM0IDMwaC0ydi00aDJ2Mmgtdi0yaDJ2MmgtMnYyaDJ2MloiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">🍜</span>
-            <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full">
-              ShopeeFood HCM
-            </span>
+      <div className="relative overflow-hidden rounded-2xl h-64 sm:h-80 group">
+        {/* Background Image with Blur */}
+        <img
+          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80"
+          alt="Chợ Ẩm Thực"
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 blur-[1px] group-hover:blur-0"
+        />
+        {/* Base Dark Overlay for overall contrast */}
+        <div className="absolute inset-0 bg-black/30" />
+        {/* Gradient Overlay from bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10">
+          <div className="flex items-center mb-4">
+            <div className="flex items-center gap-2.5 bg-black/50 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+              </div>
+              <span className="text-white text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap">
+                Hương Vị Bản Địa
+              </span>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            Chợ Ẩm Thực Sài Gòn
+          
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+            Chợ Ẩm Thực <span className="text-orange-500">Việt Nam</span>
           </h1>
-          <p className="text-white/80 text-sm sm:text-base max-w-xl">
-            Khám phá hàng trăm món ăn từ các quán nổi tiếng. Dữ liệu trực tiếp từ Firebase Data Connect.
+          <p className="text-gray-100 text-sm sm:text-base max-w-2xl mb-8 font-medium drop-shadow-md leading-relaxed opacity-90">
+            Hành trình khám phá tinh hoa ẩm thực Việt với những hương vị bản địa đặc sắc nhất. 
+            Trải nghiệm hệ thống dữ liệu thực tế được cập nhật liên tục từ khắp mọi miền Tổ quốc.
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-4 mt-5">
+          <div className="flex flex-wrap gap-3 sm:gap-4">
             {[
               { icon: '🍽️', label: 'Món ăn', value: stats.totalFoods },
               { icon: '🏪', label: 'Quán', value: stats.totalShops },
               { icon: '🏷️', label: 'Danh mục', value: stats.totalCategories },
               { icon: '⭐', label: 'Rating TB', value: stats.avgRating },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-2">
-                <span className="text-lg">{stat.icon}</span>
+              <div key={stat.label} className="bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/10 hover:bg-white/10 transition-all hover:scale-105 hover:border-white/20">
+                <span className="text-xl">{stat.icon}</span>
                 <div>
-                  <p className="text-white font-bold text-lg leading-tight">{stat.value}</p>
-                  <p className="text-white/70 text-xs">{stat.label}</p>
+                  <p className="text-white font-black text-lg leading-tight">{stat.value}</p>
+                  <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">{stat.label}</p>
                 </div>
               </div>
             ))}
