@@ -188,7 +188,7 @@ const MapModal = ({ isOpen, onClose, dishInfo }: MapModalProps) => {
                         {error && (
                             <div className="map-error-msg">
                                 <p>{error}</p>
-                                {userLocation && <button className="retry-btn" onClick={() => calculateRoute(userLocation[0], userLocation[1], mode)}>Thử lại</button>}
+                                {userLocation && <button className="retry-btn" onClick={() => calculateRoute(userLocation[0], userLocation[1], 'driving')}>Thử lại</button>}
                             </div>
                         )}
 

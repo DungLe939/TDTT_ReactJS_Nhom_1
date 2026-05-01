@@ -49,62 +49,6 @@ exports.createFoodItem = function createFoodItem(dcOrVars, vars) {
 }
 ;
 
-const upsertPlanCacheRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpsertPlanCache', inputVars);
-}
-upsertPlanCacheRef.operationName = 'UpsertPlanCache';
-exports.upsertPlanCacheRef = upsertPlanCacheRef;
-
-exports.upsertPlanCache = function upsertPlanCache(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(upsertPlanCacheRef(dcInstance, inputVars));
-}
-;
-
-const deletePlanCacheRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'DeletePlanCache', inputVars);
-}
-deletePlanCacheRef.operationName = 'DeletePlanCache';
-exports.deletePlanCacheRef = deletePlanCacheRef;
-
-exports.deletePlanCache = function deletePlanCache(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(deletePlanCacheRef(dcInstance, inputVars));
-}
-;
-
-const updateDayScoresRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpdateDayScores', inputVars);
-}
-updateDayScoresRef.operationName = 'UpdateDayScores';
-exports.updateDayScoresRef = updateDayScoresRef;
-
-exports.updateDayScores = function updateDayScores(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(updateDayScoresRef(dcInstance, inputVars));
-}
-;
-
-const updateUsedCategoriesRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpdateUsedCategories', inputVars);
-}
-updateUsedCategoriesRef.operationName = 'UpdateUsedCategories';
-exports.updateUsedCategoriesRef = updateUsedCategoriesRef;
-
-exports.updateUsedCategories = function updateUsedCategories(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(updateUsedCategoriesRef(dcInstance, inputVars));
-}
-;
-
 const listCategoriesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -192,35 +136,5 @@ exports.listShops = function listShops(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listShopsRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
-}
-;
-
-const listAllShopsWithMenuRef = (dc) => {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListAllShopsWithMenu');
-}
-listAllShopsWithMenuRef.operationName = 'ListAllShopsWithMenu';
-exports.listAllShopsWithMenuRef = listAllShopsWithMenuRef;
-
-exports.listAllShopsWithMenu = function listAllShopsWithMenu(dcOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
-  return executeQuery(listAllShopsWithMenuRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
-}
-;
-
-const getPlanCacheRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetPlanCache', inputVars);
-}
-getPlanCacheRef.operationName = 'GetPlanCache';
-exports.getPlanCacheRef = getPlanCacheRef;
-
-exports.getPlanCache = function getPlanCache(dcOrVars, varsOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getPlanCacheRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
 }
 ;

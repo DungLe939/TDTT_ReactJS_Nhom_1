@@ -1,122 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
 import { motion } from 'motion/react';
-import { Map, ScanFace, Languages, Dices, Users, ArrowRight, Sparkles, Search, X } from 'lucide-react';
-
-/* ── CSS injected once for the stroke-draw animation ── */
-const ICON_ANIMATION_CSS = `
-  @keyframes drawStroke {
-    from { stroke-dashoffset: var(--dash-len, 500); opacity: 0.4; }
-    to   { stroke-dashoffset: 0;                    opacity: 1;   }
-  }
-  .icon-draw svg path,
-  .icon-draw svg circle,
-  .icon-draw svg line,
-  .icon-draw svg polyline,
-  .icon-draw svg rect,
-  .icon-draw svg ellipse {
-    stroke-dasharray:  500;
-    stroke-dashoffset: 500;
-    animation: drawStroke 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-`;
-
-if (typeof document !== 'undefined' && !document.getElementById('icon-draw-style')) {
-  const s = document.createElement('style');
-  s.id = 'icon-draw-style';
-  s.textContent = ICON_ANIMATION_CSS;
-  document.head.appendChild(s);
-}
-
-/* ── individual feature card with hover animations ── */
-interface Feature {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  color: string;
-  borderColor: string;
-  bgLight: string;
-  iconColor: string;
-  path: string;
-}
-
-const FeatureCard = ({ feature, idx }: { feature: Feature; idx: number }) => {
-  const [hovered, setHovered] = useState(false);
-  const [drawKey, setDrawKey] = useState(0);
-
-  const handleEnter = () => {
-    setHovered(true);
-    setDrawKey(k => k + 1);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.3 + idx * 0.1 }}
-    >
-      <Link
-        to={feature.path}
-        className="block h-full bg-white rounded-[2rem] p-8 border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)] transition-all group relative overflow-hidden"
-        onMouseEnter={handleEnter}
-        onMouseLeave={() => setHovered(false)}
-      >
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem]"
-          style={{ background: `radial-gradient(ellipse at top left, ${feature.color}12 0%, transparent 65%)` }}
-        />
-
-        <motion.div
-          className="mb-6 relative w-fit"
-          animate={
-            hovered
-              ? { y: [0, -7, 0, -4, 0], rotate: [0, -5, 5, -3, 0] }
-              : { y: 0, rotate: 0 }
-          }
-          transition={
-            hovered
-              ? { duration: 1.8, ease: 'easeInOut', repeat: Infinity }
-              : { duration: 0.35, ease: 'easeOut' }
-          }
-        >
-          <motion.div
-            className="absolute -inset-2 rounded-3xl pointer-events-none"
-            style={{ border: `2px solid ${feature.color}` }}
-            animate={hovered ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.7 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-          />
-
-          <div
-            className={`w-16 h-16 rounded-2xl ${feature.bgLight} border-2 ${feature.borderColor} ${feature.iconColor} flex items-center justify-center relative transition-all duration-300`}
-            style={{ boxShadow: hovered ? `0 8px 24px -4px ${feature.color}40` : 'none' }}
-          >
-            <div key={drawKey} className={hovered ? 'icon-draw' : ''}>
-              {feature.icon}
-            </div>
-          </div>
-        </motion.div>
-
-        <h3 className="text-xl font-bold text-neutral-900 mb-3 group-hover:text-orange-500 transition-colors relative z-10">
-          {feature.title}
-        </h3>
-        <p className="text-neutral-600 mb-6 line-clamp-2 relative z-10">
-          {feature.description}
-        </p>
-
-        <div className="flex items-center text-sm font-bold text-neutral-900 group-hover:text-orange-500 transition-colors mt-auto pt-4 border-t border-neutral-100 relative z-10">
-          Trải nghiệm ngay
-          <motion.span
-            animate={hovered ? { x: [0, 5, 0] } : { x: 0 }}
-            transition={hovered ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' } : {}}
-            className="ml-2"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </motion.span>
-        </div>
-      </Link>
-    </motion.div>
-  );
-};
+import { Link } from 'react-router';
+import { Sparkles, ScanFace, Languages, Map, Dices, Users, Search, X } from 'lucide-react';
+import { FeatureCard, type Feature } from './HomeComponents';
 
 export const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -469,3 +355,4 @@ export const Home = () => {
     </div>
   );
 };
+

@@ -23,16 +23,10 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*GetFoodDetail*](#getfooddetail)
   - [*GetShopDetail*](#getshopdetail)
   - [*ListShops*](#listshops)
-  - [*ListAllShopsWithMenu*](#listallshopswithmenu)
-  - [*GetPlanCache*](#getplancache)
 - [**Mutations**](#mutations)
   - [*CreateCategory*](#createcategory)
   - [*CreateShop*](#createshop)
   - [*CreateFoodItem*](#createfooditem)
-  - [*UpsertPlanCache*](#upsertplancache)
-  - [*DeletePlanCache*](#deleteplancache)
-  - [*UpdateDayScores*](#updatedayscores)
-  - [*UpdateUsedCategories*](#updateusedcategories)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `example`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -241,6 +235,11 @@ export interface ListFoodsData {
       name: string;
       rating?: number | null;
       address: string;
+      lat?: number | null;
+      lng?: number | null;
+      coverImage?: string | null;
+      openTime?: string | null;
+      closeTime?: string | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -352,6 +351,9 @@ export interface ListFoodsByCategoryData {
       id: UUIDString;
       name: string;
       rating?: number | null;
+      coverImage?: string | null;
+      openTime?: string | null;
+      closeTime?: string | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -466,8 +468,6 @@ export interface GetFoodDetailData {
       priceMin?: number | null;
       priceMax?: number | null;
       priceDisplay?: string | null;
-      latitude?: number | null;
-      longitude?: number | null;
     } & Shop_Key;
       category: {
         id: UUIDString;
@@ -570,8 +570,6 @@ export interface GetShopDetailData {
     priceMin?: number | null;
     priceMax?: number | null;
     priceDisplay?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
     foodItems_on_shop: ({
       id: UUIDString;
       name: string;
@@ -682,8 +680,8 @@ export interface ListShopsData {
     priceDisplay?: string | null;
     openTime?: string | null;
     closeTime?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
+    lat?: number | null;
+    lng?: number | null;
   } & Shop_Key)[];
 }
 ```
@@ -741,199 +739,6 @@ export default function ListShopsComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.shops);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## ListAllShopsWithMenu
-You can execute the `ListAllShopsWithMenu` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListAllShopsWithMenu(dc: DataConnect, options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListAllShopsWithMenu(options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
-```
-
-### Variables
-The `ListAllShopsWithMenu` Query has no variables.
-### Return Type
-Recall that calling the `ListAllShopsWithMenu` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListAllShopsWithMenu` Query is of type `ListAllShopsWithMenuData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListAllShopsWithMenuData {
-  shops: ({
-    id: UUIDString;
-    externalId?: string | null;
-    name: string;
-    address: string;
-    city: string;
-    rating?: number | null;
-    coverImage?: string | null;
-    url: string;
-    openTime?: string | null;
-    closeTime?: string | null;
-    priceMin?: number | null;
-    priceMax?: number | null;
-    priceDisplay?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
-    foodItems_on_shop: ({
-      id: UUIDString;
-      name: string;
-      description?: string | null;
-      price: number;
-      priceDisplay?: string | null;
-      imageUrl?: string | null;
-      thumbnailUrl?: string | null;
-      groupName?: string | null;
-      isPopular: boolean;
-      totalLike: number;
-      category: {
-        id: UUIDString;
-        name: string;
-        slug: string;
-      } & Category_Key;
-    } & FoodItem_Key)[];
-  } & Shop_Key)[];
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-### Using `ListAllShopsWithMenu`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig } from '@dataconnect/generated';
-import { useListAllShopsWithMenu } from '@dataconnect/generated/react'
-
-export default function ListAllShopsWithMenuComponent() {
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListAllShopsWithMenu();
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListAllShopsWithMenu(dataConnect);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListAllShopsWithMenu(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-  const query = useListAllShopsWithMenu(dataConnect, options);
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-    console.log(query.data.shops);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## GetPlanCache
-You can execute the `GetPlanCache` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useGetPlanCache(dc: DataConnect, vars: GetPlanCacheVariables, options?: useDataConnectQueryOptions<GetPlanCacheData>): UseDataConnectQueryResult<GetPlanCacheData, GetPlanCacheVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useGetPlanCache(vars: GetPlanCacheVariables, options?: useDataConnectQueryOptions<GetPlanCacheData>): UseDataConnectQueryResult<GetPlanCacheData, GetPlanCacheVariables>;
-```
-
-### Variables
-The `GetPlanCache` Query requires an argument of type `GetPlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface GetPlanCacheVariables {
-  guestId: string;
-}
-```
-### Return Type
-Recall that calling the `GetPlanCache` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetPlanCache` Query is of type `GetPlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface GetPlanCacheData {
-  planCache?: {
-    id: string;
-    rawRestaurants?: unknown | null;
-    orderedPlan?: unknown | null;
-    mealBudgetConfig?: unknown | null;
-    preferences?: unknown | null;
-    usedCategories: string[];
-    dayScores?: unknown | null;
-    updatedAt: TimestampString;
-  } & PlanCache_Key;
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-### Using `GetPlanCache`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, GetPlanCacheVariables } from '@dataconnect/generated';
-import { useGetPlanCache } from '@dataconnect/generated/react'
-
-export default function GetPlanCacheComponent() {
-  // The `useGetPlanCache` Query hook requires an argument of type `GetPlanCacheVariables`:
-  const getPlanCacheVars: GetPlanCacheVariables = {
-    guestId: ..., 
-  };
-
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useGetPlanCache(getPlanCacheVars);
-  // Variables can be defined inline as well.
-  const query = useGetPlanCache({ guestId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useGetPlanCache(dataConnect, getPlanCacheVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useGetPlanCache(getPlanCacheVars, options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-  const query = useGetPlanCache(dataConnect, getPlanCacheVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-    console.log(query.data.planCache);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1087,8 +892,6 @@ export interface CreateShopVariables {
   priceMin?: number | null;
   priceMax?: number | null;
   priceDisplay?: string | null;
-  latitude: number;
-  longitude: number;
 }
 ```
 ### Return Type
@@ -1150,12 +953,10 @@ export default function CreateShopComponent() {
     priceMin: ..., // optional
     priceMax: ..., // optional
     priceDisplay: ..., // optional
-    latitude: ..., 
-    longitude: ..., 
   };
   mutation.mutate(createShopVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., latitude: ..., longitude: ..., });
+  mutation.mutate({ externalId: ..., name: ..., address: ..., city: ..., rating: ..., coverImage: ..., url: ..., openTime: ..., closeTime: ..., priceMin: ..., priceMax: ..., priceDisplay: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -1289,398 +1090,6 @@ export default function CreateFoodItemComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.foodItem_insert);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## UpsertPlanCache
-You can execute the `UpsertPlanCache` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useUpsertPlanCache(options?: useDataConnectMutationOptions<UpsertPlanCacheData, FirebaseError, UpsertPlanCacheVariables>): UseDataConnectMutationResult<UpsertPlanCacheData, UpsertPlanCacheVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useUpsertPlanCache(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertPlanCacheData, FirebaseError, UpsertPlanCacheVariables>): UseDataConnectMutationResult<UpsertPlanCacheData, UpsertPlanCacheVariables>;
-```
-
-### Variables
-The `UpsertPlanCache` Mutation requires an argument of type `UpsertPlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface UpsertPlanCacheVariables {
-  guestId: string;
-  rawRestaurants?: unknown | null;
-  orderedPlan?: unknown | null;
-  mealBudgetConfig?: unknown | null;
-  preferences?: unknown | null;
-  usedCategories: string[];
-  dayScores?: unknown | null;
-}
-```
-### Return Type
-Recall that calling the `UpsertPlanCache` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpsertPlanCache` Mutation is of type `UpsertPlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface UpsertPlanCacheData {
-  planCache_upsert: PlanCache_Key;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `UpsertPlanCache`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpsertPlanCacheVariables } from '@dataconnect/generated';
-import { useUpsertPlanCache } from '@dataconnect/generated/react'
-
-export default function UpsertPlanCacheComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpsertPlanCache();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpsertPlanCache(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpsertPlanCache(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpsertPlanCache(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpsertPlanCache` Mutation requires an argument of type `UpsertPlanCacheVariables`:
-  const upsertPlanCacheVars: UpsertPlanCacheVariables = {
-    guestId: ..., 
-    rawRestaurants: ..., // optional
-    orderedPlan: ..., // optional
-    mealBudgetConfig: ..., // optional
-    preferences: ..., // optional
-    usedCategories: ..., 
-    dayScores: ..., // optional
-  };
-  mutation.mutate(upsertPlanCacheVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ guestId: ..., rawRestaurants: ..., orderedPlan: ..., mealBudgetConfig: ..., preferences: ..., usedCategories: ..., dayScores: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(upsertPlanCacheVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.planCache_upsert);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## DeletePlanCache
-You can execute the `DeletePlanCache` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useDeletePlanCache(options?: useDataConnectMutationOptions<DeletePlanCacheData, FirebaseError, DeletePlanCacheVariables>): UseDataConnectMutationResult<DeletePlanCacheData, DeletePlanCacheVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useDeletePlanCache(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlanCacheData, FirebaseError, DeletePlanCacheVariables>): UseDataConnectMutationResult<DeletePlanCacheData, DeletePlanCacheVariables>;
-```
-
-### Variables
-The `DeletePlanCache` Mutation requires an argument of type `DeletePlanCacheVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface DeletePlanCacheVariables {
-  guestId: string;
-}
-```
-### Return Type
-Recall that calling the `DeletePlanCache` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlanCache` Mutation is of type `DeletePlanCacheData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface DeletePlanCacheData {
-  planCache_delete?: PlanCache_Key | null;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `DeletePlanCache`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, DeletePlanCacheVariables } from '@dataconnect/generated';
-import { useDeletePlanCache } from '@dataconnect/generated/react'
-
-export default function DeletePlanCacheComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useDeletePlanCache();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useDeletePlanCache(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useDeletePlanCache(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useDeletePlanCache(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useDeletePlanCache` Mutation requires an argument of type `DeletePlanCacheVariables`:
-  const deletePlanCacheVars: DeletePlanCacheVariables = {
-    guestId: ..., 
-  };
-  mutation.mutate(deletePlanCacheVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ guestId: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(deletePlanCacheVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.planCache_delete);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## UpdateDayScores
-You can execute the `UpdateDayScores` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useUpdateDayScores(options?: useDataConnectMutationOptions<UpdateDayScoresData, FirebaseError, UpdateDayScoresVariables>): UseDataConnectMutationResult<UpdateDayScoresData, UpdateDayScoresVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useUpdateDayScores(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateDayScoresData, FirebaseError, UpdateDayScoresVariables>): UseDataConnectMutationResult<UpdateDayScoresData, UpdateDayScoresVariables>;
-```
-
-### Variables
-The `UpdateDayScores` Mutation requires an argument of type `UpdateDayScoresVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface UpdateDayScoresVariables {
-  guestId: string;
-  dayScores?: unknown | null;
-}
-```
-### Return Type
-Recall that calling the `UpdateDayScores` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateDayScores` Mutation is of type `UpdateDayScoresData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface UpdateDayScoresData {
-  planCache_update?: PlanCache_Key | null;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `UpdateDayScores`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpdateDayScoresVariables } from '@dataconnect/generated';
-import { useUpdateDayScores } from '@dataconnect/generated/react'
-
-export default function UpdateDayScoresComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpdateDayScores();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpdateDayScores(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateDayScores(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateDayScores(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpdateDayScores` Mutation requires an argument of type `UpdateDayScoresVariables`:
-  const updateDayScoresVars: UpdateDayScoresVariables = {
-    guestId: ..., 
-    dayScores: ..., // optional
-  };
-  mutation.mutate(updateDayScoresVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ guestId: ..., dayScores: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(updateDayScoresVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.planCache_update);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## UpdateUsedCategories
-You can execute the `UpdateUsedCategories` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useUpdateUsedCategories(options?: useDataConnectMutationOptions<UpdateUsedCategoriesData, FirebaseError, UpdateUsedCategoriesVariables>): UseDataConnectMutationResult<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useUpdateUsedCategories(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateUsedCategoriesData, FirebaseError, UpdateUsedCategoriesVariables>): UseDataConnectMutationResult<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
-```
-
-### Variables
-The `UpdateUsedCategories` Mutation requires an argument of type `UpdateUsedCategoriesVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface UpdateUsedCategoriesVariables {
-  guestId: string;
-  usedCategories: string[];
-}
-```
-### Return Type
-Recall that calling the `UpdateUsedCategories` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateUsedCategories` Mutation is of type `UpdateUsedCategoriesData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface UpdateUsedCategoriesData {
-  planCache_update?: PlanCache_Key | null;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `UpdateUsedCategories`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpdateUsedCategoriesVariables } from '@dataconnect/generated';
-import { useUpdateUsedCategories } from '@dataconnect/generated/react'
-
-export default function UpdateUsedCategoriesComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpdateUsedCategories();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpdateUsedCategories(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateUsedCategories(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateUsedCategories(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpdateUsedCategories` Mutation requires an argument of type `UpdateUsedCategoriesVariables`:
-  const updateUsedCategoriesVars: UpdateUsedCategoriesVariables = {
-    guestId: ..., 
-    usedCategories: ..., 
-  };
-  mutation.mutate(updateUsedCategoriesVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ guestId: ..., usedCategories: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(updateUsedCategoriesVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.planCache_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

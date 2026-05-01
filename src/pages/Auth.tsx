@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate } from 'react-router';
 import { LoadingModal } from '../common/components/LoadingModal';
 
