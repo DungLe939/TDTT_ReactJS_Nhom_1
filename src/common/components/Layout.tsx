@@ -103,7 +103,7 @@ export const Layout = () => {
                 {/* Sidebar Desktop */}
                 <DesktopSidebar />
 
-                <div className="flex min-h-screen flex-1 flex-col">
+                <div className="flex min-h-screen flex-1 flex-col min-w-0">
                     {/* Header */}
                     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all duration-200 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
                         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">

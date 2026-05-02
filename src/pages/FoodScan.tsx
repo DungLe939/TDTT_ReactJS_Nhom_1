@@ -645,20 +645,20 @@ export const FoodScan = () => {
     : storyParagraphs.slice(0, 2);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-b from-amber-50 via-white to-orange-50 p-4 sm:p-6">
-      <div className="pointer-events-none absolute -right-24 -top-16 h-72 w-72 rounded-full bg-orange-200/50 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-200/50 blur-3xl" />
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden rounded-3xl border border-orange-100 dark:border-white/10 bg-gradient-to-b from-amber-50 via-white to-orange-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-6">
+      <div className="pointer-events-none absolute -right-24 -top-16 h-72 w-72 rounded-full bg-orange-200/50 dark:bg-orange-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-200/50 dark:bg-amber-500/10 blur-3xl" />
 
       {!scanResult ? (
         <div className="relative z-10 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-          <section className="rounded-3xl border border-orange-100 bg-white/85 p-5 shadow-sm backdrop-blur sm:p-6">
+          <section className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white/85 dark:bg-slate-900/85 p-5 shadow-sm backdrop-blur sm:p-6">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-neutral-900">Quét Món Thông Minh</h1>
-                <p className="text-sm text-neutral-600">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Quét Món Thông Minh</h1>
+                <p className="text-sm text-neutral-600 dark:text-gray-400">
                   Chụp ảnh hoặc upload ảnh món ăn để nhận diện và nghe bản thuyết minh.
                 </p>
               </div>
@@ -669,8 +669,8 @@ export const FoodScan = () => {
                 type="button"
                 onClick={() => setCaptureMode('camera')}
                 className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition ${captureMode === 'camera'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -681,8 +681,8 @@ export const FoodScan = () => {
                 type="button"
                 onClick={() => setCaptureMode('upload')}
                 className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition ${captureMode === 'upload'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -723,7 +723,7 @@ export const FoodScan = () => {
                 </div>
 
                 {cameraError && (
-                  <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  <p className="rounded-xl border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                     {cameraError}
                   </p>
                 )}
@@ -757,7 +757,7 @@ export const FoodScan = () => {
                     <button
                       type="button"
                       onClick={stopCamera}
-                      className="cursor-pointer inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100"
+                      className="cursor-pointer inline-flex items-center gap-2 rounded-full border border-neutral-300 dark:border-white/20 bg-white dark:bg-slate-800 px-5 py-2.5 text-sm font-semibold text-neutral-700 dark:text-gray-300 transition hover:bg-neutral-100 dark:hover:bg-slate-700"
                     >
                       <CameraOff className="h-4 w-4" />
                       Tắt camera
@@ -777,21 +777,21 @@ export const FoodScan = () => {
             )}
 
             {previewUrl && (
-              <div className="mt-5 rounded-2xl border border-orange-100 bg-orange-50/80 p-4">
-                <p className="text-sm font-semibold text-neutral-800">Ảnh đã sẵn sàng</p>
+              <div className="mt-5 rounded-2xl border border-orange-100 dark:border-white/10 bg-orange-50/80 dark:bg-orange-950/20 p-4">
+                <p className="text-sm font-semibold text-neutral-800 dark:text-white">Ảnh đã sẵn sàng</p>
                 <div className="mt-3 flex gap-3">
                   <img
                     src={previewUrl}
                     alt="Preview"
                     className="h-20 w-20 rounded-xl object-cover"
                   />
-                  <div className="text-sm text-neutral-600">
-                    <p className="font-medium text-neutral-800">{selectedFile?.name}</p>
+                  <div className="text-sm text-neutral-600 dark:text-gray-400">
+                    <p className="font-medium text-neutral-800 dark:text-white">{selectedFile?.name}</p>
                     <p>{selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : ''}</p>
                     <button
                       type="button"
                       onClick={clearPreview}
-                      className="mt-2 cursor-pointer text-xs font-semibold text-orange-600 hover:text-orange-700"
+                      className="mt-2 cursor-pointer text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700"
                     >
                       Xóa ảnh và chọn lại
                     </button>
@@ -814,7 +814,7 @@ export const FoodScan = () => {
               <button
                 type="button"
                 onClick={resetSession}
-                className="cursor-pointer inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100"
+                className="cursor-pointer inline-flex items-center gap-2 rounded-full border border-neutral-300 dark:border-white/20 bg-white dark:bg-slate-800 px-6 py-3 text-sm font-semibold text-neutral-700 dark:text-gray-300 transition hover:bg-neutral-100 dark:hover:bg-slate-700"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Đặt lại
@@ -822,25 +822,25 @@ export const FoodScan = () => {
             </div>
           </section>
 
-          <aside className="rounded-3xl border border-orange-100 bg-white/85 p-5 shadow-sm backdrop-blur sm:p-6">
-            <h2 className="text-lg font-bold text-neutral-900">Cách sử dụng</h2>
-            <ol className="mt-4 space-y-3 text-sm text-neutral-600">
-              <li className="rounded-xl border border-orange-100 bg-orange-50/70 p-3">
-                <p className="font-semibold text-neutral-800">1. Chọn ảnh món ăn</p>
+          <aside className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white/85 dark:bg-slate-900/85 p-5 shadow-sm backdrop-blur sm:p-6">
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Cách sử dụng</h2>
+            <ol className="mt-4 space-y-3 text-sm text-neutral-600 dark:text-gray-400">
+              <li className="rounded-xl border border-orange-100 dark:border-white/10 bg-orange-50/70 dark:bg-orange-950/20 p-3">
+                <p className="font-semibold text-neutral-800 dark:text-white">1. Chọn ảnh món ăn</p>
                 <p className="mt-1">Dùng camera hoặc upload tệp ảnh từ thư viện.</p>
               </li>
-              <li className="rounded-xl border border-orange-100 bg-orange-50/70 p-3">
-                <p className="font-semibold text-neutral-800">2. Bấm phân tích</p>
+              <li className="rounded-xl border border-orange-100 dark:border-white/10 bg-orange-50/70 dark:bg-orange-950/20 p-3">
+                <p className="font-semibold text-neutral-800 dark:text-white">2. Bấm phân tích</p>
                 <p className="mt-1">Hệ thống nhận diện món và tạo câu chuyện thưởng thức.</p>
               </li>
-              <li className="rounded-xl border border-orange-100 bg-orange-50/70 p-3">
-                <p className="font-semibold text-neutral-800">3. Nghe thuyết minh</p>
+              <li className="rounded-xl border border-orange-100 dark:border-white/10 bg-orange-50/70 dark:bg-orange-950/20 p-3">
+                <p className="font-semibold text-neutral-800 dark:text-white">3. Nghe thuyết minh</p>
                 <p className="mt-1">Bản âm thanh sẽ tự đọc lại nội dung vừa tạo.</p>
               </li>
             </ol>
 
-            <div className="mt-5 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              <p className="font-semibold">Trạng thái hệ thống</p>
+            <div className="mt-5 rounded-2xl border border-amber-300 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Trạng thái hệ thống</p>
               <p className="mt-1">
                 Nếu ứng dụng phản hồi chậm, bạn có thể kiểm tra nhanh kết nối tại đây.
               </p>
@@ -870,7 +870,7 @@ export const FoodScan = () => {
           <motion.section
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-sm"
+            className="overflow-hidden rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm"
           >
             <div className="relative h-64 bg-neutral-900 sm:h-72">
               {previewUrl ? (
@@ -908,9 +908,9 @@ export const FoodScan = () => {
             </div>
 
             <div className="grid gap-4 p-5 sm:grid-cols-2">
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-sm font-semibold text-neutral-700">Độ tin cậy nhận diện</p>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200">
+              <div className="rounded-2xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-slate-800 p-4">
+                <p className="text-sm font-semibold text-neutral-700 dark:text-white">Độ tin cậy nhận diện</p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200 dark:bg-slate-700">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
                     style={{ width: `${confidence}%` }}
@@ -919,9 +919,9 @@ export const FoodScan = () => {
                 <p className="mt-2 text-sm text-neutral-600">{confidence.toFixed(1)}%</p>
               </div>
 
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-sm font-semibold text-neutral-700">Thông tin xử lý</p>
-                <div className="mt-3 space-y-2 text-sm text-neutral-600">
+              <div className="rounded-2xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-slate-800 p-4">
+                <p className="text-sm font-semibold text-neutral-700 dark:text-white">Thông tin xử lý</p>
+                <div className="mt-3 space-y-2 text-sm text-neutral-600 dark:text-gray-400">
                   <p className="flex items-center gap-2">
                     <Cpu className="h-4 w-4 text-orange-500" />
                     Mô hình: {scanResult.llm_meta?.model || 'N/A'}
@@ -939,11 +939,11 @@ export const FoodScan = () => {
             </div>
           </motion.section>
 
-          <section className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
+          <section className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-neutral-900">Audio Thuyết Minh</h2>
-                <p className="text-sm text-neutral-600">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Audio Thuyết Minh</h2>
+                <p className="text-sm text-neutral-600 dark:text-gray-400">
                   Bản thuyết minh âm thanh sẽ được phát trực tiếp ngay trên trình duyệt.
                 </p>
               </div>
@@ -963,7 +963,7 @@ export const FoodScan = () => {
               </button>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="mt-4 rounded-2xl border border-amber-300 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
               <p className="inline-flex items-center gap-2 font-semibold">
                 <AlertTriangle className="h-4 w-4" />
                 Nội dung âm thanh dựa trên kết quả nhận diện mới nhất.
@@ -971,7 +971,7 @@ export const FoodScan = () => {
             </div>
 
             {audioError && (
-              <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <p className="mt-3 rounded-xl border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                 {audioError}
               </p>
             )}
@@ -990,11 +990,11 @@ export const FoodScan = () => {
             <article className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm lg:col-span-2">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="inline-flex items-center gap-2 text-xl font-bold text-neutral-900">
+                  <h2 className="inline-flex items-center gap-2 text-xl font-bold text-neutral-900 dark:text-white">
                     <BookOpen className="h-5 w-5 text-orange-500" />
                     Câu Chuyện Văn Hóa
                   </h2>
-                  <p className="text-sm text-neutral-600">
+                  <p className="text-sm text-neutral-600 dark:text-gray-400">
                     Nội dung được hệ thống tổng hợp tự động từ món ăn vừa nhận diện.
                   </p>
                 </div>
@@ -1010,7 +1010,7 @@ export const FoodScan = () => {
                 )}
               </div>
 
-              <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700">
+              <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700 dark:text-gray-300">
                 {visibleStory.length > 0 ? (
                   visibleStory.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
@@ -1021,56 +1021,56 @@ export const FoodScan = () => {
               </div>
             </article>
 
-            <article className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
-              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900">
+            <article className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900 dark:text-white">
                 <ChefHat className="h-5 w-5 text-orange-500" />
                 Nguyên Liệu
               </h3>
 
-              <ul className="mt-4 space-y-2 text-sm text-neutral-700">
+              <ul className="mt-4 space-y-2 text-sm text-neutral-700 dark:text-gray-300">
                 {ingredients.length > 0 ? (
                   ingredients.map((ingredient) => (
                     <li
                       key={ingredient}
-                      className="rounded-xl border border-orange-100 bg-orange-50/70 px-3 py-2"
+                      className="rounded-xl border border-orange-100 dark:border-white/10 bg-orange-50/70 dark:bg-orange-950/20 px-3 py-2"
                     >
                       {ingredient}
                     </li>
                   ))
                 ) : (
-                  <li className="text-neutral-500">Không có danh sách nguyên liệu.</li>
+                  <li className="text-neutral-500 dark:text-gray-500">Không có danh sách nguyên liệu.</li>
                 )}
               </ul>
             </article>
 
-            <article className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
-              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900">
+            <article className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900 dark:text-white">
                 <Clock3 className="h-5 w-5 text-orange-500" />
                 Cách Làm Cơ Bản
               </h3>
-              <ol className="mt-4 space-y-2 text-sm text-neutral-700">
+              <ol className="mt-4 space-y-2 text-sm text-neutral-700 dark:text-gray-300">
                 {parsedContent.steps.length > 0 ? (
                   parsedContent.steps.map((step, index) => (
                     <li
                       key={`${index}-${step}`}
-                      className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2"
+                      className="rounded-xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-slate-800 px-3 py-2"
                     >
-                      <span className="mr-2 font-semibold text-orange-600">{index + 1}.</span>
+                      <span className="mr-2 font-semibold text-orange-600 dark:text-orange-400">{index + 1}.</span>
                       {step}
                     </li>
                   ))
                 ) : (
-                  <li className="text-neutral-500">Chưa có hướng dẫn cách làm.</li>
+                  <li className="text-neutral-500 dark:text-gray-500">Chưa có hướng dẫn cách làm.</li>
                 )}
               </ol>
             </article>
 
-            <article className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm lg:col-span-2">
-              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900">
+            <article className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 p-5 shadow-sm lg:col-span-2">
+              <h3 className="inline-flex items-center gap-2 text-lg font-bold text-neutral-900 dark:text-white">
                 <Lightbulb className="h-5 w-5 text-orange-500" />
                 Mẹo Thưởng Thức
               </h3>
-              <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700">
+              <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700 dark:text-gray-300">
                 {parsedContent.tips.length > 0 ? (
                   parsedContent.tips.map((tip) => <p key={tip}>{tip}</p>)
                 ) : (
@@ -1082,10 +1082,10 @@ export const FoodScan = () => {
             {parsedContent.fallbackSections.map((section) => (
               <article
                 key={section.title}
-                className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm lg:col-span-2"
+                className="rounded-3xl border border-orange-100 dark:border-white/10 bg-white dark:bg-slate-900 p-5 shadow-sm lg:col-span-2"
               >
-                <h3 className="text-lg font-bold text-neutral-900">{section.title}</h3>
-                <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{section.title}</h3>
+                <div className="mt-4 space-y-3 text-sm leading-7 text-neutral-700 dark:text-gray-300">
                   {section.lines.map((line) => (
                     <p key={`${section.title}-${line}`}>{line}</p>
                   ))}
