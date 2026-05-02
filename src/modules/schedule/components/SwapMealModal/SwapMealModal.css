@@ -23,7 +23,7 @@
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modalSlideIn {
@@ -123,7 +123,7 @@
 .swap-option-card {
     background: white;
     border-radius: 18px;
-    padding: 20px;
+    padding: 16px;
     border: 1px solid #f0f0f0;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -131,7 +131,29 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+}
+
+.option-img {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f3f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.option-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.option-img-placeholder {
+    color: #ced4da;
 }
 
 .swap-option-card:hover {

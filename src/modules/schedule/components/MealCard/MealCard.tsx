@@ -32,7 +32,11 @@ const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDet
             {hasWarning && (
                 <div className="absolute top-0 right-0 left-0 bg-red-50 text-red-600 text-xs px-3 py-1 flex items-center gap-1 font-medium border-b border-red-100">
                     <AlertTriangle className="w-3 h-3" /> Món này hơi giống bữa trước, bạn có muốn đổi?
-                    <button className="ml-auto text-red-700 underline font-bold" onClick={() => onSwap?.(dishInfo)}>Đổi món</button>
+                    <button className="ml-auto text-red-700 underline font-bold" onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onSwap?.(dishInfo);
+                    }}>Đổi món</button>
                 </div>
             )}
 
@@ -94,16 +98,18 @@ const MealCard = ({ session, type = 'main', time, dishInfo, onShowMap, onShowDet
                     </span>
 
                     <div className="flex items-center gap-1.5">
-                        {/* Nút Đổi món: Chỉ hiển thị cho các bữa chính theo yêu cầu nghiệp vụ */}
-                        {type === 'main' && (
-                            <button
-                                className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-orange-100 hover:text-orange-600 transition-colors"
-                                onClick={() => onSwap?.(dishInfo)}
-                                title="Đổi món ăn"
-                            >
-                                <RefreshCw className="w-4 h-4" />
-                            </button>
-                        )}
+                        {/* Nút Đổi món: Hiển thị cho cả bữa chính và bữa phụ */}
+                        <button
+                            className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-orange-100 hover:text-orange-600 transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onSwap?.(dishInfo);
+                            }}
+                            title="Đổi món ăn"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                        </button>
 
                         {/* Nút Xem chỉ đường: Mở Modal bản đồ */}
                         <button

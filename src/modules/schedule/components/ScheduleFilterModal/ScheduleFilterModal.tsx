@@ -8,6 +8,7 @@ interface ScheduleFilterModalProps {
     onClose: () => void;
     onSubmit: (data: any) => void;
     isLoading: boolean;
+    prefilledLocation?: string;
 }
 
 const TASTE_OPTIONS = [
@@ -18,7 +19,7 @@ const TASTE_OPTIONS = [
     { value: 'nhat', label: 'Thanh Nhạt' }
 ];
 
-const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleFilterModalProps) => {
+const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading, prefilledLocation }: ScheduleFilterModalProps) => {
     // ==========================================
     // LOGIC: KHÔI PHỤC DỮ LIỆU CŨ TỪ LOCALSTORAGE
     // ==========================================
@@ -43,6 +44,33 @@ const ScheduleFilterModal = ({ isOpen, onClose, onSubmit, isLoading }: ScheduleF
     // Autocomplete States
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // ==========================================
+    // EFFECT: ĐỒNG BỘ LOCATION TỪ EXTERNAL PROP (Bản đồ)
+    // ==========================================
+    useEffect(() => {
+        if (prefilledLocation) {
+            setLocation(prefilledLocation);
+            
+            // Tự động quét quán ăn tại địa điểm vừa nhận từ bản đồ để cập nhật dữ liệu mới
+            setPrefetchStatus('loading');
+            prefetchCoordsRef.current = null;
+            
+            const shortName = prefilledLocation.split(',')[0];
+            scheduleService.searchLocation(shortName)
+                .then((res) => {
+                    if (res?.success && res?.coords) {
+                        prefetchCoordsRef.current = res.coords;
+                        setPrefetchStatus('done');
+                    } else {
+                        setPrefetchStatus('error');
+                    }
+                })
+                .catch(() => {
+                    setPrefetchStatus('error');
+                });
+        }
+    }, [prefilledLocation]);
 
     // ==========================================
     // PRE-FETCH STATE: Quét quán ăn ngầm khi chọn địa điểm
