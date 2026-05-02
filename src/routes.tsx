@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { Layout } from './common/components/Layout';
 
 import { Home } from './pages/Home';
-import { Itinerary } from './pages/Itinerary';
+import SchedulePage from './modules/schedule/pages/SchedulePage/SchedulePage';
 import { FoodScan } from './pages/FoodScan';
 import { SmartMenu } from './pages/SmartMenu';
 import { Quests } from './pages/Quests';
@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: Home },
-      { path: 'itinerary', Component: Itinerary },
+      { path: 'itinerary', Component: SchedulePage },
       { path: 'scan', Component: FoodScan },
       { path: 'menu', Component: SmartMenu },
       { path: 'quests', Component: Quests },
