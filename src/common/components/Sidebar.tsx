@@ -152,7 +152,7 @@ export const DesktopSidebar = () => {
                     <button onClick={() => navigate('/')} className={`group flex items-center gap-3 text-left w-full ${isExpanded ? '' : 'justify-center'}`}>
                         <BrandLogo
                             variant={isExpanded ? 'full' : 'icon'}
-                            size={isExpanded ? 'md' : 'sm'}
+                            size={isExpanded ? 'md' : 'lg'}
                             animated
                         />
                     </button>

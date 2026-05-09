@@ -17,15 +17,16 @@ export const FeatureCard = ({ feature, idx }: { feature: Feature, idx: number })
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: "easeOut" }}
-            className={`flex flex-col items-start p-6 rounded-3xl bg-white border ${feature.borderColor} shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2`}
+            className={`flex flex-col items-start p-6 rounded-3xl bg-white dark:bg-slate-900/80 backdrop-blur-sm border ${feature.borderColor} shadow-sm dark:shadow-none hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-2`}
         >
             <div className={`p-4 rounded-2xl ${feature.bgLight} ${feature.iconColor} mb-6`}>
                 {feature.icon}
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-            <p className="text-gray-600 text-base leading-relaxed mb-6 flex-1">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
+            <p className="text-gray-600 dark:text-slate-400 text-base leading-relaxed mb-6 flex-1">
                 {feature.description}
             </p>
             <Link

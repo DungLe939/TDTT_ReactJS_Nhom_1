@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Map, ScanFace, Languages, Dices, Users, X } from 'lucide-react';
+import { Search, Map, ScanFace, Languages, Dices, Users, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { FeatureCard, type Feature } from './HomeComponents';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 
@@ -10,17 +11,51 @@ const LandingNavbar = () => {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  const [isVisible, setIsVisible] = useState(true);
+
   useEffect(() => {
+    setMounted(true);
+    let lastY = window.scrollY;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const currentY = window.scrollY;
+      
+      // Scrolled state for background change
+      setScrolled(currentY > 50);
+
+      // Hide/Show logic
+      if (currentY > 200) {
+        if (currentY > lastY) {
+          setIsVisible(false); // Scrolling down
+        } else {
+          setIsVisible(true); // Scrolling up
+        }
+      } else {
+        setIsVisible(true);
+      }
+      
+      lastY = currentY;
     };
-    window.addEventListener('scroll', handleScroll);
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (!mounted) {
+    return <nav className="fixed top-0 w-full z-50 px-6 md:px-12 py-4 h-20 bg-transparent" />;
+  }
+
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 md:px-12 py-4 flex items-center justify-between ${scrolled ? 'bg-black/80 backdrop-blur-md border-b border-white/10 py-3 shadow-lg' : 'bg-transparent'}`}>
-      <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+    <motion.nav 
+      initial={{ y: 0 }}
+      animate={{ y: isVisible ? 0 : -100 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 md:px-12 py-4 flex items-center justify-between ${scrolled ? 'bg-black/80 backdrop-blur-md border-b border-white/5 py-3 shadow-lg' : 'bg-transparent'}`}
+    >
+      <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
         <span className="text-lg md:text-xl font-bold text-white tracking-tight">
           Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-400">Bản Địa</span>
         </span>
@@ -32,7 +67,16 @@ const LandingNavbar = () => {
       </div>
 
       <div className="flex items-center gap-4 md:gap-6">
-        <a href="#search-section" className="text-white/80 hover:text-white transition-colors hidden sm:block">
+        {mounted && (
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="text-white/80 hover:text-white transition-colors p-2"
+            title="Toggle Dark Mode"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        )}
+        <a href="#search-section" className="text-white/80 hover:text-white transition-colors hidden sm:block p-2">
           <Search className="w-5 h-5" />
         </a>
         {isLoggedIn ? (
@@ -50,7 +94,7 @@ const LandingNavbar = () => {
           </button>
         )}
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
@@ -63,8 +107,8 @@ export const Home = () => {
       description: 'Lên lịch trình khám phá ẩm thực tự động dành riêng cho bạn.',
       icon: <Map className="w-8 h-8" strokeWidth={1.5} />,
       color: '#F97316',
-      borderColor: 'border-orange-300',
-      bgLight: 'bg-orange-50',
+      borderColor: 'border-orange-300 dark:border-orange-500/20',
+      bgLight: 'bg-orange-50 dark:bg-orange-500/10',
       iconColor: 'text-orange-500',
       path: '/itinerary'
     },
@@ -73,8 +117,8 @@ export const Home = () => {
       description: 'Sử dụng AI để nhận diện món ăn tại địa phương chỉ bằng một cú chụp.',
       icon: <ScanFace className="w-8 h-8" strokeWidth={1.5} />,
       color: '#F43F5E',
-      borderColor: 'border-rose-300',
-      bgLight: 'bg-rose-50',
+      borderColor: 'border-rose-300 dark:border-rose-500/20',
+      bgLight: 'bg-rose-50 dark:bg-rose-500/10',
       iconColor: 'text-rose-500',
       path: '/scan'
     },
@@ -83,8 +127,8 @@ export const Home = () => {
       description: 'Dịch thuật menu qua nhiều ngôn ngữ một cách chính xác.',
       icon: <Languages className="w-8 h-8" strokeWidth={1.5} />,
       color: '#10B981',
-      borderColor: 'border-emerald-300',
-      bgLight: 'bg-emerald-50',
+      borderColor: 'border-emerald-300 dark:border-emerald-500/20',
+      bgLight: 'bg-emerald-50 dark:bg-emerald-500/10',
       iconColor: 'text-emerald-500',
       path: '/menu'
     },
@@ -93,8 +137,8 @@ export const Home = () => {
       description: 'Hoàn thành các nhiệm vụ khám phá để nhận phần thưởng hấp dẫn.',
       icon: <Dices className="w-8 h-8" strokeWidth={1.5} />,
       color: '#8B5CF6',
-      borderColor: 'border-violet-300',
-      bgLight: 'bg-violet-50',
+      borderColor: 'border-violet-300 dark:border-violet-500/20',
+      bgLight: 'bg-violet-50 dark:bg-violet-500/10',
       iconColor: 'text-violet-500',
       path: '/quests'
     },
@@ -103,8 +147,8 @@ export const Home = () => {
       description: 'Tìm kiếm mạng lưới những người đam mê ẩm thực và cùng khám phá.',
       icon: <Users className="w-8 h-8" strokeWidth={1.5} />,
       color: '#3B82F6',
-      borderColor: 'border-blue-300',
-      bgLight: 'bg-blue-50',
+      borderColor: 'border-blue-300 dark:border-blue-500/20',
+      bgLight: 'bg-blue-50 dark:bg-blue-500/10',
       iconColor: 'text-blue-500',
       path: '/group'
     }
@@ -119,7 +163,7 @@ export const Home = () => {
   ];
 
   return (
-    <div className="w-full bg-neutral-50 dark:bg-slate-950 font-sans selection:bg-orange-200">
+    <div className="w-full bg-[#F7F3EE] dark:bg-slate-950 font-sans selection:bg-orange-200">
       <LandingNavbar />
 
       {/* Hero Section (Netcompany Style) */}
@@ -133,7 +177,20 @@ export const Home = () => {
           />
           {/* Gradient to darken the left side for text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+
+          {/* Tech/AI Grid Overlay - Chỉ hiển thị bên trái và mờ dần sang phải */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px)
+              `,
+              backgroundSize: '96px 96px',
+              maskImage: 'linear-gradient(to right, black 20%, transparent 80%)',
+              WebkitMaskImage: 'linear-gradient(to right, black 20%, transparent 80%)'
+            }}
+          />
         </div>
 
         <div className="relative z-10 px-8 md:px-16 lg:px-24 w-full max-w-[1600px] mx-auto mt-20 md:mt-0">
@@ -178,20 +235,56 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Main Content Area */}
-      <div className="w-full max-w-[1600px] mx-auto px-6 md:px-16 lg:px-24">
+      {/* Main Content Area with Animated Background */}
+      <div className="relative w-full bg-[#F7F3EE] dark:bg-slate-950 overflow-hidden -mt-px">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          {/* Subtle Grid - Light Mode */}
+          <div className="absolute inset-0 dark:hidden" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '96px 96px' }} />
+          {/* Subtle Grid - Dark Mode */}
+          <div className="absolute inset-0 hidden dark:block" style={{ backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '96px 96px' }} />
+          
+          {/* Glow 1 - Animated */}
+          <motion.div 
+            animate={{ y: [0, -40, 0], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-20 -right-40 w-[600px] h-[600px] bg-orange-300/30 dark:bg-orange-600/10 blur-[120px] rounded-full" 
+          />
+          
+          {/* Glow 2 - Animated */}
+          <motion.div 
+            animate={{ y: [0, 40, 0], x: [0, -30, 0], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute bottom-40 -left-40 w-[700px] h-[700px] bg-amber-200/40 dark:bg-amber-600/10 blur-[150px] rounded-full" 
+          />
+        </div>
+
+        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-16 lg:px-24">
         
         {/* Search Section */}
         <section id="search-section" className="py-20 md:py-32 border-b border-neutral-200 dark:border-white/5">
           <div className="max-w-4xl">
-            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white leading-tight mb-6 tracking-tight">
-              Hôm nay bạn muốn <br/> <span className="text-orange-600">thưởng thức</span> món gì?
-            </h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-10 max-w-2xl">
-              Nhập tên món ăn, nguyên liệu, hoặc thậm chí là mô tả hương vị bạn đang thèm. Trợ lý AI sẽ gợi ý cho bạn những địa điểm tuyệt vời nhất.
-            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white leading-tight mb-6 tracking-tight">
+                Hôm nay bạn muốn <br/> <span className="text-orange-600">thưởng thức</span> món gì?
+              </h2>
+              <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-10 max-w-2xl">
+                Nhập tên món ăn, nguyên liệu, hoặc thậm chí là mô tả hương vị bạn đang thèm. Trợ lý AI sẽ gợi ý cho bạn những địa điểm tuyệt vời nhất.
+              </p>
+            </motion.div>
 
-            <div className="relative flex items-center bg-white dark:bg-slate-900 border border-neutral-300 dark:border-white/10 rounded-sm shadow-sm hover:shadow-md transition-shadow overflow-hidden mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="relative flex items-center bg-white dark:bg-slate-900 border border-neutral-300 dark:border-white/10 rounded-sm shadow-sm hover:shadow-md transition-shadow overflow-hidden mb-12"
+            >
               <Search className="absolute left-5 w-6 h-6 text-neutral-400" />
               <input
                 type="text"
@@ -208,33 +301,48 @@ export const Home = () => {
               <button className="m-2 px-8 py-3 md:py-4 bg-orange-600 hover:bg-orange-700 text-white font-medium text-lg rounded-sm transition-colors">
                 Tìm kiếm
               </button>
-            </div>
+            </motion.div>
 
             {/* Popular Categories */}
-            <div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
               <h3 className="text-sm font-semibold uppercase tracking-widest text-neutral-500 mb-6">Gợi ý phổ biến</h3>
               <div className="flex flex-wrap gap-4">
-                {foodCategories.map((cat) => (
-                  <button
+                {foodCategories.map((cat, idx) => (
+                  <motion.button
                     key={cat.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: 0.5 + idx * 0.05 }}
                     onClick={() => setSearchQuery(cat.name)}
                     className="flex items-center gap-3 bg-white dark:bg-slate-900 hover:bg-neutral-50 dark:hover:bg-slate-800 border border-neutral-200 dark:border-white/10 rounded-sm pr-6 pl-2 py-2 transition-all shadow-sm"
                   >
                     <img src={cat.img} alt={cat.name} className="w-10 h-10 rounded-sm object-cover" />
                     <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{cat.name}</span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Features Section */}
         <section id="features-section" className="py-20 md:py-32">
-          <div className="mb-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-16"
+          >
             <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white tracking-tight mb-4">Giải pháp toàn diện</h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl">Khám phá sức mạnh của công nghệ trong trải nghiệm văn hóa và ẩm thực bản địa.</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, idx) => (
@@ -242,6 +350,7 @@ export const Home = () => {
             ))}
           </div>
         </section>
+        </div>
       </div>
 
       {/* Footer */}
