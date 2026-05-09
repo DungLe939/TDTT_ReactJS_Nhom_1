@@ -15,6 +15,7 @@ import { useAuth } from '@/modules/auth/context/AuthContext';
 import { Chatbot } from './Chatbot';
 import { DesktopSidebar, MobileSidebar } from './Sidebar';
 import { getNavSections } from './SidebarConfig';
+import { BrandLogo } from './BrandLogo';
 
 /**
  * Layout component chính của ứng dụng.
@@ -119,12 +120,7 @@ export const Layout = () => {
 
                             {/* Mobile Logo & Branding */}
                             <button onClick={() => navigate('/')} className="flex items-center gap-2 lg:hidden">
-                                <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                                    <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                                <span className="text-base font-bold text-neutral-900 dark:text-white">
-                                    Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">Bản Địa</span>
-                                </span>
+                                <BrandLogo variant="full" size="sm" animated />
                             </button>
 
                             {/* Desktop Workspace Label */}

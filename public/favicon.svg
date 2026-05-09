@@ -1,0 +1,26 @@
+<svg width="32" height="32" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Diamond border -->
+  <g transform="translate(100,100) rotate(45)">
+    <rect x="-62" y="-62" width="124" height="124" rx="18" stroke="#F97316" stroke-width="10" fill="none"/>
+  </g>
+  <!-- Conical hat -->
+  <path d="M100 52 L68 108 Q100 118 132 108 Z" fill="#F97316" opacity="0.95"/>
+  <!-- Hat brim -->
+  <path d="M56 110 Q78 125 100 122 Q122 125 144 110" stroke="#F97316" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <!-- Map pin -->
+  <path d="M100 50 C92 50 86 56 86 63 C86 72 100 82 100 82 C100 82 114 72 114 63 C114 56 108 50 100 50Z" fill="#F97316"/>
+  <circle cx="100" cy="62" r="5" fill="white"/>
+  <!-- Fork -->
+  <g transform="translate(82, 120)">
+    <rect x="4" y="18" width="5" height="28" rx="2.5" fill="#F97316"/>
+    <rect x="-2" y="0" width="3.5" height="18" rx="1.75" fill="#F97316"/>
+    <rect x="4.5" y="0" width="3.5" height="18" rx="1.75" fill="#F97316"/>
+    <rect x="11" y="0" width="3.5" height="18" rx="1.75" fill="#F97316"/>
+  </g>
+  <!-- Spoon -->
+  <g transform="translate(105, 120)">
+    <rect x="5" y="22" width="5" height="24" rx="2.5" fill="#F97316"/>
+    <ellipse cx="7.5" cy="10" rx="10" ry="12" fill="#F97316"/>
+    <ellipse cx="7.5" cy="9" rx="6" ry="7.5" fill="white" opacity="0.3"/>
+  </g>
+</svg>

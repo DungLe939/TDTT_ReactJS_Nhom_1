@@ -21,10 +21,9 @@ const LandingNavbar = () => {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 md:px-12 py-4 flex items-center justify-between ${scrolled ? 'bg-black/80 backdrop-blur-md border-b border-white/10 py-3 shadow-lg' : 'bg-transparent'}`}>
       <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold overflow-hidden shadow-md">
-            <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover" />
-        </div>
-        <span className="text-lg md:text-xl font-bold text-white tracking-tight">Hương Vị Bản Địa</span>
+        <span className="text-lg md:text-xl font-bold text-white tracking-tight">
+          Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-400">Bản Địa</span>
+        </span>
       </div>
 
       <div className="hidden md:flex items-center gap-10 text-white/90 text-sm font-medium">
@@ -250,10 +249,9 @@ export const Home = () => {
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center overflow-hidden">
-                <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover" />
-              </div>
-              <span className="text-xl font-bold tracking-tight">Hương Vị Bản Địa</span>
+              <span className="text-xl font-bold tracking-tight">
+                Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-400">Bản Địa</span>
+              </span>
             </div>
             <p className="text-white/60 text-sm max-w-sm">Trợ lý du lịch ẩm thực thông minh, giúp bạn lưu giữ và lan tỏa giá trị văn hóa qua từng món ăn.</p>
           </div>
