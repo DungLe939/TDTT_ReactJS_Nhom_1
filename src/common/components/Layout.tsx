@@ -8,6 +8,7 @@ import {
     X,
     Sun,
     Moon,
+    Home,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/modules/auth/context/AuthContext';
@@ -144,10 +145,11 @@ export const Layout = () => {
 
                             {/* Quick Actions */}
                             <button
-                                onClick={() => navigate('/scan')}
-                                className="hidden rounded-xl bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-500/20 md:inline-flex"
+                                onClick={() => navigate('/')}
+                                className="hidden items-center justify-center rounded-xl bg-orange-500 p-2.5 text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.05] hover:shadow-lg hover:shadow-orange-500/20 md:flex"
+                                aria-label="Về trang chủ"
                             >
-                                Quét nhanh
+                                <Home className="h-5 w-5" />
                             </button>
 
                             {/* Theme Toggle */}
