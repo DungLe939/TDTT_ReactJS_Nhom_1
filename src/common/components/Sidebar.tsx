@@ -13,6 +13,7 @@ import { useAuth } from '@/modules/auth/context/AuthContext';
 import { toast } from 'sonner';
 import { getNavSections } from './SidebarConfig';
 import type { NavItem, NavSection } from './SidebarConfig';
+import { BrandLogo } from './BrandLogo';
 
 /**
  * Component Sidebar dành cho giao diện màn hình lớn (Desktop).
@@ -149,15 +150,11 @@ export const DesktopSidebar = () => {
                 {/* Header */}
                 <div className="relative flex items-center justify-between border-b border-gray-200 dark:border-white/10 px-4 py-5 h-[85px]">
                     <button onClick={() => navigate('/')} className={`group flex items-center gap-3 text-left w-full ${isExpanded ? '' : 'justify-center'}`}>
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-xl font-bold text-white shadow-lg shadow-orange-200 dark:shadow-none transition-transform group-hover:scale-105">
-                            T
-                        </div>
-                        {isExpanded && (
-                            <div className="min-w-0 transition-opacity duration-200">
-                                <p className="truncate text-lg font-bold text-neutral-900 dark:text-white">TasteTrekker</p>
-                                <p className="truncate text-xs uppercase tracking-[0.16em] text-orange-500">Food Explorer</p>
-                            </div>
-                        )}
+                        <BrandLogo
+                            variant={isExpanded ? 'full' : 'icon'}
+                            size={isExpanded ? 'md' : 'lg'}
+                            animated
+                        />
                     </button>
                     {/* Toggle Button */}
                     <button
