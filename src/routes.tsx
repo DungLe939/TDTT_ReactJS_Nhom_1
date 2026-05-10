@@ -20,10 +20,12 @@ import { Store } from './pages/Store';
 export const router = createBrowserRouter([
   {
     path: '/',
+    Component: Home,
+  },
+  {
     // Layout như kiểu là footer và header của trang nếu chuyển qua page khác sẽ không bị mất
     Component: Layout,
     children: [
-      { index: true, Component: Home },
       { path: 'itinerary', Component: SchedulePage },
       { path: 'scan', Component: FoodScan },
       { path: 'menu', Component: SmartMenu },

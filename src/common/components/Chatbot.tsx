@@ -34,20 +34,22 @@ export const Chatbot = () => {
   const { isLoggedIn, user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // DeepSeek API Config
+  // DeepSeek API Config (Sử dụng proxy qua Vite để tránh CORS)
   const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
-  const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
+  const DEEPSEEK_URL = '/api-deepseek/chat/completions';
 
   // ─── Load Chat History from Firestore ───────────────────────────────────
   useEffect(() => {
+    const welcomeMsg: Message = { 
+      id: 'welcome', 
+      type: 'bot', 
+      text: isLoggedIn && user 
+        ? `Chào ${user.name}! Tôi là trợ lý ẩm thực AI. Tôi có thể giúp gì cho bạn hôm nay?`
+        : 'Xin chào! Tôi là trợ lý ẩm thực AI. Bạn muốn tìm hiểu về món ăn nào hay cần gợi ý quán ăn ở đâu?' 
+    };
+
     if (!isLoggedIn || !user || !db) {
-      setMessages([
-        { 
-          id: 'welcome', 
-          type: 'bot', 
-          text: 'Xin chào! Tôi là trợ lý ẩm thực AI. Bạn muốn tìm hiểu về món ăn nào hay cần gợi ý quán ăn ở đâu?' 
-        }
-      ]);
+      setMessages([welcomeMsg]);
       return;
     }
 
@@ -57,24 +59,24 @@ export const Chatbot = () => {
       limit(20)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const history = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Message[];
-      
-      if (history.length === 0) {
-        setMessages([
-          { 
-            id: 'welcome', 
-            type: 'bot', 
-            text: `Chào ${user.name}! Tôi là trợ lý ẩm thực AI. Tôi có thể giúp gì cho bạn hôm nay?` 
-          }
-        ]);
-      } else {
-        setMessages(history);
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const history = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Message[];
+        
+        if (history.length === 0) {
+          setMessages([welcomeMsg]);
+        } else {
+          setMessages(history);
+        }
+      },
+      (error) => {
+        console.error('Firestore Chat History Error:', error);
+        setMessages([welcomeMsg]); // Fallback to welcome message on error
       }
-    });
+    );
 
     return () => unsubscribe();
   }, [isLoggedIn, user]);
@@ -90,6 +92,11 @@ export const Chatbot = () => {
 
   // ─── AI Response Logic (DeepSeek) ────────────────────────────────────────
   const getAIResponse = async (userText: string) => {
+    if (!DEEPSEEK_API_KEY) {
+      console.error('DeepSeek API Key is missing!');
+      return 'Cấu hình AI chưa hoàn tất. Vui lòng kiểm tra API Key trong file .env';
+    }
+
     try {
       const systemPrompt = `Bạn là trợ lý ẩm thực thông minh của TasteTrekker. 
       Bạn chuyên về ẩm thực Việt Nam, đặc sản vùng miền và tư vấn quán ăn.
@@ -132,30 +139,75 @@ export const Chatbot = () => {
     setInput('');
     setIsTyping(true);
 
-    // 1. Add User Message
-    if (isLoggedIn && user && db) {
-      await addDoc(collection(db, 'chatBotHistory', user.id, 'messages'), {
-        type: 'user',
-        text: userText,
-        timestamp: serverTimestamp()
+    const tempUserId = Date.now().toString();
+
+    try {
+      // 1. Add User Message (Optimistic UI - show immediately)
+      const userMessage: Message = { 
+        id: tempUserId, 
+        type: 'user', 
+        text: userText, 
+        timestamp: new Date() 
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+
+      // 2. Add to Firestore if logged in
+      if (isLoggedIn && user && db) {
+        await addDoc(collection(db, 'chatBotHistory', user.id, 'messages'), {
+          type: 'user',
+          text: userText,
+          timestamp: serverTimestamp()
+        });
+      }
+
+      // 3. Get AI Response
+      const aiText = await getAIResponse(userText);
+
+      // 4. Add Bot Message
+      const botMessage: Message = { 
+        id: (Date.now() + 1).toString(), 
+        type: 'bot', 
+        text: aiText, 
+        timestamp: new Date() 
+      };
+
+      if (isLoggedIn && user && db) {
+        await addDoc(collection(db, 'chatBotHistory', user.id, 'messages'), {
+          type: 'bot',
+          text: aiText,
+          timestamp: serverTimestamp()
+        });
+      } else {
+        setMessages(prev => [...prev, botMessage]);
+      }
+    } catch (error: any) {
+      console.error('Chatbot Send Error Details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+        error
       });
-    } else {
-      setMessages(prev => [...prev, { id: Date.now().toString(), type: 'user', text: userText }]);
-    }
+      
+      let errorText = 'Rất tiếc, tôi không thể gửi tin nhắn lúc này. Vui lòng kiểm tra kết nối mạng!';
+      
+      if (error.code === 'permission-denied') {
+        errorText = 'Lỗi quyền truy cập Firestore. Vui lòng kiểm tra Security Rules!';
+      } else if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
+        errorText = 'Không thể kết nối tới máy chủ AI (CORS hoặc Mạng). Vui lòng kiểm tra console!';
+      } else if (error.message) {
+        errorText = `Lỗi: ${error.message}`;
+      }
 
-    // 2. Get AI Response
-    const aiText = await getAIResponse(userText);
-    setIsTyping(false);
-
-    // 3. Add Bot Message
-    if (isLoggedIn && user && db) {
-      await addDoc(collection(db, 'chatBotHistory', user.id, 'messages'), {
+      const errorMessage: Message = {
+        id: 'error-' + Date.now(),
         type: 'bot',
-        text: aiText,
-        timestamp: serverTimestamp()
-      });
-    } else {
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), type: 'bot', text: aiText }]);
+        text: errorText,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
     }
   };
 
