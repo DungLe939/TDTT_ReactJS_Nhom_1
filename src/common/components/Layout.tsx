@@ -85,18 +85,18 @@ export const Layout = () => {
             {/* Background Wrapper (Premium effects từ nhánh hiện tại) */}
             <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-gradient-to-br from-neutral-50 via-orange-50/40 to-amber-50/50 dark:from-slate-950 dark:via-orange-950/20 dark:to-slate-900">
                 {/* Full Page Blurred Image */}
-                <div 
+                <div
                     className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.08] blur-[24px]"
                 />
-                
+
                 {/* Ambient Glow Tones (SaaS/Luxury effect) */}
                 <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-orange-400/20 blur-[120px] mix-blend-multiply dark:bg-orange-600/10" />
                 <div className="absolute top-[40%] -left-[10%] w-[40vw] h-[40vw] rounded-full bg-amber-400/15 blur-[100px] mix-blend-multiply dark:bg-amber-600/10" />
                 <div className="absolute -bottom-[10%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-yellow-300/15 blur-[120px] mix-blend-multiply dark:bg-yellow-600/5" />
 
                 {/* AI Subtle Radial Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.12] dark:opacity-[0.05]" 
+                <div
+                    className="absolute inset-0 opacity-[0.12] dark:opacity-[0.05]"
                     style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(0,0,0,0.8) 1px, transparent 0)', backgroundSize: '32px 32px' }}
                 />
             </div>
@@ -200,7 +200,7 @@ export const Layout = () => {
 
                     {/* Main Content Area */}
                     <main className="flex-1 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-                        <div className="mx-auto w-full max-w-6xl">
+                        <div className="mx-auto w-full">
                             <Outlet />
                         </div>
                     </main>
