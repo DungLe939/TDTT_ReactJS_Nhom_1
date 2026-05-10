@@ -1,10 +1,85 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Map, ScanFace, Languages, Dices, Users, X, Sun, Moon } from 'lucide-react';
+import { Search, Map, ScanFace, Languages, Dices, Users, X, Sun, Moon, Star, MapPin } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { FeatureCard, type Feature } from './HomeComponents';
 import { useAuth } from '@/modules/auth/context/AuthContext';
+
+const floatingFoods = [
+  {
+    name: 'Phở Bò Tái Lăn',
+    location: 'Hà Nội',
+    rating: 4.9,
+    reviews: 2847,
+    img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400&auto=format&fit=crop&q=80',
+  },
+  {
+    name: 'Bánh Mì Sài Gòn',
+    location: 'TP. Hồ Chí Minh',
+    rating: 4.8,
+    reviews: 1953,
+    img: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=400&auto=format&fit=crop&q=80',
+  },
+  {
+    name: 'Bún Bò Huế',
+    location: 'Huế',
+    rating: 4.7,
+    reviews: 1126,
+    img: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=400&auto=format&fit=crop&q=80',
+  },
+];
+
+const FloatingFoodCard = ({ food, index }: { food: typeof floatingFoods[0]; index: number }) => {
+  // Staggered positions for visual depth
+  const positions = [
+    { top: '18%', right: '15%', rotate: -3 },
+    { top: '48%', right: '10%', rotate: 2 },
+    { top: '75%', right: '18%', rotate: -2 },
+  ];
+
+  const pos = positions[index];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 60, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 0.8, delay: 0.6 + index * 0.2, ease: 'easeOut' }}
+      className="absolute hidden lg:flex"
+      style={{ top: pos.top, right: pos.right }}
+    >
+      <motion.div
+        animate={{ y: [0, index % 2 === 0 ? -12 : 12, 0] }}
+        transition={{
+          duration: 4 + index * 0.8,
+          repeat: Infinity,
+          ease: 'easeInOut',
+          delay: index * 0.5,
+        }}
+        style={{ rotate: pos.rotate }}
+        className="flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-3 pr-5 shadow-2xl shadow-black/20 cursor-default select-none hover:bg-white/15 transition-colors duration-300 group"
+      >
+        <img
+          src={food.img}
+          alt={food.name}
+          className="w-16 h-16 rounded-xl object-cover ring-2 ring-white/20 group-hover:ring-orange-400/40 transition-all duration-300"
+        />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-white font-semibold text-sm tracking-tight">{food.name}</span>
+          <div className="flex items-center gap-1 text-orange-400">
+            <Star className="w-3.5 h-3.5 fill-orange-400" />
+            <span className="text-xs font-bold text-orange-300">{food.rating}</span>
+            <span className="text-[10px] text-white/40 ml-0.5">({food.reviews.toLocaleString()})</span>
+          </div>
+          <div className="flex items-center gap-1 text-white/50 mt-0.5">
+            <MapPin className="w-3 h-3" />
+            <span className="text-[11px]">{food.location}</span>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 const LandingNavbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -171,7 +246,7 @@ export const Home = () => {
         {/* Background Overlay Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=2164&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&auto=format&fit=crop&q=80" 
             alt="Hero Background" 
             className="w-full h-full object-cover scale-105 opacity-80"
           />
@@ -195,14 +270,67 @@ export const Home = () => {
 
         <div className="relative z-10 px-8 md:px-16 lg:px-24 w-full max-w-[1600px] mx-auto mt-20 md:mt-0">
           <div className="max-w-3xl">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-[3.5rem] md:text-7xl lg:text-[6rem] font-bold text-white leading-[1.05] tracking-tight mb-6"
-            >
-              Khám phá <br className="hidden md:block" /> thế giới <br className="hidden md:block" /> qua từng món ăn
-            </motion.h1>
+            <h1 className="text-[3.5rem] md:text-7xl lg:text-[6rem] font-bold text-white leading-[1.05] tracking-tight mb-6">
+              {/* Line 1 - Gradient "Khám phá" */}
+              <motion.span
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+                className="block"
+              >
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 drop-shadow-[0_0_30px_rgba(251,146,60,0.3)]">Khám phá</span>
+              </motion.span>
+
+              {/* Line 2 - "Việt Nam" */}
+              <motion.span
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
+                className="block"
+              >
+                Việt Nam
+              </motion.span>
+
+              {/* Line 3 - Underlined "món ăn" */}
+              <motion.span
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
+                className="block"
+              >
+                qua từng{' '}
+                <span className="relative inline-block">
+                  món ăn
+                  <motion.svg
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 1.2, delay: 1, ease: 'easeOut' }}
+                    className="absolute -bottom-2 left-0 w-full h-3"
+                    viewBox="0 0 200 12"
+                    fill="none"
+                    preserveAspectRatio="none"
+                  >
+                    <motion.path
+                      d="M2 8 C40 2, 80 2, 100 6 S160 12, 198 4"
+                      stroke="url(#underlineGrad)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1.2, delay: 1, ease: 'easeOut' }}
+                    />
+                    <defs>
+                      <linearGradient id="underlineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F97316" />
+                        <stop offset="50%" stopColor="#FBBF24" />
+                        <stop offset="100%" stopColor="#F97316" />
+                      </linearGradient>
+                    </defs>
+                  </motion.svg>
+                </span>
+              </motion.span>
+            </h1>
 
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -219,7 +347,7 @@ export const Home = () => {
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             >
               <Link 
-                to="/scan"
+                to="/market"
                 className="inline-flex items-center justify-center bg-orange-600 text-white px-8 py-4 text-base md:text-lg font-medium tracking-wide rounded-sm hover:bg-orange-700 transition-colors shadow-lg"
               >
                 Bắt đầu khám phá
@@ -227,6 +355,11 @@ export const Home = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Floating Food Cards - Right Side */}
+        {floatingFoods.map((food, index) => (
+          <FloatingFoodCard key={food.name} food={food} index={index} />
+        ))}
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center animate-bounce">
