@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Map, ScanFace, Languages, Dices, Users, X, Sun, Moon, Star, MapPin } from 'lucide-react';
+import { Search, Map, ScanFace, Languages, Dices, Users, X, Sun, Moon, Star, MapPin, Sparkles, Flame } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { FeatureCard, type Feature } from './HomeComponents';
 import { useAuth } from '@/modules/auth/context/AuthContext';
@@ -173,8 +173,25 @@ const LandingNavbar = () => {
   );
 };
 
+const searchPlaceholders = [
+  'Phở bò tái lăn...',
+  'Bánh mì xíu mại Sài Gòn...',
+  'Bún chả Hà Nội...',
+  'Cơm tấm sườn bì chả...',
+  'Bánh xèo giòn rụm...',
+];
+
 export const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIdx((prev) => (prev + 1) % searchPlaceholders.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const features: Feature[] = [
     {
@@ -230,11 +247,11 @@ export const Home = () => {
   ];
 
   const foodCategories = [
-    { name: 'Phở Bò', img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&auto=format&fit=crop&q=60' },
-    { name: 'Bánh Mì', img: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=600&auto=format&fit=crop&q=60' },
-    { name: 'Bún Bò', img: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=600&auto=format&fit=crop&q=60' },
-    { name: 'Cơm Tấm', img: 'https://images.unsplash.com/photo-1766050587783-1c90751275dd?w=600&auto=format&fit=crop&q=60' },
-    { name: 'Gỏi Cuốn', img: 'https://plus.unsplash.com/premium_photo-1663850685033-a8557389963e?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Phở Bò', description: 'Đặc sản Hà Nội', trending: true, img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Bánh Mì', description: 'Biểu tượng Sài Gòn', trending: true, img: 'https://images.unsplash.com/photo-1715925717150-2a6d181d8846?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Bún Bò', description: 'Hương vị xứ Huế', trending: false, img: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Cơm Tấm', description: 'Bình dân Sài Gòn', trending: false, img: 'https://images.unsplash.com/photo-1766050587783-1c90751275dd?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Gỏi Cuốn', description: 'Thanh mát miền Nam', trending: false, img: 'https://plus.unsplash.com/premium_photo-1663850685033-a8557389963e?w=600&auto=format&fit=crop&q=60' },
   ];
 
   return (
@@ -395,7 +412,7 @@ export const Home = () => {
         <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-16 lg:px-24">
         
         {/* Search Section */}
-        <section id="search-section" className="py-20 md:py-32 border-b border-neutral-200 dark:border-white/5">
+        <section id="search-section" className="pt-28 md:pt-40 pb-20 md:pb-32 border-b border-neutral-200 dark:border-white/5">
           <div className="max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -411,52 +428,104 @@ export const Home = () => {
               </p>
             </motion.div>
 
+            {/* AI-Powered Search Bar */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className="relative flex items-center bg-white dark:bg-slate-900 border border-neutral-300 dark:border-white/10 rounded-sm shadow-sm hover:shadow-md transition-shadow overflow-hidden mb-12"
+              className="relative mb-12"
             >
-              <Search className="absolute left-5 w-6 h-6 text-neutral-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Ví dụ: Phở bò tái lăn, Bánh mì xíu mại..."
-                className="flex-1 pl-14 pr-4 py-5 md:py-6 text-lg text-neutral-800 dark:text-white bg-transparent outline-none"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="mr-2 p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-slate-800 text-neutral-400 transition-colors">
-                  <X className="w-5 h-5" />
+              {/* AI Badge */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-200/60 dark:border-orange-500/20 text-xs font-semibold text-orange-700 dark:text-orange-400">
+                  <Sparkles className="w-3 h-3" />
+                  Hỗ trợ bởi AI
+                </span>
+              </div>
+
+              {/* Search Input Container */}
+              <div className={`relative flex items-center bg-white dark:bg-slate-900 rounded-2xl shadow-sm transition-all duration-300 overflow-hidden ${
+                isSearchFocused 
+                  ? 'shadow-lg shadow-orange-200/40 dark:shadow-orange-500/10 ring-2 ring-orange-400/50' 
+                  : 'border border-neutral-200 dark:border-white/10 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-500/20'
+              }`}>
+                {/* Sparkles Icon with pulse */}
+                <div className="absolute left-5 flex items-center justify-center">
+                  <Sparkles className={`w-5 h-5 transition-colors duration-300 ${isSearchFocused ? 'text-orange-500' : 'text-neutral-400'}`} />
+                  {isSearchFocused && (
+                    <div className="absolute inset-0 animate-ping">
+                      <Sparkles className="w-5 h-5 text-orange-400/30" />
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                  placeholder={searchPlaceholders[placeholderIdx]}
+                  className="flex-1 pl-14 pr-4 py-5 md:py-6 text-lg text-neutral-800 dark:text-white bg-transparent outline-none placeholder:text-neutral-400/70 placeholder:transition-all"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="mr-2 p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-slate-800 text-neutral-400 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+                <button className="m-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-base md:text-lg rounded-xl transition-all duration-200 shadow-md shadow-orange-200/50 dark:shadow-orange-500/20 hover:shadow-lg flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  Tìm kiếm
                 </button>
-              )}
-              <button className="m-2 px-8 py-3 md:py-4 bg-orange-600 hover:bg-orange-700 text-white font-medium text-lg rounded-sm transition-colors">
-                Tìm kiếm
-              </button>
+              </div>
             </motion.div>
 
-            {/* Popular Categories */}
+            {/* Popular Categories - Upgraded Cards */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-neutral-500 mb-6">Gợi ý phổ biến</h3>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-3 mb-6">
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-neutral-500">Gợi ý phổ biến</h3>
+                <span className="flex items-center gap-1 text-xs font-semibold text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full">
+                  <Flame className="w-3 h-3" /> Trending
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
                 {foodCategories.map((cat, idx) => (
                   <motion.button
                     key={cat.name}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: 0.5 + idx * 0.05 }}
+                    transition={{ duration: 0.4, delay: 0.3 + idx * 0.08 }}
                     onClick={() => setSearchQuery(cat.name)}
-                    className="flex items-center gap-3 bg-white dark:bg-slate-900 hover:bg-neutral-50 dark:hover:bg-slate-800 border border-neutral-200 dark:border-white/10 rounded-sm pr-6 pl-2 py-2 transition-all shadow-sm"
+                    className="group relative flex flex-col items-center gap-3 bg-white dark:bg-slate-900 hover:bg-orange-50/50 dark:hover:bg-slate-800 border border-neutral-200 dark:border-white/10 rounded-2xl p-4 pt-5 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-orange-100/50 dark:hover:shadow-black/20 hover:-translate-y-1 hover:border-orange-200 dark:hover:border-orange-500/20"
                   >
-                    <img src={cat.img} alt={cat.name} className="w-10 h-10 rounded-sm object-cover" />
-                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{cat.name}</span>
+                    {/* Trending Badge */}
+                    {cat.trending && (
+                      <span className="absolute -top-2 -right-2 flex items-center gap-0.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        <Flame className="w-2.5 h-2.5" /> HOT
+                      </span>
+                    )}
+
+                    {/* Food Image */}
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden ring-2 ring-neutral-100 dark:ring-white/10 group-hover:ring-orange-200 dark:group-hover:ring-orange-500/30 transition-all duration-300">
+                      <img 
+                        src={cat.img} 
+                        alt={cat.name} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      />
+                    </div>
+
+                    {/* Text */}
+                    <div className="text-center">
+                      <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors">{cat.name}</span>
+                      <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">{cat.description}</p>
+                    </div>
                   </motion.button>
                 ))}
               </div>
