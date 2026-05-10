@@ -332,9 +332,7 @@ const getRestaurants = async (): Promise<Restaurant[]> => {
   const cached = await getCachedRestaurants();
   const lastSyncedAt = localStorage.getItem(LAST_SYNCED_KEY) || '';
 
-  // Trigger background sync WITHOUT awaiting it for the caller
-  // This allows the UI to render the 8,500 cached items instantly
-  (async () => {
+  const syncFromServer = async (): Promise<Restaurant[]> => {
     try {
       let url = `${API_URL}/restaurants`;
       if (lastSyncedAt) {
@@ -349,27 +347,39 @@ const getRestaurants = async (): Promise<Restaurant[]> => {
           console.log(`[API] Received ${apiUpdates.length} updates for restaurants`);
           await setCachedRestaurants(apiUpdates);
           localStorage.setItem(LAST_SYNCED_KEY, new Date().toISOString());
+          return apiUpdates;
         } else if (cached.length < 10 && lastSyncedAt) {
            // Fallback for missing updatedAt field
            const fullResponse = await fetch(`${API_URL}/restaurants`);
            if (fullResponse.ok) {
              const allRests = await fullResponse.json();
-             if (Array.isArray(allRests)) await setCachedRestaurants(allRests);
+             if (Array.isArray(allRests)) {
+               await setCachedRestaurants(allRests);
+               return allRests;
+             }
            }
         }
       }
     } catch (e) {
       console.warn("[Background Sync] Failed", e);
     }
-  })();
+    return [];
+  };
 
   // Return the cached data immediately for fast load
   if (cached.length > 0) {
+    syncFromServer(); // Trigger background sync without awaiting
     return cached;
   }
 
+  // If cache is empty (first load), await the sync before returning!
+  const newRestaurants = await syncFromServer();
+  if (newRestaurants && newRestaurants.length > 0) {
+    return newRestaurants;
+  }
+
   // Final fallback (Mock/Static list)
-  return [];
+  return SEED_RESTAURANTS as Restaurant[];
 };
 
 

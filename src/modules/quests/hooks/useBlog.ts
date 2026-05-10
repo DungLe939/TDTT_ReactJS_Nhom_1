@@ -2,7 +2,7 @@
 // useBlog — Async hook cho Blog System
 // =============================================================================
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { blogController } from '../services/blogController';
 import { DEMO_USERS } from '../services/mockData';
@@ -33,8 +33,7 @@ export const useBlog = () => {
     achievements: []
   };
 
-  const demoUsers = DEMO_USERS;
-
+  // Removed static demoUsers declaration
   // Load ban đầu (Restaurants + Posts)
   useEffect(() => {
     const initData = async () => {
@@ -151,11 +150,20 @@ export const useBlog = () => {
     return post.likedByUserIds.includes(currentUser.id);
   }, [currentUser.id]);
 
+  const demoUsers = useMemo(() => {
+    const users = [...DEMO_USERS];
+    if (currentUser.id !== 'guest' && !users.find(u => u.id === currentUser.id)) {
+      users.push(currentUser);
+    }
+    return users;
+  }, [currentUser]);
+
   return {
     posts,
     restaurants,
     filter,
     currentUser,
+    demoUsers,
     isLoggedIn,
     isLoading,
     createPost,

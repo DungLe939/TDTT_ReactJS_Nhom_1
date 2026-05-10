@@ -46,7 +46,7 @@ export const Quests = () => {
   const [visibleRestaurants, setVisibleRestaurants] = useState(10);
 
   const {
-    posts, restaurants, filter, currentUser, isLoading: blogLoading,
+    posts, restaurants, filter, currentUser, demoUsers, isLoading: blogLoading,
     createPost, toggleLike, addComment, toggleLikeComment, visitRestaurant,
     toggleFilterTag, clearFilter, hasLiked,
   } = useBlog();
@@ -191,7 +191,7 @@ export const Quests = () => {
                     <EmptyState tab="community" />
                   ) : (
                     <PostList
-                      posts={posts} demoUsers={[]} restaurants={restaurants} currentUser={currentUser}
+                      posts={posts} demoUsers={demoUsers} restaurants={restaurants} currentUser={currentUser}
                       onLike={toggleLike} onComment={(pid, content, photos, parentId) => addComment(pid, content, photos, parentId)}
                       onLikeComment={toggleLikeComment} hasLiked={hasLiked}
                     />
