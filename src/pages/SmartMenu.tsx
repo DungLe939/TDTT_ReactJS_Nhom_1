@@ -24,7 +24,7 @@ export const SmartMenu = () => {
   // Flag đánh dấu nguồn gốc văn bản: true = từ quét Menu (FoodScan), false = người dùng tự nhập
   const [isFromScan, setIsFromScan] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  
+
   // States mới cho tính năng Sidebar và History
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [history, setHistory] = useState<TranslationHistory[]>([]);
@@ -233,7 +233,7 @@ export const SmartMenu = () => {
   };
 
   return (
-    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
+    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -243,8 +243,9 @@ export const SmartMenu = () => {
       {/* Sidebar Lịch sử */}
       <div className={`transition-all duration-500 flex flex-col overflow-hidden shrink-0 min-h-0
         ${isHistoryOpen ? 'w-full md:w-80 opacity-100' : 'w-0 opacity-0 hidden md:flex'} 
+
         rounded-3xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-slate-900/50' : 'bg-white border-orange-100 shadow-orange-500/5'}`}>
-        
+
         <div className={`p-4 xl:p-5 flex justify-between items-center border-b ${isDarkMode ? 'border-slate-700' : 'border-orange-50'}`}>
           <h2 className="font-bold whitespace-nowrap text-orange-500 flex items-center gap-2.5 text-lg">
              <History className="w-5 h-5 bg-orange-100 text-orange-600 rounded-md p-0.5" /> Lịch Sử
@@ -369,7 +370,6 @@ export const SmartMenu = () => {
             </button>
           </div>
         </div>
-
         {/* Areas */}
         <div ref={containerRef} className="flex-1 flex flex-col md:flex-row h-full relative min-h-0">
           {/* Source Area */}
@@ -461,6 +461,7 @@ export const SmartMenu = () => {
                 </button>
               </div>
             )}
+
           </div>
         </div>
       </div>

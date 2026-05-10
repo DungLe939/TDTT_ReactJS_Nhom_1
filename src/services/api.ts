@@ -152,13 +152,7 @@ export const scheduleService = {
         return response.data;
     },
 
-    /**
-     * Gửi toàn bộ thông tin để tạo lịch trình (Phiên bản đồng bộ )
-     */
-    generatePlan: async (payload: unknown) => {
-        const response = await apiClient.post('/schedule/generatePlan', payload);
-        return response.data;
-    },
+
 
     /**
      * Truy vấn dữ liệu bản đồ để vẽ chỉ đường giữa các món ăn.
@@ -190,7 +184,7 @@ export const scheduleService = {
     preparePlan: async (payload: unknown) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/preparePlan', payload),
-            2 // Thực hiện lại tối đa 2 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
+            3 // Thực hiện lại tối đa 3 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
         );
         return response.data;
     },
@@ -204,7 +198,7 @@ export const scheduleService = {
     generateDayPlan: async (dayIndex: number) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/generateDayPlan', { dayIndex }),
-            2 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI
+            3 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI (Groq + Gemini)
         );
         return response.data;
     },
@@ -215,6 +209,15 @@ export const scheduleService = {
      */
     swapOptions: async (payload: { dayIndex: number, mealType: string, userLat?: number, userLng?: number }) => {
         const response = await apiClient.post('/schedule/swapOptions', payload);
+        return response.data;
+    },
+
+    /**
+     * Lấy toàn bộ danh sách quán ăn + món ăn để hiển thị trong modal "Thêm bữa ăn phụ".
+     * Không còn lọc theo isSnack — frontend tự filter theo category.
+     */
+    getAllDishes: async () => {
+        const response = await apiClient.post('/schedule/allDishes', {});
         return response.data;
     }
 };

@@ -91,6 +91,8 @@ export function TestDataConnect() {
         priceMin: 15000,
         priceMax: 100000,
         priceDisplay: '15.000đ - 100.000đ',
+        latitude: 10.762622,
+        longitude: 106.660172,
       });
       const shopId = shopResult.data.shop_insert.id;
 

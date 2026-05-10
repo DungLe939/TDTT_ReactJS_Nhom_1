@@ -21,5 +21,3 @@ export type {
 export { useLocation } from './hooks/useLocation';
 export { useGroupTaste } from './hooks/useGroupTaste';
 export type { GroupUser } from './hooks/useGroupTaste';
-// Main Page Component
-export { GroupTastePage } from './GroupTastePage';
