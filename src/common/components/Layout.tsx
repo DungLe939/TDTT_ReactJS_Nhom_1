@@ -8,12 +8,14 @@ import {
     X,
     Sun,
     Moon,
+    Home,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { Chatbot } from './Chatbot';
 import { DesktopSidebar, MobileSidebar } from './Sidebar';
 import { getNavSections } from './SidebarConfig';
+import { BrandLogo } from './BrandLogo';
 
 /**
  * Layout component chính của ứng dụng.
@@ -103,7 +105,7 @@ export const Layout = () => {
                 {/* Sidebar Desktop */}
                 <DesktopSidebar />
 
-                <div className="flex min-h-screen flex-1 flex-col">
+                <div className="flex min-h-screen flex-1 flex-col min-w-0">
                     {/* Header */}
                     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all duration-200 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
                         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -118,12 +120,7 @@ export const Layout = () => {
 
                             {/* Mobile Logo & Branding */}
                             <button onClick={() => navigate('/')} className="flex items-center gap-2 lg:hidden">
-                                <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                                    <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                                <span className="text-base font-bold text-neutral-900 dark:text-white">
-                                    Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">Bản Địa</span>
-                                </span>
+                                <BrandLogo variant="full" size="sm" animated />
                             </button>
 
                             {/* Desktop Workspace Label */}
@@ -144,10 +141,11 @@ export const Layout = () => {
 
                             {/* Quick Actions */}
                             <button
-                                onClick={() => navigate('/scan')}
-                                className="hidden rounded-xl bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-500/20 md:inline-flex"
+                                onClick={() => navigate('/')}
+                                className="hidden items-center justify-center rounded-xl bg-orange-500 p-2.5 text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.05] hover:shadow-lg hover:shadow-orange-500/20 md:flex"
+                                aria-label="Về trang chủ"
                             >
-                                Quét nhanh
+                                <Home className="h-5 w-5" />
                             </button>
 
                             {/* Theme Toggle */}

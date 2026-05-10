@@ -91,7 +91,13 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
                         </div>
                         <div className="info-row">
                             <Clock size={18} className="info-icon" />
-                            <span>Giờ mở cửa: {dishInfo.openingHours?.open} - {dishInfo.openingHours?.close}</span>
+                            <span>
+                                Giờ mở cửa: {
+                                    typeof dishInfo.openingHours === 'object' 
+                                        ? `${dishInfo.openingHours.open} - ${dishInfo.openingHours.close}`
+                                        : (dishInfo.openingHours || '07:00 - 22:00')
+                                }
+                            </span>
                         </div>
                     </div>
 
@@ -115,8 +121,18 @@ const RestaurantDetailModal = ({ isOpen, onClose, dishInfo, onDishSelect }: Rest
                                             onClick={() => handleItemClick(item)}
                                         >
                                             <div className="menu-item-left">
-                                                <span className="menu-item-name">{item.name}</span>
-                                                {isCurrent && <span className="current-badge">Đang chọn</span>}
+                                                {/* Thumbnail món ăn trong menu */}
+                                                <div className="menu-item-img">
+                                                    {item.imageUrl ? (
+                                                        <img src={item.imageUrl} alt={item.name} />
+                                                    ) : (
+                                                        <UtensilsCrossed size={14} className="text-neutral-300" />
+                                                    )}
+                                                </div>
+                                                <div className="menu-item-info">
+                                                    <span className="menu-item-name">{item.name}</span>
+                                                    {isCurrent && <span className="current-badge">Đang chọn</span>}
+                                                </div>
                                             </div>
                                             <span className="menu-item-price">{item.price?.toLocaleString()}đ</span>
                                         </div>

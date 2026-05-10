@@ -9,7 +9,9 @@ import {
   sendPasswordResetEmail,
   type User as FirebaseUser,
 } from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, googleProvider, githubProvider } from '@/modules/auth/services/firebase';
+import { db } from '@/core/firebase/firebaseConfig';
 
 // Interface of User (mở rộng từ Firebase User)
 interface User {
@@ -64,10 +66,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Lắng nghe thay đổi trạng thái đăng nhập từ Firebase
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
-        setUser(mapFirebaseUser(fbUser));
+        const mappedUser = mapFirebaseUser(fbUser);
+        setUser(mappedUser);
+
+        // Đồng bộ lên Firestore
+        if (db) {
+          try {
+            const userRef = doc(db, 'users', fbUser.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+              // Tạo mới nếu chưa có
+              await setDoc(userRef, {
+                uid: fbUser.uid,
+                displayName: fbUser.displayName,
+                email: fbUser.email,
+                photoURL: fbUser.photoURL,
+                allergies: [],
+                preferences: {},
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              });
+            } else {
+              // Cập nhật thông tin cơ bản
+              await setDoc(userRef, {
+                displayName: fbUser.displayName,
+                email: fbUser.email,
+                photoURL: fbUser.photoURL,
+                updatedAt: serverTimestamp(),
+              }, { merge: true });
+              
+              // Cập nhật lại state user với thông tin đầy đủ từ Firestore (như allergies)
+              const dbData = userSnap.data();
+              setUser({
+                ...mappedUser,
+                allergies: dbData.allergies || [],
+                role: dbData.role || 'user',
+              });
+            }
+          } catch (error) {
+            console.error('Lỗi đồng bộ user lên Firestore:', error);
+          }
+        }
       } else {
         setFirebaseUser(null);
         setUser(null);
