@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { FileUpload } from '../common/components/FileUpload';
 import { LoadingModal } from '../common/components/LoadingModal';
 import { scanService } from '../services/api';
-import type { ScanPredictResult } from '../modules/scanning/types/scan.types';
+import type { ScanMultiPredictResult, ScanFoodItem, ScanDetectedObject, ScanObjectDetailResponse } from '../modules/scanning/types/scan.types';
 import {
   parseCommaList,
   parseScanContent,
@@ -228,7 +228,7 @@ const formatTokens = (tokens?: number) => {
   return tokens.toLocaleString('vi-VN');
 };
 
-const isPredictSuccess = (result: ScanPredictResult) => {
+const isPredictSuccess = (result: ScanMultiPredictResult) => {
   const normalizedStatus = String(result.status || '')
     .trim()
     .toLowerCase();
@@ -247,6 +247,11 @@ const isPredictSuccess = (result: ScanPredictResult) => {
     return true;
   }
 
+  // Multi-food: nếu có results array thì coi như thành công
+  if (result.results && result.results.length > 0) {
+    return true;
+  }
+
   return false;
 };
 
@@ -260,7 +265,7 @@ export const FoodScan = () => {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [scanResult, setScanResult] = useState<ScanPredictResult | null>(null);
+  const [scanResult, setScanResult] = useState<ScanMultiPredictResult | null>(null);
 
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -269,6 +274,11 @@ export const FoodScan = () => {
   const [apiCheckSummary, setApiCheckSummary] = useState<string | null>(null);
 
   const [showFullStory, setShowFullStory] = useState(false);
+  const [activeResultIndex, setActiveResultIndex] = useState(0);
+  const [detectedObjects, setDetectedObjects] = useState<ScanDetectedObject[]>([]);
+  const [objectDetailsCache, setObjectDetailsCache] = useState<Record<number, ScanObjectDetailResponse>>({});
+  const [audioCache, setAudioCache] = useState<Record<number, string>>({});
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -452,13 +462,78 @@ export const FoodScan = () => {
     toast.success('Đã chụp xong. Bạn có thể bấm phân tích ngay.');
   }, [isCameraActive, setNewSelectedFile]);
 
+  /**
+   * Load chi tiết (story + TTS) cho 1 object cụ thể từ /predict_object.
+   * Tự động cache kết quả để không gọi lại.
+   */
+  const loadObjectDetail = useCallback(async (objectIndex: number, objects: ScanDetectedObject[]) => {
+    const obj = objects[objectIndex];
+    if (!obj) return;
+
+    setIsLoadingDetail(true);
+    try {
+      const detail = await scanService.getObjectDetail(obj.crop_b64);
+
+      // Cache kết quả
+      setObjectDetailsCache(prev => ({ ...prev, [objectIndex]: detail }));
+
+      // Cập nhật scanResult để phần hiển thị story/audio hoạt động
+      setScanResult({
+        status: detail.status,
+        recognition: detail.recognition,
+        content: detail.content,
+      });
+
+      toast.success(`Đã tải thông tin "${detail.recognition?.food_label || obj.food_label}".`);
+
+      // Pre-fetch audio ngay để tránh bị ghi đè trên server khi chuyển tab
+      try {
+        const audioBlob = await scanService.fetchNarrationAudio();
+        const url = URL.createObjectURL(audioBlob);
+        setAudioCache(prev => ({ ...prev, [objectIndex]: url }));
+      } catch (err) {
+        console.warn('Lỗi tải trước audio:', err);
+      }
+    } catch (error) {
+      if (!axios.isAxiosError(error) || error.code !== 'ERR_CANCELED') {
+        const message = getErrorMessage(error, 'Không thể tải chi tiết món ăn.');
+        toast.error(message);
+      }
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  }, []);
+
+  /**
+   * Handler khi user click vào tab món ăn khác.
+   * Nếu detail đã cache thì dùng luôn, nếu chưa thì gọi API.
+   */
+  const handleTabClick = useCallback((index: number) => {
+    setActiveResultIndex(index);
+    setShowFullStory(false);
+    clearAudio();
+
+    // Nếu đã cache thì set scanResult từ cache
+    const cached = objectDetailsCache[index];
+    if (cached) {
+      setScanResult({
+        status: cached.status,
+        recognition: cached.recognition,
+        content: cached.content,
+      });
+    } else if (detectedObjects.length > 0) {
+      // Chưa cache → gọi API
+      loadObjectDetail(index, detectedObjects);
+    }
+  }, [clearAudio, detectedObjects, loadObjectDetail, objectDetailsCache]);
+
   const handleAnalyze = useCallback(async () => {
     if (!selectedFile) {
       toast.warning('Hãy chọn ảnh trước khi phân tích.');
       return;
     }
 
-    // Tắt camera khi bắt đầu phân tích để tránh bật đèn camera không cần thiết.
+    // Tắt camera khi bắt đầu phân tích
     if (isCameraActive) {
       stopCamera();
     }
@@ -471,24 +546,59 @@ export const FoodScan = () => {
     setAudioError(null);
     setScanResult(null);
     setShowFullStory(false);
+    setActiveResultIndex(0);
+    setDetectedObjects([]);
+    setObjectDetailsCache({});
+    setAudioCache({});
     setIsAnalyzing(true);
 
     try {
-      const response = await scanService.predictFood(selectedFile, controller.signal);
+      // Bước 1: Detect nhiều món bằng YOLO + CLIP
+      const detectResult = await scanService.detectMultiFoods(selectedFile, controller.signal);
 
-      if (!isPredictSuccess(response)) {
-        const rawStatus = String(response.status || 'unknown');
-        throw new Error(
-          response.message || `Hệ thống chưa thể phân tích ảnh (mã: ${rawStatus}).`
-        );
+      if (detectResult.status !== 'success' || !detectResult.objects?.length) {
+        throw new Error('Không nhận diện được món ăn nào trong ảnh.');
       }
 
-      if (!response.content.trim()) {
-        throw new Error('Chưa có nội dung trả về để hiển thị.');
+      // Gộp các món ăn bị trùng tên và đếm số lượng (chỉ giữ lại 1 tab cho 1 loại món)
+      const groupedObjects = detectResult.objects.reduce((acc, obj) => {
+        const existing = acc.find(item => item.food_label === obj.food_label);
+        if (existing) {
+          existing.quantity = (existing.quantity || 1) + 1;
+        } else {
+          acc.push({ ...obj, quantity: 1 });
+        }
+        return acc;
+      }, [] as typeof detectResult.objects);
+
+      setDetectedObjects(groupedObjects);
+
+      // Bước 2: Auto-load chi tiết cho món đầu tiên
+      const firstObj = groupedObjects[0];
+      const firstDetail = await scanService.getObjectDetail(firstObj.crop_b64, controller.signal);
+
+      setObjectDetailsCache({ 0: firstDetail });
+      setScanResult({
+        status: firstDetail.status,
+        recognition: firstDetail.recognition,
+        content: firstDetail.content,
+      });
+
+      // Pre-fetch audio cho món đầu tiên
+      try {
+        const audioBlob = await scanService.fetchNarrationAudio(controller.signal);
+        const url = URL.createObjectURL(audioBlob);
+        setAudioCache({ 0: url });
+      } catch (err) {
+        console.warn('Lỗi tải trước audio món đầu tiên:', err);
       }
 
-      setScanResult(response);
-      toast.success('Nhận diện thành công. Bạn có thể nghe thuyết minh ngay.');
+      const totalFoods = groupedObjects.length;
+      toast.success(
+        totalFoods > 1
+          ? `Nhận diện được ${totalFoods} loại món ăn! Bấm vào tab để xem chi tiết.`
+          : 'Nhận diện thành công. Bạn có thể nghe thuyết minh ngay.'
+      );
     } catch (error) {
       if (axios.isAxiosError(error) && error.code === 'ERR_CANCELED') {
         return;
@@ -502,11 +612,20 @@ export const FoodScan = () => {
       }
       setIsAnalyzing(false);
     }
-  }, [clearAudio, isCameraActive, selectedFile, stopCamera]);
+  }, [clearAudio, isCameraActive, loadObjectDetail, selectedFile, stopCamera]);
 
   const handleFetchAudio = useCallback(async () => {
     if (!scanResult) {
       toast.warning('Hãy phân tích ảnh trước khi nghe thuyết minh.');
+      return;
+    }
+
+    // Nếu đã có sẵn audio cho tab hiện tại trong cache
+    const cachedUrl = audioCache[activeResultIndex];
+    if (cachedUrl) {
+      setAudioUrl(cachedUrl);
+      setIsAudioLoading(false);
+      setAudioError(null);
       return;
     }
 
@@ -587,6 +706,11 @@ export const FoodScan = () => {
     setScanResult(null);
     setAudioError(null);
     setShowFullStory(false);
+    setActiveResultIndex(0);
+    setDetectedObjects([]);
+    setObjectDetailsCache({});
+    setAudioCache({});
+    setIsLoadingDetail(false);
     setCameraError(null);
     clearAudio();
     clearPreview();
@@ -614,9 +738,40 @@ export const FoodScan = () => {
     };
   }, [stopCamera]);
 
+  // Danh sách các món ăn nhận diện được
+  const foodItems: ScanFoodItem[] = useMemo(() => {
+    // Multi-detect flow: derive from detectedObjects + cached details
+    if (detectedObjects.length > 0) {
+      return detectedObjects.map((obj, idx) => {
+        const baseLabel = objectDetailsCache[idx]?.recognition?.food_label || obj.food_label;
+        const displayLabel = obj.quantity && obj.quantity > 1 ? `${baseLabel} (${obj.quantity})` : baseLabel;
+
+        return {
+          recognition: {
+            food_label: displayLabel,
+            confidence: objectDetailsCache[idx]?.recognition?.confidence || obj.clip_sim,
+          },
+          content: objectDetailsCache[idx]?.content ?? '',
+        };
+      });
+    }
+    // Single /predict flow (backward compat)
+    if (!scanResult) return [];
+    if (scanResult.results && scanResult.results.length > 0) {
+      return scanResult.results;
+    }
+    return [{
+      recognition: scanResult.recognition,
+      content: scanResult.content,
+      source_data: scanResult.source_data,
+    }];
+  }, [detectedObjects, objectDetailsCache, scanResult]);
+
+  const activeItem = foodItems[activeResultIndex] ?? foodItems[0] ?? null;
+
   const parsedContent = useMemo(
-    () => parseScanContent(scanResult?.content ?? ''),
-    [scanResult?.content]
+    () => parseScanContent(activeItem?.content ?? ''),
+    [activeItem?.content]
   );
 
   const storyParagraphs = useMemo(() => {
@@ -624,22 +779,22 @@ export const FoodScan = () => {
       return parsedContent.culturalStory;
     }
 
-    if (scanResult?.source_data?.story) {
-      return [scanResult.source_data.story];
+    if (activeItem?.source_data?.story) {
+      return [activeItem.source_data.story];
     }
 
     return parsedContent.intro;
-  }, [parsedContent, scanResult?.source_data?.story]);
+  }, [parsedContent, activeItem?.source_data?.story]);
 
   const ingredients = useMemo(() => {
     if (parsedContent.ingredients.length > 0) {
       return parsedContent.ingredients;
     }
 
-    return parseCommaList(scanResult?.source_data?.ingredients);
-  }, [parsedContent.ingredients, scanResult?.source_data?.ingredients]);
+    return parseCommaList(activeItem?.source_data?.ingredients);
+  }, [parsedContent.ingredients, activeItem?.source_data?.ingredients]);
 
-  const confidence = parseConfidencePercent(scanResult?.recognition?.confidence);
+  const confidence = parseConfidencePercent(activeItem?.recognition?.confidence);
   const visibleStory = showFullStory
     ? storyParagraphs
     : storyParagraphs.slice(0, 2);
@@ -897,15 +1052,45 @@ export const FoodScan = () => {
               </button>
 
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                <p className="text-sm text-white/80">Món ăn được nhận diện</p>
+                <p className="text-sm text-white/80">
+                  {foodItems.length > 1 ? `Nhận diện được ${foodItems.length} món ăn` : 'Món ăn được nhận diện'}
+                </p>
                 <h1 className="text-3xl font-bold">
-                  {scanResult.recognition?.food_label || 'Không rõ tên món'}
+                  {activeItem?.recognition?.food_label || 'Không rõ tên món'}
                 </h1>
                 <p className="mt-2 text-sm text-white/80">
-                  Độ tin cậy: {scanResult.recognition?.confidence || 'N/A'}
+                  Độ tin cậy: {activeItem?.recognition?.confidence || 'N/A'}
                 </p>
               </div>
             </div>
+
+            {foodItems.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto px-5 pt-4 pb-1">
+                {foodItems.map((item, index) => (
+                  <button
+                    key={`food-tab-${item.recognition?.food_label ?? index}`}
+                    type="button"
+                    onClick={() => handleTabClick(index)}
+                    className={`cursor-pointer shrink-0 rounded-2xl border px-4 py-3 text-left transition-all ${
+                      index === activeResultIndex
+                        ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 dark:border-orange-500/50 shadow-sm'
+                        : 'border-neutral-200 dark:border-white/10 bg-white dark:bg-slate-800 hover:border-orange-200 dark:hover:border-orange-500/30'
+                    }`}
+                  >
+                    <p className={`text-sm font-semibold ${
+                      index === activeResultIndex ? 'text-orange-600 dark:text-orange-400' : 'text-neutral-700 dark:text-gray-300'
+                    }`}>
+                      {item.recognition?.food_label || `Món ${index + 1}`}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${
+                      index === activeResultIndex ? 'text-orange-500/80 dark:text-orange-400/60' : 'text-neutral-500 dark:text-gray-500'
+                    }`}>
+                      {item.recognition?.confidence || 'N/A'}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="grid gap-4 p-5 sm:grid-cols-2">
               <div className="rounded-2xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-slate-800 p-4">
@@ -1098,8 +1283,14 @@ export const FoodScan = () => {
 
       <LoadingModal
         isOpen={isAnalyzing}
-        message="Đang phân tích món ăn"
-        submessage="Hệ thống đang xử lý hình ảnh và tạo nội dung thuyết minh"
+        message="Đang nhận diện món ăn"
+        submessage="YOLO phát hiện vùng ảnh → CLIP phân loại → LLM viết câu chuyện"
+      />
+
+      <LoadingModal
+        isOpen={isLoadingDetail}
+        message="Đang tải chi tiết món ăn"
+        submessage="Hệ thống đang sinh câu chuyện văn hóa cho món bạn chọn"
       />
     </div>
   );
