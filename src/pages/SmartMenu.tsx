@@ -115,7 +115,7 @@ export const SmartMenu = () => {
     if (!sourceText.trim()) return;
     setIsTranslating(true);
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const API_URL = import.meta.env.VITE_API_CQ_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     try {
       // ---------------------------------------------------------------
