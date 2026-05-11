@@ -36,9 +36,10 @@ const SchedulePage = () => {
     const [planData, setPlanData] = useState<any[] | null>(null);
 
     // scheduleInfo: Cấu hình cơ bản của chuyến đi (Địa điểm, số ngày, ngân sách...)
+    // Mặc định rỗng — chỉ hiển thị thông tin khi user thực sự tạo lịch trình
     const [scheduleInfo, setScheduleInfo] = useState<any>({
-        location: 'Đà Nẵng',
-        days: 3,
+        location: '',
+        days: 0,
         startDate: '',
         totalBudget: 0,
         suggestedMealBudget: null
@@ -108,6 +109,7 @@ const SchedulePage = () => {
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
         setPlanData(null);
+        setIsModalOpen(false); // Đóng modal ngay khi user bấm "Tạo lịch trình" để UX mượt hơn
 
         try {
             // BƯỚC 1: Lấy tọa độ địa điểm 
@@ -150,6 +152,19 @@ const SchedulePage = () => {
             };
             setScheduleInfo(newScheduleInfo);
             localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
+
+            // Tính toán viewStartDate ngay khi tạo lịch trình mới
+            // để thanh chuyển ngày hiển thị ngay lập tức (không cần reload trang)
+            if (newScheduleInfo.startDate) {
+                const tripStartDate = new Date(newScheduleInfo.startDate);
+                const getMonday = (d: Date) => {
+                    const date = new Date(d);
+                    const day = date.getDay();
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                    return new Date(date.setDate(diff));
+                };
+                setViewStartDate(getMonday(tripStartDate));
+            }
 
             // BƯỚC 3: STREAMING — Tạo lịch trình TỪNG NGÀY 
             // Khi ngày 1 xong → đóng modal, hiện giao diện ngay lập tức
@@ -249,7 +264,7 @@ const SchedulePage = () => {
                 <div className="bg-white rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 mb-6">
                     <ScheduleBanner
                         title="Lịch trình Food Tour"
-                        subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`}
+                        subtitle={scheduleInfo.location ? `${scheduleInfo.location}, ${scheduleInfo.days} ngày` : 'Hãy tạo lịch trình của bạn'}
                         onFilterClick={handleFilterClick}
                         onMapClick={() => setIsLocationPickerOpen(true)}
                     />
