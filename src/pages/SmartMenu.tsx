@@ -233,7 +233,7 @@ export const SmartMenu = () => {
   };
 
   return (
-    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
+    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

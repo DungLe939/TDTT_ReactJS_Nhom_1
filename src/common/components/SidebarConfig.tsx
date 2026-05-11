@@ -51,7 +51,7 @@ export const getNavSections = (isAdmin: boolean): NavSection[] => {
         {
             title: 'Khám phá',
             items: [
-                { path: '/', label: 'Lịch trình', icon: <Map className="h-5 w-5" />, description: 'Gợi ý quán' },
+                { path: '/itinerary', label: 'Lịch trình', icon: <Map className="h-5 w-5" />, description: 'Gợi ý quán' },
                 { path: '/scan', label: 'Quét món', icon: <ScanFace className="h-5 w-5" />, description: 'Nhận diện món' },
                 { path: '/menu', label: 'Menu AI', icon: <Languages className="h-5 w-5" />, description: 'Đề xuất AI' },
                 { path: '/market', label: 'Chợ món', icon: <Store className="h-5 w-5" />, description: 'Khám phá quán' },

@@ -8,12 +8,14 @@ import {
     X,
     Sun,
     Moon,
+    Home,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { DesktopSidebar, MobileSidebar } from './Sidebar';
 import { getNavSections } from './SidebarConfig';
-import { TranslateWidget } from './TranslateWidget';
+import { Chatbot } from './Chatbot';
+import { BrandLogo } from './BrandLogo';
 
 /**
  * Layout component chính của ứng dụng.
@@ -83,18 +85,18 @@ export const Layout = () => {
             {/* Background Wrapper (Premium effects từ nhánh hiện tại) */}
             <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-gradient-to-br from-neutral-50 via-orange-50/40 to-amber-50/50 dark:from-slate-950 dark:via-orange-950/20 dark:to-slate-900">
                 {/* Full Page Blurred Image */}
-                <div 
+                <div
                     className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.08] blur-[24px]"
                 />
-                
+
                 {/* Ambient Glow Tones (SaaS/Luxury effect) */}
                 <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-orange-400/20 blur-[120px] mix-blend-multiply dark:bg-orange-600/10" />
                 <div className="absolute top-[40%] -left-[10%] w-[40vw] h-[40vw] rounded-full bg-amber-400/15 blur-[100px] mix-blend-multiply dark:bg-amber-600/10" />
                 <div className="absolute -bottom-[10%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-yellow-300/15 blur-[120px] mix-blend-multiply dark:bg-yellow-600/5" />
 
                 {/* AI Subtle Radial Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.12] dark:opacity-[0.05]" 
+                <div
+                    className="absolute inset-0 opacity-[0.12] dark:opacity-[0.05]"
                     style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(0,0,0,0.8) 1px, transparent 0)', backgroundSize: '32px 32px' }}
                 />
             </div>
@@ -103,7 +105,7 @@ export const Layout = () => {
                 {/* Sidebar Desktop */}
                 <DesktopSidebar />
 
-                <div className="flex min-h-screen flex-1 flex-col">
+                <div className="flex min-h-screen flex-1 flex-col min-w-0">
                     {/* Header */}
                     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all duration-200 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
                         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -118,12 +120,7 @@ export const Layout = () => {
 
                             {/* Mobile Logo & Branding */}
                             <button onClick={() => navigate('/')} className="flex items-center gap-2 lg:hidden">
-                                <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                                    <img src="/Logo.jpg" alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                                <span className="text-base font-bold text-neutral-900 dark:text-white">
-                                    Hương Vị <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">Bản Địa</span>
-                                </span>
+                                <BrandLogo variant="full" size="sm" animated />
                             </button>
 
                             {/* Desktop Workspace Label */}
@@ -144,10 +141,11 @@ export const Layout = () => {
 
                             {/* Quick Actions */}
                             <button
-                                onClick={() => navigate('/scan')}
-                                className="hidden rounded-xl bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-500/20 md:inline-flex"
+                                onClick={() => navigate('/')}
+                                className="hidden items-center justify-center rounded-xl bg-orange-500 p-2.5 text-white transition-all duration-200 hover:bg-orange-600 hover:scale-[1.05] hover:shadow-lg hover:shadow-orange-500/20 md:flex"
+                                aria-label="Về trang chủ"
                             >
-                                Quét nhanh
+                                <Home className="h-5 w-5" />
                             </button>
 
                             {/* Theme Toggle */}
@@ -202,15 +200,15 @@ export const Layout = () => {
 
                     {/* Main Content Area */}
                     <main className="flex-1 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-                        <div className="mx-auto w-full max-w-6xl">
+                        <div className="mx-auto w-full">
                             <Outlet />
                         </div>
                     </main>
                 </div>
             </div>
 
-            {/* Translate Widget Overlay */}
-            <TranslateWidget />
+            {/* AI Chatbot Overlay */}
+            <Chatbot />
         </div>
     );
 };
