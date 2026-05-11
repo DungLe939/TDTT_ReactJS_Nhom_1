@@ -20,7 +20,20 @@ export const SmartMenu = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sentiment, setSentiment] = useState<{ label: string, score: number } | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+ 
+  // Sync with global theme
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   // States mới cho tính năng Sidebar và History
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
@@ -171,7 +184,7 @@ export const SmartMenu = () => {
   };
 
   return (
-    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
+    <div className={`h-[calc(100vh-4rem)] min-h-[600px] flex p-2 md:p-6 gap-6 max-w-7xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-[#fffaf5] text-neutral-800'}`}>
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -181,7 +194,7 @@ export const SmartMenu = () => {
       {/* Sidebar Lịch sử */}
       <div className={`transition-all duration-500 flex flex-col overflow-hidden shrink-0 min-h-0
         ${isHistoryOpen ? 'w-full md:w-80 opacity-100' : 'w-0 opacity-0 hidden md:flex'} 
-        rounded-3xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-slate-900/50' : 'bg-white border-orange-100 shadow-orange-500/5'}`}>
+        rounded-3xl shadow-lg border ${isDarkMode ? 'bg-slate-900 border-white/10 shadow-slate-950/50' : 'bg-white border-orange-100 shadow-orange-500/5'}`}>
 
         <div className={`p-4 xl:p-5 flex justify-between items-center border-b ${isDarkMode ? 'border-slate-700' : 'border-orange-50'}`}>
           <h2 className="font-bold whitespace-nowrap text-orange-500 flex items-center gap-2.5 text-lg">
@@ -196,9 +209,9 @@ export const SmartMenu = () => {
 
         <div className="flex-1 relative min-h-0 flex flex-col">
           {/* Mặt nạ làm nhòe trên & Nút Cuộn */}
-          <div className={`absolute top-0 left-0 right-3 h-14 pointer-events-none z-[5] flex justify-center pt-1 bg-gradient-to-b ${isDarkMode ? 'from-slate-900 via-slate-900/90 to-transparent' : 'from-[#fffaf5] via-[#fffaf5]/90 to-transparent'}`}>
+          <div className={`absolute top-0 left-0 right-3 h-14 pointer-events-none z-[5] flex justify-center pt-1 bg-gradient-to-b ${isDarkMode ? 'from-slate-900 via-slate-900/90 to-transparent' : 'from-white via-white/90 to-transparent'}`}>
             {history.length > 4 && (
-              <button onClick={() => scrollHistory('up')} className={`pointer-events-auto mt-1 w-8 h-8 flex items-center justify-center rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600' : 'bg-white hover:bg-orange-50 text-orange-500 border border-orange-200'}`}>
+              <button onClick={() => scrollHistory('up')} className={`pointer-events-auto mt-1 w-8 h-8 flex items-center justify-center rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10' : 'bg-white hover:bg-orange-50 text-orange-500 border border-orange-200'}`}>
                 <ChevronUp className="w-5 h-5" />
               </button>
             )}
@@ -208,7 +221,7 @@ export const SmartMenu = () => {
             {history.map(item => (
               <div key={item.id} onClick={() => loadHistoryItem(item)}
                 className={`cursor-pointer group p-3.5 rounded-2xl border transition-all duration-500 hover:-translate-y-0.5 hover:shadow-md 
-                     ${isDarkMode ? 'border-slate-700 hover:border-orange-500/40 bg-slate-800 hover:bg-slate-700' : 'border-neutral-100 hover:border-orange-300 bg-[#fffaf5] hover:bg-orange-50/50'}`}>
+                     ${isDarkMode ? 'border-white/5 bg-slate-800/50 hover:border-orange-500/40 hover:bg-slate-800' : 'border-neutral-100 hover:border-orange-300 bg-neutral-50 hover:bg-orange-50/50'}`}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-sm">
                     {item.lang === 'vi' ? 'EN ➔ VI' : 'VI ➔ EN'}
@@ -235,9 +248,9 @@ export const SmartMenu = () => {
 
           {/* Mặt nạ làm nhòe dưới */}
           {history.length > 0 && (
-            <div className={`absolute bottom-0 left-0 right-3 h-14 pointer-events-none z-[5] flex justify-center items-end pb-1 bg-gradient-to-t ${isDarkMode ? 'from-slate-900 via-slate-900/90 to-transparent' : 'from-[#fffaf5] via-[#fffaf5]/90 to-transparent'}`}>
+            <div className={`absolute bottom-0 left-0 right-3 h-14 pointer-events-none z-[5] flex justify-center items-end pb-1 bg-gradient-to-t ${isDarkMode ? 'from-slate-900 via-slate-900/90 to-transparent' : 'from-white via-white/90 to-transparent'}`}>
               {history.length > 4 && (
-                <button onClick={() => scrollHistory('down')} className={`pointer-events-auto mb-1 w-8 h-8 flex items-center justify-center rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600' : 'bg-white hover:bg-orange-50 text-orange-500 border border-orange-200'}`}>
+                <button onClick={() => scrollHistory('down')} className={`pointer-events-auto mb-1 w-8 h-8 flex items-center justify-center rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10' : 'bg-white hover:bg-orange-50 text-orange-500 border border-orange-200'}`}>
                   <ChevronDown className="w-5 h-5" />
                 </button>
               )}
@@ -255,12 +268,12 @@ export const SmartMenu = () => {
         </div>
 
         {/* Tai gấu phải */}
-        <div className={`hidden lg:flex absolute -top-10 right-[8%] w-24 h-24 rounded-full border z-0 transition-colors duration-500 items-start pt-3 justify-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-orange-200 shadow-[0_-8px_15px_rgba(249,115,22,0.05)]'}`}>
-          <div className={`w-12 h-12 rounded-full transition-colors duration-500 ${isDarkMode ? 'bg-slate-700' : 'bg-orange-100'}`} />
+        <div className={`hidden lg:flex absolute -top-10 right-[8%] w-24 h-24 rounded-full border z-0 transition-colors duration-500 items-start pt-3 justify-center ${isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-white border-orange-200 shadow-[0_-8px_15px_rgba(249,115,22,0.05)]'}`}>
+          <div className={`w-12 h-12 rounded-full transition-colors duration-500 ${isDarkMode ? 'bg-slate-800' : 'bg-orange-100'}`} />
         </div>
 
         {/* Main Translation Concept */}
-        <div className={`flex-1 flex flex-col rounded-3xl min-h-0 shadow-xl relative z-10 overflow-hidden transition-all duration-500 border ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-slate-900/50' : 'bg-white border-orange-200 shadow-orange-500/10'}`}>
+        <div className={`flex-1 flex flex-col rounded-3xl min-h-0 shadow-xl relative z-10 overflow-hidden transition-all duration-500 border ${isDarkMode ? 'bg-slate-900 border-white/10 shadow-slate-950/50' : 'bg-white border-orange-200 shadow-orange-500/10'}`}>
 
           {/* Header Tweak */}
           <div className={`px-4 xl:px-6 py-4 flex justify-between items-center z-10 relative border-b transition-colors duration-500 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-orange-50/50 to-white border-orange-50'}`}>
@@ -301,22 +314,21 @@ export const SmartMenu = () => {
               </div>
 
               {/* Dark Mode Switch */}
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`relative flex items-center w-14 h-7 rounded-full transition-colors duration-300 shadow-inner border mx-2 ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-orange-200 border-orange-300'}`}
-                title="Đổi chế độ sáng tối"
+              <div
+                className={`relative flex items-center w-14 h-7 rounded-full transition-colors duration-300 shadow-inner border mx-2 ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-orange-200 border-orange-300'}`}
+                title="Chế độ hiện tại"
               >
-                <div className={`absolute top-[1.5px] w-6 h-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${isDarkMode ? 'left-[26px] bg-slate-900 border border-slate-600' : 'left-[1.5px] bg-white border border-orange-100'}`}>
+                <div className={`absolute top-[1.5px] w-6 h-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${isDarkMode ? 'left-[26px] bg-slate-950 border border-white/10' : 'left-[1.5px] bg-white border border-orange-100'}`}>
                   {isDarkMode ? <Moon className="w-3.5 h-3.5 text-slate-300" /> : <Sun className="w-4 h-4 text-orange-500" />}
                 </div>
-              </button>
+              </div>
             </div>
           </div>
 
           {/* Areas */}
           <div ref={containerRef} className="flex-1 flex flex-col md:flex-row h-full relative min-h-0">
             {/* Source Area */}
-            <div style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%' }} className={`p-5 md:p-8 flex flex-col relative transition-colors duration-500 border-b md:border-b-0 md:border-r ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-orange-100/50'}`}>
+            <div style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%' }} className={`p-5 md:p-8 flex flex-col relative transition-colors duration-500 border-b md:border-b-0 md:border-r ${isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-orange-100/50'}`}>
               <textarea
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
@@ -368,7 +380,7 @@ export const SmartMenu = () => {
             </div>
 
             {/* Target Area */}
-            <div style={{ width: window.innerWidth >= 768 ? `${100 - leftWidth}%` : '100%' }} className={`p-5 md:p-8 flex flex-col relative transition-colors duration-500 ${isDarkMode ? 'bg-slate-850 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-800 to-slate-900' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-50/50 to-white'}`}>
+            <div style={{ width: window.innerWidth >= 768 ? `${100 - leftWidth}%` : '100%' }} className={`p-5 md:p-8 flex flex-col relative transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 to-slate-950' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-50/50 to-white'}`}>
 
               {/* Center decorative soup icon */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none opacity-[0.03]">
