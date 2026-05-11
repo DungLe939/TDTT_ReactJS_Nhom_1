@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
         Instead of: import MyComponent from '../../common/components/MyComponent'
         */
         '@': path.resolve(__dirname, './src'),
+        '@dataconnect/generated': path.resolve(__dirname, './src/dataconnect-generated'),
       },
     },
     server: {
@@ -37,6 +38,12 @@ export default defineConfig(({ mode }) => {
             timeout: 180000,
             proxyTimeout: 180000,
             rewrite: (pathValue) => pathValue.replace(/^\/scan-api/, ''),
+          },
+          '/api-deepseek': {
+            target: 'https://api.deepseek.com',
+            changeOrigin: true,
+            secure: true,
+            rewrite: (path) => path.replace(/^\/api-deepseek/, ''),
           },
         }
         : undefined,

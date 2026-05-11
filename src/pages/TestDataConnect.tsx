@@ -179,7 +179,7 @@ export function TestDataConnect() {
               <p style={{ color: '#666', fontSize: 13 }}>Chưa có category. Bấm "Seed Data" ở trên.</p>
             ) : (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {categories.map(cat => (
+                {categories.map((cat: any) => (
                   <span key={cat.id} style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500,
                     background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
@@ -198,7 +198,7 @@ export function TestDataConnect() {
               <p style={{ color: '#666', fontSize: 13 }}>Chưa có shop.</p>
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
-                {shops.map(shop => (
+                {shops.map((shop: any) => (
                   <div key={shop.id} style={{
                     padding: 14, background: '#1e1e2e', borderRadius: 8, border: '1px solid #333',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -226,7 +226,7 @@ export function TestDataConnect() {
               <p style={{ color: '#666', fontSize: 13 }}>Chưa có món ăn.</p>
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
-                {foods.map(food => (
+                {foods.map((food: any) => (
                   <div key={food.id} style={{
                     padding: 14, background: '#1e1e2e', borderRadius: 8, border: '1px solid #333',
                     display: 'flex', gap: 12, alignItems: 'center',
