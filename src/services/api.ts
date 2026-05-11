@@ -3,6 +3,11 @@ import { retryRequest } from '../utils/retryRequest';
 import type {
     ScanPredictResponse,
     ScanPredictResult,
+    ScanFoodItem,
+    ScanMultiPredictResponse,
+    ScanMultiPredictResult,
+    ScanMultiDetectResponse,
+    ScanObjectDetailResponse,
 } from '../modules/scanning/types/scan.types';
 
 export interface ScanSystemInfoResponse {
@@ -259,7 +264,7 @@ export const scanService = {
     predictFood: async (
         imageFile: File,
         signal?: AbortSignal
-    ): Promise<ScanPredictResult> => {
+    ): Promise<ScanMultiPredictResult> => {
         ensureScanApiConfigured();
 
         const formData = new FormData();
@@ -267,20 +272,29 @@ export const scanService = {
 
         const response = await retryRequest(
             () =>
-                scanClient.post<ScanPredictResponse>('/predict', formData, {
+                scanClient.post<ScanMultiPredictResponse>('/predict', formData, {
                     signal,
                 }),
             0
         );
 
-        const data = extractPredictPayload(response.data) as ScanPredictResponse &
+        const data = extractPredictPayload(response.data) as ScanMultiPredictResponse &
             GenericScanPayload;
         const normalizedStatus = normalizePredictStatus(data);
+
+        // Normalize multi-food results nếu API trả về
+        const normalizedResults: ScanFoodItem[] | undefined = data.results?.map(
+            (item: ScanFoodItem) => ({
+                ...item,
+                content: normalizePredictContent(item.content),
+            })
+        );
 
         return {
             ...data,
             status: normalizedStatus || 'unknown',
             content: normalizePredictContent(data.content),
+            results: normalizedResults,
         };
     },
 
@@ -291,6 +305,50 @@ export const scanService = {
             responseType: 'blob',
             signal,
         });
+
+        return response.data;
+    },
+
+    /**
+     * Detect nhiều món ăn trong 1 ảnh (YOLO + CLIP).
+     * Trả về danh sách objects kèm crop_b64 để gọi tiếp getObjectDetail.
+     */
+    detectMultiFoods: async (
+        imageFile: File,
+        signal?: AbortSignal
+    ): Promise<ScanMultiDetectResponse> => {
+        ensureScanApiConfigured();
+
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        const response = await retryRequest(
+            () =>
+                scanClient.post<ScanMultiDetectResponse>(
+                    '/predict_multi',
+                    formData,
+                    { signal }
+                ),
+            0
+        );
+
+        return response.data;
+    },
+
+    /**
+     * Lấy chi tiết (story + TTS) cho 1 crop cụ thể từ /predict_object.
+     */
+    getObjectDetail: async (
+        cropB64: string,
+        signal?: AbortSignal
+    ): Promise<ScanObjectDetailResponse> => {
+        ensureScanApiConfigured();
+
+        const response = await scanClient.post<ScanObjectDetailResponse>(
+            '/predict_object',
+            { crop_b64: cropB64 },
+            { signal }
+        );
 
         return response.data;
     },

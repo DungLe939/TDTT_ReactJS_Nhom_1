@@ -52,7 +52,7 @@ const mapFirebaseUser = (firebaseUser: FirebaseUser): User => ({
   email: firebaseUser.email || '',
   photoURL: firebaseUser.photoURL,
   allergies: [], // Sau này có thể lấy từ Firestore
-  role: firebaseUser.email === 'cquang324@gmail.com' ? 'admin' : 'user',
+  role: 'user', // Mặc định là user, sau này có thể check từ custom claims hoặc Firestore
 });
 
 // Create Context for Authentication
