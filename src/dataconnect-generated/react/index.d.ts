@@ -1,4 +1,4 @@
-import { CreateCategoryData, CreateCategoryVariables, CreateShopData, CreateShopVariables, CreateFoodItemData, CreateFoodItemVariables, ListCategoriesData, ListFoodsData, ListFoodsVariables, ListFoodsByCategoryData, ListFoodsByCategoryVariables, GetFoodDetailData, GetFoodDetailVariables, GetShopDetailData, GetShopDetailVariables, ListShopsData, ListShopsVariables } from '../';
+import { CreateCategoryData, CreateCategoryVariables, CreateShopData, CreateShopVariables, CreateFoodItemData, CreateFoodItemVariables, UpsertPlanCacheData, UpsertPlanCacheVariables, DeletePlanCacheData, DeletePlanCacheVariables, UpdateDayScoresData, UpdateDayScoresVariables, UpdateUsedCategoriesData, UpdateUsedCategoriesVariables, ListCategoriesData, ListFoodsData, ListFoodsVariables, ListFoodsByCategoryData, ListFoodsByCategoryVariables, GetFoodDetailData, GetFoodDetailVariables, GetShopDetailData, GetShopDetailVariables, ListShopsData, ListShopsVariables, ListAllShopsWithMenuData, GetPlanCacheData, GetPlanCacheVariables } from '../';
 import { UseDataConnectQueryResult, useDataConnectQueryOptions, UseDataConnectMutationResult, useDataConnectMutationOptions} from '@tanstack-query-firebase/react/data-connect';
 import { UseQueryResult, UseMutationResult} from '@tanstack/react-query';
 import { DataConnect } from 'firebase/data-connect';
@@ -13,6 +13,18 @@ export function useCreateShop(dc: DataConnect, options?: useDataConnectMutationO
 
 export function useCreateFoodItem(options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
 export function useCreateFoodItem(dc: DataConnect, options?: useDataConnectMutationOptions<CreateFoodItemData, FirebaseError, CreateFoodItemVariables>): UseDataConnectMutationResult<CreateFoodItemData, CreateFoodItemVariables>;
+
+export function useUpsertPlanCache(options?: useDataConnectMutationOptions<UpsertPlanCacheData, FirebaseError, UpsertPlanCacheVariables>): UseDataConnectMutationResult<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+export function useUpsertPlanCache(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertPlanCacheData, FirebaseError, UpsertPlanCacheVariables>): UseDataConnectMutationResult<UpsertPlanCacheData, UpsertPlanCacheVariables>;
+
+export function useDeletePlanCache(options?: useDataConnectMutationOptions<DeletePlanCacheData, FirebaseError, DeletePlanCacheVariables>): UseDataConnectMutationResult<DeletePlanCacheData, DeletePlanCacheVariables>;
+export function useDeletePlanCache(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlanCacheData, FirebaseError, DeletePlanCacheVariables>): UseDataConnectMutationResult<DeletePlanCacheData, DeletePlanCacheVariables>;
+
+export function useUpdateDayScores(options?: useDataConnectMutationOptions<UpdateDayScoresData, FirebaseError, UpdateDayScoresVariables>): UseDataConnectMutationResult<UpdateDayScoresData, UpdateDayScoresVariables>;
+export function useUpdateDayScores(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateDayScoresData, FirebaseError, UpdateDayScoresVariables>): UseDataConnectMutationResult<UpdateDayScoresData, UpdateDayScoresVariables>;
+
+export function useUpdateUsedCategories(options?: useDataConnectMutationOptions<UpdateUsedCategoriesData, FirebaseError, UpdateUsedCategoriesVariables>): UseDataConnectMutationResult<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
+export function useUpdateUsedCategories(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateUsedCategoriesData, FirebaseError, UpdateUsedCategoriesVariables>): UseDataConnectMutationResult<UpdateUsedCategoriesData, UpdateUsedCategoriesVariables>;
 
 export function useListCategories(options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, undefined>;
 export function useListCategories(dc: DataConnect, options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, undefined>;
@@ -31,3 +43,9 @@ export function useGetShopDetail(dc: DataConnect, vars: GetShopDetailVariables, 
 
 export function useListShops(vars?: ListShopsVariables, options?: useDataConnectQueryOptions<ListShopsData>): UseDataConnectQueryResult<ListShopsData, ListShopsVariables>;
 export function useListShops(dc: DataConnect, vars?: ListShopsVariables, options?: useDataConnectQueryOptions<ListShopsData>): UseDataConnectQueryResult<ListShopsData, ListShopsVariables>;
+
+export function useListAllShopsWithMenu(options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
+export function useListAllShopsWithMenu(dc: DataConnect, options?: useDataConnectQueryOptions<ListAllShopsWithMenuData>): UseDataConnectQueryResult<ListAllShopsWithMenuData, undefined>;
+
+export function useGetPlanCache(vars: GetPlanCacheVariables, options?: useDataConnectQueryOptions<GetPlanCacheData>): UseDataConnectQueryResult<GetPlanCacheData, GetPlanCacheVariables>;
+export function useGetPlanCache(dc: DataConnect, vars: GetPlanCacheVariables, options?: useDataConnectQueryOptions<GetPlanCacheData>): UseDataConnectQueryResult<GetPlanCacheData, GetPlanCacheVariables>;

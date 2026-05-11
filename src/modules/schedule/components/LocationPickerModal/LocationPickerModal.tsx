@@ -47,7 +47,7 @@ const LocationPickerModal = ({ isOpen, onClose, onConfirm }: LocationPickerModal
     const [showSuggestions, setShowSuggestions] = useState(false);
     
     // State bản đồ
-    const [mapCenter, setMapCenter] = useState<[number, number]>([16.047079, 108.206230]); // Default: Đà Nẵng
+    const [mapCenter, setMapCenter] = useState<[number, number]>([10.762622, 106.660172]); // Default: TP Hồ Chí Minh
     const [selectedPos, setSelectedPos] = useState<[number, number] | null>(null);
     const [selectedName, setSelectedName] = useState('');
     
@@ -58,17 +58,8 @@ const LocationPickerModal = ({ isOpen, onClose, onConfirm }: LocationPickerModal
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            // Xin quyền GPS nếu có thể
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setMapCenter([position.coords.latitude, position.coords.longitude]);
-                    },
-                    () => {
-                        // Bỏ qua nếu user từ chối
-                    }
-                );
-            }
+            // Không tự động dịch bản đồ tới vị trí GPS của user
+            // để tránh gây rối mắt. Bản đồ luôn bắt đầu tại Đà Nẵng.
         } else {
             document.body.style.overflow = 'unset';
             // Reset state
