@@ -31,9 +31,21 @@ export function FileUpload({
         return;
       }
 
-      if (accept && !file.type.match(accept.replace('*', '.*'))) {
-        setError('Invalid file type');
-        return;
+      // Kiểm tra loại file: chuyển accept pattern thành regex đúng chuẩn
+      if (accept) {
+        const patterns = accept.split(',').map(p => p.trim());
+        const isValid = patterns.some(pattern => {
+          if (pattern === '*' || pattern === '*/*') return true;
+          if (pattern.endsWith('/*')) {
+            const mainType = pattern.slice(0, -2);
+            return file.type.startsWith(mainType + '/');
+          }
+          return file.type === pattern || file.name.toLowerCase().endsWith(pattern.replace('image/', '.').replace('/', '.'));
+        });
+        if (!isValid && file.type !== '') {
+          setError('Định dạng file không hợp lệ. Chỉ chấp nhận ảnh.');
+          return;
+        }
       }
 
       onFileSelect(file);
@@ -86,6 +98,8 @@ export function FileUpload({
       if (files && files.length > 0) {
         handleFile(files[0]);
       }
+      // Reset input để có thể chọn lại cùng một file
+      e.target.value = '';
     },
     [handleFile]
   );

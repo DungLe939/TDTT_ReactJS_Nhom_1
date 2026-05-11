@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-import { Chatbot } from './Chatbot';
 import { DesktopSidebar, MobileSidebar } from './Sidebar';
 import { getNavSections } from './SidebarConfig';
+import { Chatbot } from './Chatbot';
 import { BrandLogo } from './BrandLogo';
 
 /**
@@ -207,7 +207,7 @@ export const Layout = () => {
                 </div>
             </div>
 
-            {/* Chatbot Overlay */}
+            {/* AI Chatbot Overlay */}
             <Chatbot />
         </div>
     );

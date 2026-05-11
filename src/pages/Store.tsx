@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListFoods, useListCategories, useListFoodsByCategory } from "../dataconnect-generated/react";
+import { useListFoods, useListCategories, useListFoodsByCategory } from "@dataconnect/generated/react";
 import { FoodCard } from "../common/components/FoodCard";
 import { Button } from "../common/components/ui/button";
 import { Input } from "../common/components/ui/input";
@@ -84,7 +84,7 @@ export function Store() {
               >
                 Tất cả
               </Button>
-              {catData?.categories?.map((cat) => (
+              {catData?.categories?.map((cat: any) => (
                 <Button
                   key={cat.id}
                   variant={selectedCategoryId === cat.id ? "default" : "outline"}
@@ -103,7 +103,7 @@ export function Store() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {selectedCategoryId 
-                ? catData?.categories?.find(c => c.id === selectedCategoryId)?.name 
+                ? catData?.categories?.find((c: any) => c.id === selectedCategoryId)?.name 
                 : 'Tất cả món ăn'}
             </h2>
             <Badge variant="secondary" className="px-3 py-1 rounded-full text-sm">
@@ -134,7 +134,7 @@ export function Store() {
             </div>
           ) : foods && foods.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {foods.map((food) => (
+              {foods.map((food: any) => (
                 <FoodCard key={food.id} food={food} />
               ))}
             </div>

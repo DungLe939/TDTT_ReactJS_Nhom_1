@@ -286,3 +286,24 @@ export const scanService = {
         return response.data;
     },
 };
+
+/**
+ * Service cho tính năng Quét Menu (Menu OCR)
+ * Gọi API nội bộ của NestJS thay vì external FastAPI.
+ */
+export const menuScanService = {
+    scanMenuImage: async (imageFile: File, signal?: AbortSignal): Promise<{ success: boolean; text: string }> => {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        console.log('[MenuScan] Calling API:', `${API_URL}/menu-scan`);
+        const response = await apiClient.post<{ success: boolean; text: string }>('/menu-scan', formData, {
+            signal,
+            headers: {
+                'X-Pinggy-No-Screen': 'true',
+            },
+        });
+
+        return response.data;
+    },
+};
