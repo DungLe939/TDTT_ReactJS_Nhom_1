@@ -25,11 +25,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null;
 
 /**
- * Biến toàn cục lấy từ file .env (VITE_API_URL).
- * Nếu chưa setup .env, hệ thống sẽ mặc định trỏ về 'http://localhost:3000' 
- * là địa chỉ chạy mặc định của server NestJS Backend khi phát triển local.
+ * Biến toàn cục lấy từ file .env:
+ * - VITE_API_URL: API chính của hệ thống (NestJS)
+ * - VITE_API_CQ_URL: API dành riêng cho tính năng Dịch Menu và OCR (Công Quang)
  */
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_CQ_URL = import.meta.env.VITE_API_CQ_URL || API_URL;
 const SCAN_API_URL = (import.meta.env.VITE_SCAN_API_URL || '').replace(/\/+$/, '');
 const SCAN_PROXY_PREFIX = '/scan-api';
 const SCAN_CLIENT_BASE_URL = import.meta.env.DEV
@@ -48,6 +49,14 @@ const SCAN_TIMEOUT_MS = 180000;
  */
 export const apiClient = axios.create({
     baseURL: API_URL,
+    withCredentials: true,
+});
+
+/**
+ * Client riêng cho các tính năng của Công Quang (Dịch menu, OCR)
+ */
+export const cqApiClient = axios.create({
+    baseURL: API_CQ_URL,
     withCredentials: true,
 });
 
@@ -340,6 +349,27 @@ export const scanService = {
             { crop_b64: cropB64 },
             { signal }
         );
+
+        return response.data;
+    },
+};
+
+/**
+ * Service cho tính năng Quét Menu (Menu OCR)
+ * Gọi API nội bộ của NestJS thay vì external FastAPI.
+ */
+export const menuScanService = {
+    scanMenuImage: async (imageFile: File, signal?: AbortSignal): Promise<{ success: boolean; text: string }> => {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        console.log('[MenuScan] Calling API:', `${API_CQ_URL}/menu-scan`);
+        const response = await cqApiClient.post<{ success: boolean; text: string }>('/menu-scan', formData, {
+            signal,
+            headers: {
+                'X-Pinggy-No-Screen': 'true',
+            },
+        });
 
         return response.data;
     },

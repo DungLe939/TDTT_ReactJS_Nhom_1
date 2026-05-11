@@ -16,10 +16,11 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { FileUpload } from '../common/components/FileUpload';
 import { LoadingModal } from '../common/components/LoadingModal';
-import { scanService } from '../services/api';
+import { scanService, menuScanService } from '../services/api';
 import type { ScanMultiPredictResult, ScanFoodItem, ScanDetectedObject, ScanObjectDetailResponse } from '../modules/scanning/types/scan.types';
 import {
   parseCommaList,
@@ -256,6 +257,8 @@ const isPredictSuccess = (result: ScanMultiPredictResult) => {
 };
 
 export const FoodScan = () => {
+  const navigate = useNavigate();
+  const [isMenuScanning, setIsMenuScanning] = useState(false);
   const [captureMode, setCaptureMode] = useState<CaptureMode>('camera');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -614,6 +617,32 @@ export const FoodScan = () => {
     }
   }, [clearAudio, isCameraActive, loadObjectDetail, selectedFile, stopCamera]);
 
+  const handleMenuScan = useCallback(async () => {
+    if (!selectedFile) {
+      toast.warning('Hãy chọn ảnh Menu trước khi phân tích.');
+      return;
+    }
+
+    if (isCameraActive) {
+      stopCamera();
+    }
+
+    setIsMenuScanning(true);
+    try {
+      const response = await menuScanService.scanMenuImage(selectedFile);
+      if (response.success && response.text) {
+        toast.success('Trích xuất Menu thành công! Đang chuyển trang...');
+        navigate('/menu', { state: { autoTranslateText: response.text } });
+      } else {
+        throw new Error('Không thể trích xuất văn bản từ Menu này.');
+      }
+    } catch (error) {
+      toast.error('Lỗi quét Menu: Vui lòng thử lại với ảnh rõ nét hơn.');
+    } finally {
+      setIsMenuScanning(false);
+    }
+  }, [selectedFile, isCameraActive, stopCamera, navigate]);
+
   const handleFetchAudio = useCallback(async () => {
     if (!scanResult) {
       toast.warning('Hãy phân tích ảnh trước khi nghe thuyết minh.');
@@ -959,11 +988,21 @@ export const FoodScan = () => {
               <button
                 type="button"
                 onClick={handleAnalyze}
-                disabled={!selectedFile || isAnalyzing}
+                disabled={!selectedFile || isAnalyzing || isMenuScanning}
                 className="cursor-pointer inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Sparkles className="h-4 w-4" />
                 Phân tích món ăn
+              </button>
+
+              <button
+                type="button"
+                onClick={handleMenuScan}
+                disabled={!selectedFile || isAnalyzing || isMenuScanning}
+                className="cursor-pointer inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isMenuScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                Trích xuất chữ
               </button>
 
               <button
@@ -1282,9 +1321,9 @@ export const FoodScan = () => {
       )}
 
       <LoadingModal
-        isOpen={isAnalyzing}
-        message="Đang nhận diện món ăn"
-        submessage="YOLO phát hiện vùng ảnh → CLIP phân loại → LLM viết câu chuyện"
+        isOpen={isAnalyzing || isMenuScanning}
+        message={isAnalyzing ? "Đang nhận diện món ăn" : "Đang trích xuất chữ"}
+        submessage={isAnalyzing ? "YOLO phát hiện vùng ảnh → CLIP phân loại → LLM viết câu chuyện" : "Hệ thống đang trích xuất dữ liệu từ hình ảnh menu"}
       />
 
       <LoadingModal
