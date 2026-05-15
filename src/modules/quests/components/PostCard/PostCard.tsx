@@ -30,9 +30,9 @@ const formatRelativeTime = (isoString: string): string => {
   return dateObj.toLocaleDateString('vi-VN');
 };
 
-const PostCard = ({ 
-  post, author, restaurant, liked, currentUser, demoUsers, 
-  onLike, onComment, onLikeComment 
+const PostCard = ({
+  post, author, restaurant, liked, currentUser, demoUsers,
+  onLike, onComment, onLikeComment
 }: PostCardProps) => {
   const [animating, setAnimating] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -123,13 +123,13 @@ const PostCard = ({
       {/* Content */}
       <div className="px-4 pb-3">
         <p className="text-neutral-800 text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>
-        
+
         {/* Tags */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {tags.map((tag) => (
-              <span 
-                key={tag} 
+              <span
+                key={tag}
                 className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-1 rounded-lg uppercase tracking-wider"
               >
                 #{tag}
@@ -143,8 +143,8 @@ const PostCard = ({
       {photoUrls.length > 0 && (
         <div className={`px-4 pb-3 grid gap-2 ${photoUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {photoUrls.map((url, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`relative rounded-2xl overflow-hidden cursor-pointer group ${photoUrls.length > 2 && index === 0 ? 'row-span-2 aspect-[4/5]' : 'aspect-square'}`}
               onClick={() => setSelectedImg(url)}
             >
@@ -157,7 +157,7 @@ const PostCard = ({
 
       {/* Fullscreen Overlay */}
       {selectedImg && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setSelectedImg(null)}
         >
@@ -174,11 +174,11 @@ const PostCard = ({
             <MapPin className="w-3.5 h-3.5 fill-orange-50" /> {restaurant.name.toUpperCase()}
           </div>
           <div className="text-[11px] text-neutral-500 font-bold ml-5 leading-tight">
-            {restaurant.address || 
-             (typeof restaurant.location === 'string' ? restaurant.location : '') || 
-             (restaurant.location as any)?.address || 
-             (restaurant.location as any)?.name || 
-             'Chưa định vị địa chỉ'}
+            {restaurant.address ||
+              (typeof restaurant.location === 'string' ? restaurant.location : '') ||
+              (restaurant.location as any)?.address ||
+              (restaurant.location as any)?.name ||
+              'Chưa định vị địa chỉ'}
           </div>
         </div>
       )}
@@ -186,7 +186,7 @@ const PostCard = ({
       {/* Footer Actions */}
       <div className="px-4 py-2 border-t border-neutral-50 flex items-center justify-between text-neutral-500">
         <div className="flex gap-4">
-          <button 
+          <button
             className={`flex items-center gap-2 text-sm font-bold transition-all ${liked ? 'text-red-500' : 'hover:text-red-400'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => currentUser.id !== 'guest' && handleLike()}
             title={currentUser.id === 'guest' ? 'Đăng nhập để thích bài viết' : ''}
@@ -196,7 +196,7 @@ const PostCard = ({
             </div>
             {post.likesCount}
           </button>
-          <button 
+          <button
             className={`flex items-center gap-2 text-sm font-bold transition-colors ${showComments ? 'text-orange-500' : 'hover:text-orange-400'}`}
             onClick={() => setShowComments(!showComments)}
           >
@@ -228,7 +228,7 @@ const PostCard = ({
                     {replies.length > 0 && (
                       <div className="absolute left-[15px] top-[40px] bottom-0 w-[2px] bg-neutral-100" />
                     )}
-                    
+
                     <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-xs shrink-0 mt-1 shadow-sm relative z-10">
                       {commentAuthor?.avatar ?? '👤'}
                     </div>
@@ -239,16 +239,16 @@ const PostCard = ({
                             {commentAuthor?.username ?? 'Người dùng ẩn danh'}
                           </span>
                           <p className="text-sm text-neutral-700 leading-relaxed">{comment.content}</p>
-                          
+
                           {commentPhotos.length > 0 && (
                             <div className="flex gap-2 mt-2">
                               {commentPhotos.map((url, i) => (
-                                <img 
-                                  key={i} 
-                                  src={url} 
-                                  alt="Comment" 
+                                <img
+                                  key={i}
+                                  src={url}
+                                  alt="Comment"
                                   className="w-20 h-20 object-cover rounded-xl cursor-pointer border border-neutral-100"
-                                  onClick={() => setSelectedImg(url)} 
+                                  onClick={() => setSelectedImg(url)}
                                 />
                               ))}
                             </div>
@@ -263,18 +263,21 @@ const PostCard = ({
                         <span className="text-[10px] font-medium text-neutral-400">
                           {formatRelativeTime(comment.createdAt)}
                         </span>
-                        <button 
-                          className={`text-[11px] font-bold transition-colors ${isCommentLiked ? 'text-red-500' : 'text-neutral-500 hover:text-neutral-800'}`}
-                          onClick={() => onLikeComment(post.id, comment.id)}
+                        <button
+                          className={`text-[11px] font-bold transition-colors ${isCommentLiked ? 'text-red-500' : 'text-neutral-500 hover:text-neutral-800'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={() => currentUser.id !== 'guest' && onLikeComment(post.id, comment.id)}
+                          title={currentUser.id === 'guest' ? 'Đăng nhập để thích' : ''}
                         >
                           Thích
                         </button>
-                        <button 
-                          className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors"
+                        <button
+                          className={`text-[11px] font-bold transition-colors ${currentUser.id === 'guest' ? 'text-neutral-300 cursor-not-allowed' : 'text-neutral-500 hover:text-neutral-800'}`}
                           onClick={() => {
+                            if (currentUser.id === 'guest') return;
                             setReplyingTo({ id: comment.id, username: commentAuthor?.username || 'Người dùng ẩn danh' });
                             inputRef.current?.focus();
                           }}
+                          title={currentUser.id === 'guest' ? 'Đăng nhập để trả lời' : ''}
                         >
                           Trả lời
                         </button>
@@ -290,17 +293,16 @@ const PostCard = ({
                   {/* Nested Replies */}
                   {replies.length > 0 && (
                     <div className="flex flex-col mt-1 ml-[15px]">
-                      {replies.map((reply, idx) => {
+                      {replies.map((reply) => {
                         const replyAuthor = getUser(reply.authorId);
                         const isReplyLiked = reply.likedByUserIds?.includes(currentUser.id) ?? false;
-                        const isLast = idx === replies.length - 1;
-                        
+
                         return (
                           <div key={reply.id} className="flex gap-2 group relative">
                             {/* Curved branch line */}
                             <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-neutral-100" />
                             <div className={`absolute -left-[14px] top-0 h-[22px] w-[14px] border-l-2 border-b-2 border-neutral-100 rounded-bl-xl`} />
-                            
+
                             <div className="pl-3 flex gap-2 w-full pb-3">
                               <div className="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-white font-bold text-[10px] shrink-0 mt-1 shadow-sm relative z-10 border-2 border-white">
                                 {replyAuthor?.avatar ?? '👤'}
@@ -321,18 +323,21 @@ const PostCard = ({
                                   <span className="text-[9px] font-medium text-neutral-400">
                                     {formatRelativeTime(reply.createdAt)}
                                   </span>
-                                  <button 
-                                    className={`text-[10px] font-bold transition-colors ${isReplyLiked ? 'text-orange-500' : 'text-neutral-500 hover:text-neutral-800'}`}
-                                    onClick={() => onLikeComment(post.id, reply.id)}
+                                  <button
+                                    className={`text-[10px] font-bold transition-colors ${isReplyLiked ? 'text-orange-500' : 'text-neutral-500 hover:text-neutral-800'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => currentUser.id !== 'guest' && onLikeComment(post.id, reply.id)}
+                                    title={currentUser.id === 'guest' ? 'Đăng nhập để thích' : ''}
                                   >
                                     Thích
                                   </button>
-                                  <button 
-                                    className="text-[10px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors"
+                                  <button
+                                    className={`text-[10px] font-bold transition-colors ${currentUser.id === 'guest' ? 'text-neutral-300 cursor-not-allowed' : 'text-neutral-500 hover:text-neutral-800'}`}
                                     onClick={() => {
+                                      if (currentUser.id === 'guest') return;
                                       setReplyingTo({ id: comment.id, username: replyAuthor?.username || 'Người dùng ẩn danh' });
                                       inputRef.current?.focus();
                                     }}
+                                    title={currentUser.id === 'guest' ? 'Đăng nhập để trả lời' : ''}
                                   >
                                     Trả lời
                                   </button>
@@ -360,7 +365,7 @@ const PostCard = ({
                   <span className="text-neutral-500 font-bold">
                     Đang trả lời <span className="text-orange-500">@{replyingTo.username}</span>
                   </span>
-                  <button 
+                  <button
                     onClick={() => setReplyingTo(null)}
                     className="text-neutral-400 hover:text-red-500 transition-colors"
                   >
@@ -375,7 +380,7 @@ const PostCard = ({
                     {commentPhotos.map((url, i) => (
                       <div key={i} className="relative shrink-0">
                         <img src={url} alt="Preview" className="w-14 h-14 rounded-xl object-cover border border-white shadow-sm" />
-                        <button 
+                        <button
                           className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-100 shadow-sm"
                           onClick={() => setCommentPhotos(ps => ps.filter((_, idx) => idx !== i))}
                         >
@@ -383,7 +388,7 @@ const PostCard = ({
                         </button>
                       </div>
                     ))}
-                    <button 
+                    <button
                       className="w-14 h-14 rounded-xl border-2 border-dashed border-neutral-200 flex items-center justify-center text-neutral-300 hover:text-orange-400 hover:border-orange-200 transition-colors"
                       onClick={handlePhotoUpload}
                     >
@@ -403,10 +408,10 @@ const PostCard = ({
                     onKeyDown={handleKeyDown}
                     disabled={currentUser.id === 'guest'}
                   />
-                  
+
                   <div className="flex items-center gap-0.5">
                     <div className="relative">
-                      <button 
+                      <button
                         className={`p-2 transition-colors ${showEmojiPicker ? 'text-orange-500' : 'text-neutral-400 hover:text-neutral-600'} ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={() => currentUser.id !== 'guest' && setShowEmojiPicker(!showEmojiPicker)}
                         disabled={currentUser.id === 'guest'}
@@ -418,8 +423,8 @@ const PostCard = ({
                           <div className="text-[10px] font-bold text-neutral-300 uppercase px-2 py-1 mb-1">Mọi người hay dùng</div>
                           <div className="flex flex-wrap gap-1">
                             {QUICK_EMOJIS.map(e => (
-                              <button 
-                                key={e} 
+                              <button
+                                key={e}
                                 onClick={() => addEmoji(e)}
                                 className="text-xl hover:scale-110 transition-transform p-1.5 rounded-lg hover:bg-neutral-50"
                               >
@@ -430,7 +435,7 @@ const PostCard = ({
                         </div>
                       )}
                     </div>
-                    <button 
+                    <button
                       className={`p-2 text-neutral-400 hover:text-neutral-600 transition-colors ${currentUser.id === 'guest' ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => currentUser.id !== 'guest' && handlePhotoUpload()}
                       disabled={currentUser.id === 'guest'}

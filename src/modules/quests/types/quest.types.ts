@@ -86,6 +86,7 @@ export interface Restaurant {
   name: string;
   cuisineType: CuisineType;
   location: string;
+  address?: string;
   priceRange: 'budget' | 'mid-range' | 'fine-dining';
   rating: number; // 1–5
   openingHours: string;
