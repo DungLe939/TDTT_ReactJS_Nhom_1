@@ -147,7 +147,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
       const payload: GroupUserPayload[] = users.map((u) => ({
         id: u.id,
         name: u.name,
-        tasteVector: u.tasteVector,
+        tasteVector: u.tasteVector.slice(0, 7),
         budget: u.budget,
         location: u.location,
         allergies: u.allergies,
@@ -184,9 +184,11 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
       }
 
       setResult(data);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Có lỗi xảy ra khi gọi API.';
+    } catch (err: any) {
+      const backendMessage = err.response?.data?.message;
+      const message = Array.isArray(backendMessage) 
+        ? backendMessage.join(', ') 
+        : backendMessage || err.message || 'Có lỗi xảy ra khi gọi API.';
       setError(message);
     } finally {
       setLoading(false);

@@ -56,20 +56,14 @@ export const UserInputForm: React.FC<UserInputFormProps> = ({
   const [editTastes, setEditTastes] = useState<number[]>(new Array(7).fill(40)); // UI labels are 7
   const [editAllergies, setEditAllergies] = useState<string[]>([]);
 
-  // Helper: Convert 7 UI tastes to 8 Backend dimensions
+  // Helper: Convert UI tastes (7) to Backend dimensions (7)
   const tastesToVector = (t: number[]): number[] => {
-    const v = new Array(8).fill(0.4); // Default neutral for seafood
-    for (let i = 0; i < 6; i++) v[i] = t[i] / 100;
-    v[7] = t[6] / 100; // Vegetarian is index 6 in UI, index 7 in Vector
-    return v;
+    return t.slice(0, 7).map(val => val / 100);
   };
 
-  // Helper: Convert 8 Backend dimensions to 7 UI tastes
+  // Helper: Convert Backend dimensions (7) to UI tastes (7)
   const vectorToTastes = (v: number[]): number[] => {
-    const t = new Array(7).fill(40);
-    for (let i = 0; i < 6; i++) t[i] = Math.round(v[i] * 100);
-    t[6] = Math.round(v[7] * 100); // Vegetarian is index 7 in Vector, index 6 in UI
-    return t;
+    return v.slice(0, 7).map(val => Math.round(val * 100));
   };
 
   const handleGetLocation = () => {
