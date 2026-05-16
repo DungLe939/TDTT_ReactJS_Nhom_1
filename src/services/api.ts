@@ -3,6 +3,11 @@ import { retryRequest } from '../utils/retryRequest';
 import type {
     ScanPredictResponse,
     ScanPredictResult,
+    ScanFoodItem,
+    ScanMultiPredictResponse,
+    ScanMultiPredictResult,
+    ScanMultiDetectResponse,
+    ScanObjectDetailResponse,
 } from '../modules/scanning/types/scan.types';
 
 export interface ScanSystemInfoResponse {
@@ -20,11 +25,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null;
 
 /**
- * Biến toàn cục lấy từ file .env (VITE_API_URL).
- * Nếu chưa setup .env, hệ thống sẽ mặc định trỏ về 'http://localhost:3000' 
- * là địa chỉ chạy mặc định của server NestJS Backend khi phát triển local.
+ * Biến toàn cục lấy từ file .env:
+ * - VITE_API_URL: API chính của hệ thống (NestJS)
+ * - VITE_API_CQ_URL: API dành riêng cho tính năng Dịch Menu và OCR (Công Quang)
  */
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_CQ_URL = import.meta.env.VITE_API_CQ_URL || API_URL;
 const SCAN_API_URL = (import.meta.env.VITE_SCAN_API_URL || '').replace(/\/+$/, '');
 const SCAN_PROXY_PREFIX = '/scan-api';
 const SCAN_CLIENT_BASE_URL = import.meta.env.DEV
@@ -43,6 +49,14 @@ const SCAN_TIMEOUT_MS = 180000;
  */
 export const apiClient = axios.create({
     baseURL: API_URL,
+    withCredentials: true,
+});
+
+/**
+ * Client riêng cho các tính năng của Công Quang (Dịch menu, OCR)
+ */
+export const cqApiClient = axios.create({
+    baseURL: API_CQ_URL,
     withCredentials: true,
 });
 
@@ -152,13 +166,7 @@ export const scheduleService = {
         return response.data;
     },
 
-    /**
-     * Gửi toàn bộ thông tin để tạo lịch trình (Phiên bản đồng bộ )
-     */
-    generatePlan: async (payload: unknown) => {
-        const response = await apiClient.post('/schedule/generatePlan', payload);
-        return response.data;
-    },
+
 
     /**
      * Truy vấn dữ liệu bản đồ để vẽ chỉ đường giữa các món ăn.
@@ -190,7 +198,7 @@ export const scheduleService = {
     preparePlan: async (payload: unknown) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/preparePlan', payload),
-            2 // Thực hiện lại tối đa 2 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
+            3 // Thực hiện lại tối đa 3 lần nếu có lỗi mạng hoặc AI quá tải (Retry logic)
         );
         return response.data;
     },
@@ -204,7 +212,7 @@ export const scheduleService = {
     generateDayPlan: async (dayIndex: number) => {
         const response = await retryRequest(
             () => apiClient.post('/schedule/generateDayPlan', { dayIndex }),
-            2 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI
+            3 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI (Groq + Gemini)
         );
         return response.data;
     },
@@ -215,6 +223,15 @@ export const scheduleService = {
      */
     swapOptions: async (payload: { dayIndex: number, mealType: string, userLat?: number, userLng?: number }) => {
         const response = await apiClient.post('/schedule/swapOptions', payload);
+        return response.data;
+    },
+
+    /**
+     * Lấy toàn bộ danh sách quán ăn + món ăn để hiển thị trong modal "Thêm bữa ăn phụ".
+     * Không còn lọc theo isSnack — frontend tự filter theo category.
+     */
+    getAllDishes: async () => {
+        const response = await apiClient.post('/schedule/allDishes', {});
         return response.data;
     }
 };
@@ -247,7 +264,7 @@ export const scanService = {
     predictFood: async (
         imageFile: File,
         signal?: AbortSignal
-    ): Promise<ScanPredictResult> => {
+    ): Promise<ScanMultiPredictResult> => {
         ensureScanApiConfigured();
 
         const formData = new FormData();
@@ -255,20 +272,29 @@ export const scanService = {
 
         const response = await retryRequest(
             () =>
-                scanClient.post<ScanPredictResponse>('/predict', formData, {
+                scanClient.post<ScanMultiPredictResponse>('/predict', formData, {
                     signal,
                 }),
             0
         );
 
-        const data = extractPredictPayload(response.data) as ScanPredictResponse &
+        const data = extractPredictPayload(response.data) as ScanMultiPredictResponse &
             GenericScanPayload;
         const normalizedStatus = normalizePredictStatus(data);
+
+        // Normalize multi-food results nếu API trả về
+        const normalizedResults: ScanFoodItem[] | undefined = data.results?.map(
+            (item: ScanFoodItem) => ({
+                ...item,
+                content: normalizePredictContent(item.content),
+            })
+        );
 
         return {
             ...data,
             status: normalizedStatus || 'unknown',
             content: normalizePredictContent(data.content),
+            results: normalizedResults,
         };
     },
 
@@ -278,6 +304,71 @@ export const scanService = {
         const response = await scanClient.get<Blob>('/audio', {
             responseType: 'blob',
             signal,
+        });
+
+        return response.data;
+    },
+
+    /**
+     * Detect nhiều món ăn trong 1 ảnh (YOLO + CLIP).
+     * Trả về danh sách objects kèm crop_b64 để gọi tiếp getObjectDetail.
+     */
+    detectMultiFoods: async (
+        imageFile: File,
+        signal?: AbortSignal
+    ): Promise<ScanMultiDetectResponse> => {
+        ensureScanApiConfigured();
+
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        const response = await retryRequest(
+            () =>
+                scanClient.post<ScanMultiDetectResponse>(
+                    '/predict_multi',
+                    formData,
+                    { signal }
+                ),
+            0
+        );
+
+        return response.data;
+    },
+
+    /**
+     * Lấy chi tiết (story + TTS) cho 1 crop cụ thể từ /predict_object.
+     */
+    getObjectDetail: async (
+        cropB64: string,
+        signal?: AbortSignal
+    ): Promise<ScanObjectDetailResponse> => {
+        ensureScanApiConfigured();
+
+        const response = await scanClient.post<ScanObjectDetailResponse>(
+            '/predict_object',
+            { crop_b64: cropB64 },
+            { signal }
+        );
+
+        return response.data;
+    },
+};
+
+/**
+ * Service cho tính năng Quét Menu (Menu OCR)
+ * Gọi API nội bộ của NestJS thay vì external FastAPI.
+ */
+export const menuScanService = {
+    scanMenuImage: async (imageFile: File, signal?: AbortSignal): Promise<{ success: boolean; text: string }> => {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        console.log('[MenuScan] Calling API:', `${API_CQ_URL}/menu-scan`);
+        const response = await cqApiClient.post<{ success: boolean; text: string }>('/menu-scan', formData, {
+            signal,
+            headers: {
+                'X-Pinggy-No-Screen': 'true',
+            },
         });
 
         return response.data;

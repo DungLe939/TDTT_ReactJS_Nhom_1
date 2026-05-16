@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ScheduleBanner from '../../components/ScheduleBanner/ScheduleBanner';
 import ScheduleFilterModal from '../../components/ScheduleFilterModal/ScheduleFilterModal';
+import LocationPickerModal from '../../components/LocationPickerModal/LocationPickerModal';
 import DailyPlanView from '../../components/DailyPlanView/DailyPlanView';
 import { scheduleService } from '../../../../services/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,6 +15,11 @@ import './SchedulePage.css';
 const SchedulePage = () => {
     // Trạng thái đóng/mở Modal bộ lọc
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Trạng thái đóng/mở Modal chọn bản đồ và vị trí vừa chọn
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [pickedLocation, setPickedLocation] = useState<string>('');
+
     // Trạng thái loading toàn trang khi đang gọi AI
     const [isLoading, setIsLoading] = useState(false);
 
@@ -29,32 +35,25 @@ const SchedulePage = () => {
     // Mỗi phần tử chứa { day: number, meals: Meal[] }
     const [planData, setPlanData] = useState<any[] | null>(null);
 
-    // snackCandidates: Danh sách các món ăn vặt tiềm năng thu thập được khi AI phân tích
-    const [snackCandidates, setSnackCandidates] = useState<any[]>([]);
-
     // scheduleInfo: Cấu hình cơ bản của chuyến đi (Địa điểm, số ngày, ngân sách...)
+    // Mặc định rỗng — chỉ hiển thị thông tin khi user thực sự tạo lịch trình
     const [scheduleInfo, setScheduleInfo] = useState<any>({
-        location: 'Đà Nẵng',
-        days: 3,
+        location: '',
+        days: 0,
         startDate: '',
         totalBudget: 0,
         suggestedMealBudget: null
     });
 
-    // STREAMING STATE: Theo dõi tiến trình tạo lịch trình từng ngày
 
-    // streamingProgress: Chuỗi thông báo trạng thái giúp người dùng bớt sốt ruột (UX)
-    const [streamingProgress, setStreamingProgress] = useState<string>('');
 
     // 1. LIFECYCLE - MOUNTING (Khôi phục dữ liệu từ LocalStorage)
     useEffect(() => {
         // Kiểm tra xem người dùng đã có lịch trình cũ trong trình duyệt chưa
         const savedPlan = localStorage.getItem('FOOD_TOUR_PLAN_DATA');
         const savedInfo = localStorage.getItem('FOOD_TOUR_SCHEDULE_INFO');
-        const savedSnacks = localStorage.getItem('FOOD_TOUR_SNACK_CANDIDATES');
 
         if (savedPlan) setPlanData(JSON.parse(savedPlan));
-        if (savedSnacks) setSnackCandidates(JSON.parse(savedSnacks));
 
         if (savedInfo) {
             const parsedInfo = JSON.parse(savedInfo);
@@ -90,6 +89,15 @@ const SchedulePage = () => {
         setIsModalOpen(true);
     };
 
+    /**
+     * Nhận địa điểm từ Map Picker và tự động mở form Khai báo
+     */
+    const handleLocationPickerConfirm = (locName: string) => {
+        setPickedLocation(locName);
+        setIsLocationPickerOpen(false);
+        setIsModalOpen(true); // Tự động bật form bộ lọc
+    };
+
     // 2. NGHIỆP VỤ - TỐI ƯU: STREAMING TẠO LỊCH TRÌNH
     /**
      * Xử lý khi người dùng nhấn "Tạo lịch trình" trong Modal.
@@ -100,29 +108,24 @@ const SchedulePage = () => {
      */
     const handleGenerateSubmit = async (formData: any) => {
         setIsLoading(true);
-        setPlanData(null); // Reset giao diện cũ để chuẩn bị dữ liệu mới
-        setSnackCandidates([]);
-        setStreamingProgress('Đang chuẩn bị dữ liệu...');
+        setPlanData(null);
+        setIsModalOpen(false); // Đóng modal ngay khi user bấm "Tạo lịch trình" để UX mượt hơn
 
         try {
             // BƯỚC 1: Lấy tọa độ địa điểm 
             let coords = formData.prefetchCoords;
 
             if (!formData.prefetchReady || !coords) {
-                // Nếu quy trình pre-fetch (lấy trước) chưa xong thì gọi API tìm kiếm ngay
-                setStreamingProgress('Đang quét quán ăn...');
                 const searchRes = await scheduleService.searchLocation(formData.location);
                 if (!searchRes?.success || !searchRes?.coords) {
                     alert('Không thể tìm thấy tọa độ hoặc quét quán ăn cho địa điểm này!');
                     setIsLoading(false);
-                    setStreamingProgress('');
                     return;
                 }
                 coords = searchRes.coords;
             }
 
             // BƯỚC 2: Chuẩn bị & Phân cụm quán ăn (Raw Filter + Clustering) 
-            setStreamingProgress('Đang phân tích dữ liệu quán ăn...');
             const preparePayload = {
                 budget: formData.budget,
                 currentLocation: { lat: coords.lat, lng: coords.lng },
@@ -130,19 +133,16 @@ const SchedulePage = () => {
                 travelDays: formData.travelDays
             };
 
-            // Gọi API prepare để Backend thực hiện thuật toán phân nhóm (K-Means)
             const prepareRes = await scheduleService.preparePlan(preparePayload);
 
             if (!prepareRes?.success || prepareRes.count === 0) {
                 alert('Không tìm thấy quán ăn phù hợp tại khu vực này!');
                 setIsLoading(false);
-                setStreamingProgress('');
                 return;
             }
 
             const totalDays = prepareRes.totalDays || formData.travelDays;
 
-            // Lưu trữ cấu hình chuyến đi vào state và LocalStorage
             const newScheduleInfo = {
                 location: formData.location,
                 days: formData.travelDays,
@@ -153,50 +153,61 @@ const SchedulePage = () => {
             setScheduleInfo(newScheduleInfo);
             localStorage.setItem('FOOD_TOUR_SCHEDULE_INFO', JSON.stringify(newScheduleInfo));
 
-            // BƯỚC 3: STREAMING - Tạo lịch trình TỪNG NGÀY 
-            // Chúng ta không đợi AI tạo xong cả tuần mới hiển thị, mà render ngay khi từng ngày hoàn tất.
+            // Tính toán viewStartDate ngay khi tạo lịch trình mới
+            // để thanh chuyển ngày hiển thị ngay lập tức (không cần reload trang)
+            if (newScheduleInfo.startDate) {
+                const tripStartDate = new Date(newScheduleInfo.startDate);
+                const getMonday = (d: Date) => {
+                    const date = new Date(d);
+                    const day = date.getDay();
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                    return new Date(date.setDate(diff));
+                };
+                setViewStartDate(getMonday(tripStartDate));
+            }
+
+            // BƯỚC 3: STREAMING — Tạo lịch trình TỪNG NGÀY 
+            // Khi ngày 1 xong → đóng modal, hiện giao diện ngay lập tức
+            // Các ngày tiếp theo tải ngầm, render mượt với animation
             const allDays: any[] = [];
-            const allSnacks: any[] = [];
 
             for (let dayIdx = 0; dayIdx < totalDays; dayIdx++) {
-                setStreamingProgress(`Đang tạo lịch trình ngày ${dayIdx + 1}/${totalDays}...`);
-
-                // Gọi AI xử lý lịch trình cho ngày thứ index=dayIdx
-                const dayRes = await scheduleService.generateDayPlan(dayIdx);
+                let dayRes = null;
+                for (let retryCount = 0; retryCount < 3; retryCount++) {
+                    try {
+                        dayRes = await scheduleService.generateDayPlan(dayIdx);
+                        if (dayRes?.success) break;
+                    } catch (dayError) {
+                        console.warn(`[Retry] Ngày ${dayIdx + 1}, lần ${retryCount + 1}/3 thất bại`);
+                        if (retryCount < 2) {
+                            await new Promise(r => setTimeout(r, (retryCount + 1) * 1500));
+                        }
+                    }
+                }
 
                 if (dayRes?.success) {
                     const newDay = { day: dayRes.day, meals: dayRes.meals };
                     allDays.push(newDay);
 
-                    // Thu thập danh sách quán ăn vặt (Snacks) dự phòng
-                    if (dayRes.snackCandidates) {
-                        allSnacks.push(...dayRes.snackCandidates);
-                    }
-
-                    // Tự động chọn xem ngày đầu tiên ngay khi có dữ liệu
-                    if (dayIdx === 0 && !selectedDayISO) {
+                    // Ngày đầu tiên xong → đóng modal, hiện giao diện ngay
+                    if (dayIdx === 0) {
                         setSelectedDayISO(newScheduleInfo.startDate.split('T')[0]);
+                        setIsModalOpen(false);
+                        setIsLoading(false);
                     }
 
-                    // Cập nhật UI ngay lập tức sau mỗi vòng lặp ngày 
                     setPlanData([...allDays]);
-                    setSnackCandidates([...allSnacks]);
                 }
             }
 
-            // Lưu kết quả cuối cùng hoàn thiện
             localStorage.setItem('FOOD_TOUR_PLAN_DATA', JSON.stringify(allDays));
-            localStorage.setItem('FOOD_TOUR_SNACK_CANDIDATES', JSON.stringify(allSnacks));
-
-            setIsModalOpen(false); // Đóng modal và hoàn tất
-            setStreamingProgress('');
 
         } catch (error) {
             console.error('Lỗi API:', error);
             alert('Có lỗi xảy ra khi gọi API! Vui lòng thử lại hoặc kiểm tra Backend.');
         } finally {
             setIsLoading(false);
-            setStreamingProgress('');
+            setIsModalOpen(false);
         }
     };
 
@@ -253,8 +264,9 @@ const SchedulePage = () => {
                 <div className="bg-white rounded-b-3xl shadow-sm overflow-hidden border-b border-neutral-200 mb-6">
                     <ScheduleBanner
                         title="Lịch trình Food Tour"
-                        subtitle={`${scheduleInfo.location}, ${scheduleInfo.days} ngày`}
+                        subtitle={scheduleInfo.location ? `${scheduleInfo.location}, ${scheduleInfo.days} ngày` : 'Hãy tạo lịch trình của bạn'}
                         onFilterClick={handleFilterClick}
+                        onMapClick={() => setIsLocationPickerOpen(true)}
                     />
 
                     {/* Thanh cuộn Lịch có mũi tên điều hướng hai đầu */}
@@ -308,11 +320,47 @@ const SchedulePage = () => {
                     )}
                 </div>
 
-                {/* Phản hồi UX: Hiển thị tiến trình AI đang làm việc từng ngày */}
-                {isLoading && streamingProgress && (
-                    <div className="flex items-center gap-3 px-4 py-3 mx-4 mb-4 bg-orange-50 rounded-xl text-orange-700 text-sm font-medium">
-                        <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span>{streamingProgress}</span>
+                {/* ✨ Loading Animation — Food Discovery Theme */}
+                {isLoading && !planData && (
+                    <div className="schedule-loading-container">
+                        {/* Floating food emojis background */}
+                        <div className="loading-food-particles">
+                            {['🍜', '🍲', '🥢', '🍛', '🧆', '🥘', '🍝', '🍣'].map((emoji, i) => (
+                                <span key={i} className="food-particle" style={{
+                                    left: `${10 + i * 12}%`,
+                                    animationDelay: `${i * 0.4}s`,
+                                    fontSize: `${1.2 + Math.random() * 0.8}rem`
+                                }}>{emoji}</span>
+                            ))}
+                        </div>
+
+                        {/* Main loading card */}
+                        <div className="loading-card">
+                            {/* Animated cooking icon */}
+                            <div className="loading-icon-wrapper">
+                                <span className="loading-main-icon">🍳</span>
+                                <div className="loading-ring"></div>
+                            </div>
+
+                            <h3 className="loading-title">Đang khám phá ẩm thực</h3>
+                            <p className="loading-subtitle">
+                                AI đang tìm những quán ngon nhất cho bạn
+                                <span className="loading-dots">
+                                    <span>.</span><span>.</span><span>.</span>
+                                </span>
+                            </p>
+
+                            {/* Shimmer progress bar */}
+                            <div className="loading-progress-track">
+                                <div className="loading-progress-bar"></div>
+                            </div>
+
+                            {/* Fun tips */}
+                            <div className="loading-tips">
+                                <span className="loading-tip-icon">💡</span>
+                                <span className="loading-tip-text">Lịch trình sẽ được tối ưu theo sở thích của bạn</span>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -323,7 +371,6 @@ const SchedulePage = () => {
                         selectedDayISO={selectedDayISO}
                         startDate={scheduleInfo.startDate}
                         scheduleInfo={scheduleInfo}
-                        snackCandidates={snackCandidates}
                         onUpdatePlan={handleUpdatePlan}
                         onRegenerate={() => {
                             // TODO: Implement logic thực sự cho việc tạo lại lịch trình nếu cần
@@ -339,6 +386,14 @@ const SchedulePage = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleGenerateSubmit}
                 isLoading={isLoading}
+                prefilledLocation={pickedLocation}
+            />
+
+            {/* Modal Bản đồ tương tác chọn điểm đến */}
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onClose={() => setIsLocationPickerOpen(false)}
+                onConfirm={handleLocationPickerConfirm}
             />
         </div>
     );

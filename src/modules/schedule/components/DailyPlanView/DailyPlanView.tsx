@@ -14,7 +14,6 @@ interface DailyPlanViewProps {
     selectedDayISO: string;
     startDate: string; // Định dạng YYYY-MM-DD
     scheduleInfo: any;
-    snackCandidates: any[];
     onRegenerate: () => void;
     onUpdatePlan?: (newPlan: any[]) => void;
 }
@@ -27,10 +26,9 @@ interface DailyPlanViewProps {
  * 2. Tính toán thống kê ngân sách (Chi phí ngày hiện tại vs. Tổng chi phí dự kiến).
  * 3. Quản lý các hành động tương tác: Xem bản đồ, Xem chi tiết quán, Đổi món, Thêm bữa phụ.
  */
-const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snackCandidates, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
+const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, onRegenerate, onUpdatePlan }: DailyPlanViewProps) => {
 
-    // tripStart: Chuyển đổi ngày bắt đầu chuyến đi sang đối tượng Date để tính toán độ lệch ngày
-    const tripStart = new Date(startDate);
+
 
     /**
      * Thuật toán trích xuất dữ liệu ngày hiện tại:
@@ -171,16 +169,27 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
      * Xử lý mở tính năng "Đổi món"
      * Sẽ gọi Backend để lấy danh sách các quán tương tự cùng khu vực nhưng chưa có trong lịch trình.
      */
-    const handleOpenSwap = async (meal: any, dayIdx: number, session: string) => {
-        const sessionMap: Record<string, string> = {
-            'SÁNG': 'breakfast',
-            'TRƯA': 'lunch',
-            'TỐI': 'dinner'
-        };
-        const sessionKey = sessionMap[session];
-        if (!sessionKey) return;
+    const handleOpenSwap = async (meal: any, dayIdx: number, session: string | undefined, type: string) => {
+        let sessionKey = '';
+        if (type === 'snack') {
+            sessionKey = 'snack';
+        } else {
+            const sessionMap: Record<string, string> = {
+                'SÁNG': 'breakfast',
+                'TRƯA': 'lunch',
+                'TỐI': 'dinner'
+            };
+            sessionKey = sessionMap[session || ''];
+            if (!sessionKey) {
+                alert(`Lỗi: Không tìm thấy sessionKey cho session "${session}"`);
+                return;
+            }
+        }
 
-        setSwapTarget({ dayIdx, sessionKey, currentDish: meal.dish });
+        // Diagnostic alert for the user to confirm the click was registered
+        // alert(`Đang tìm món đổi cho ${sessionKey}...`);
+
+        setSwapTarget({ dayIdx, sessionKey, currentDish: meal.dish || meal.id });
         setSwapModalOpen(true);
         setIsSwapLoading(true);
         setSwapOptions([]);
@@ -206,16 +215,31 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
     const handleConfirmSelectedSwap = (newOption: any) => {
         if (!swapTarget) return;
 
-        const { dayIdx, sessionKey } = swapTarget;
+        const { dayIdx, sessionKey, currentDish } = swapTarget;
         const newPlanData = [...planData];
 
         if (newPlanData[dayIdx]) {
-            // Thay thế toàn bộ object Meal cũ bằng metadata mới của quán mới
-            newPlanData[dayIdx].meals[sessionKey] = {
-                ...newOption,
-                type: 'main',
-                time: planData[dayIdx].meals[sessionKey].time // Giữ khung giờ cũ của bữa đó
-            };
+            if (sessionKey === 'snack') {
+                // Thay thế bữa phụ
+                if (newPlanData[dayIdx].snacks) {
+                    const snackIdx = newPlanData[dayIdx].snacks.findIndex((s: any) => s.dish === currentDish || s.id === currentDish);
+                    if (snackIdx !== -1) {
+                        const oldTime = newPlanData[dayIdx].snacks[snackIdx].time;
+                        newPlanData[dayIdx].snacks[snackIdx] = {
+                            ...newOption,
+                            type: 'snack',
+                            time: oldTime // Giữ nguyên thời gian
+                        };
+                    }
+                }
+            } else {
+                // Thay thế toàn bộ object Meal cũ bằng metadata mới của quán mới
+                newPlanData[dayIdx].meals[sessionKey] = {
+                    ...newOption,
+                    type: 'main',
+                    time: planData[dayIdx].meals[sessionKey].time // Giữ khung giờ cũ của bữa đó
+                };
+            }
 
             onUpdatePlan?.(newPlanData);
             setSwapModalOpen(false);
@@ -301,7 +325,7 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                             dishInfo={meal}
                             onShowMap={handleShowMap}
                             onShowDetail={(dish) => handleShowDetail(dish, meal.session || 'PHỤ')}
-                            onSwap={(dish) => handleOpenSwap(dish, planData.findIndex(p => p.day === activePlan?.day), meal.session)}
+                            onSwap={(dish) => handleOpenSwap(dish, planData.findIndex(p => p.day === activePlan?.day), meal.session, meal.type)}
                         />
                     ))
                 ) : (
@@ -331,7 +355,6 @@ const DailyPlanView = ({ planData, selectedDayISO, startDate, scheduleInfo, snac
                 isOpen={snackModalOpen}
                 onClose={() => setSnackModalOpen(false)}
                 onAdd={handleAddSnack}
-                snackCandidates={snackCandidates}
                 activePlan={activePlan}
             />
 
