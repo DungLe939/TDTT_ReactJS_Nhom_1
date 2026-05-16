@@ -209,9 +209,9 @@ export const scheduleService = {
      * Mỗi lần Backend trả về lịch trình 1 ngày mất 3-5 giây -> Người dùng nhìn thấy kết quả ngay lập tức.
      * @param dayIndex - Chỉ số ngày cần tạo (0, 1, 2...)
      */
-    generateDayPlan: async (dayIndex: number) => {
+    generateDayPlan: async (dayIndex: number, curUserId: string) => {
         const response = await retryRequest(
-            () => apiClient.post('/schedule/generateDayPlan', { dayIndex }),
+            () => apiClient.post('/schedule/generateDayPlan', { dayIndex, curUserId }),
             3 // Có hỗ trợ retry để đảm bảo tính ổn định của luồng AI (Groq + Gemini)
         );
         return response.data;
@@ -369,6 +369,13 @@ export const menuScanService = {
             headers: {
                 'X-Pinggy-No-Screen': 'true',
             },
+        });
+
+        // call directly to quests feature since there's no backend for scanning (?)
+        await apiClient.post(API_URL + '/achievements/activity', {
+            userId: 'user_abc',
+            type: 'MENU_SCANNED',
+            occurredAt: new Date(),
         });
 
         return response.data;

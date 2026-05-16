@@ -103,6 +103,7 @@ export const groupTasteApiService = {
     users: GroupUserPayload[],
     searchCoords?: { lat: number; lng: number },
     userLocation?: { lat: number; lng: number },
+    curUserId?: string,
   ): Promise<GroupRecommendationResponse> => {
     if (users.length === 0) {
       throw new Error('Danh sách thành viên trống. Không thể gợi ý nhà hàng.');
@@ -118,6 +119,7 @@ export const groupTasteApiService = {
         apiClient.post('/group/recommend', {
           users: backendUsers,
           currentLocation,
+          curUserId: curUserId,
         }),
       2,
     );
