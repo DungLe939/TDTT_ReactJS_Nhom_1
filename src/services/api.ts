@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { retryRequest } from '../utils/retryRequest';
 import type {
-    ScanPredictResponse,
-    ScanPredictResult,
     ScanFoodItem,
     ScanMultiPredictResponse,
     ScanMultiPredictResult,

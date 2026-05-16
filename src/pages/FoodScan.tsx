@@ -229,7 +229,7 @@ const formatTokens = (tokens?: number) => {
   return tokens.toLocaleString('vi-VN');
 };
 
-const isPredictSuccess = (result: ScanMultiPredictResult) => {
+const _isPredictSuccess = (result: ScanMultiPredictResult) => {
   const normalizedStatus = String(result.status || '')
     .trim()
     .toLowerCase();

@@ -276,7 +276,7 @@ export function FoodMarket() {
     setShopPage(1);
   }, [searchQuery]);
 
-  const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
+  const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       const offset = 100; // Offset for header/banner
       const elementPosition = ref.current.getBoundingClientRect().top + window.pageYOffset;
@@ -319,7 +319,7 @@ export function FoodMarket() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
+      transition: { duration: 0.8, ease: "easeOut" as const },
     },
   };
 
