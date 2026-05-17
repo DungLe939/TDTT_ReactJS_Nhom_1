@@ -1,5 +1,5 @@
 /**
- * Taste vector dimensions — khớp với backend (8 chiều):
+ * Taste vector dimensions — khớp với backend (7 chiều):
  *   [0] Cay       - Spicy
  *   [1] Ngọt      - Sweet
  *   [2] Mặn       - Savory/Salty
