@@ -477,7 +477,12 @@ export const FoodScan = () => {
 
     setIsLoadingDetail(true);
     try {
-      const detail = await scanService.getObjectDetail(obj.crop_b64);
+      const detail = await scanService.getObjectDetail(
+        obj.crop_b64,
+        obj.food_label,
+        obj.story,
+        obj.ingredients
+      );
 
       // Cache kết quả
       setObjectDetailsCache(prev => ({ ...prev, [objectIndex]: detail }));
@@ -487,6 +492,7 @@ export const FoodScan = () => {
         status: detail.status,
         recognition: detail.recognition,
         content: detail.content,
+        llm_meta: detail.llm_meta,
       });
 
       toast.success(`Đã tải thông tin "${detail.recognition?.food_label || obj.food_label}".`);
@@ -525,6 +531,7 @@ export const FoodScan = () => {
         status: cached.status,
         recognition: cached.recognition,
         content: cached.content,
+        llm_meta: cached.llm_meta,
       });
     } else if (detectedObjects.length > 0) {
       // Chưa cache → gọi API
@@ -580,13 +587,20 @@ export const FoodScan = () => {
 
       // Bước 2: Auto-load chi tiết cho món đầu tiên
       const firstObj = groupedObjects[0];
-      const firstDetail = await scanService.getObjectDetail(firstObj.crop_b64, controller.signal);
+      const firstDetail = await scanService.getObjectDetail(
+        firstObj.crop_b64,
+        firstObj.food_label,
+        firstObj.story,
+        firstObj.ingredients,
+        controller.signal
+      );
 
       setObjectDetailsCache({ 0: firstDetail });
       setScanResult({
         status: firstDetail.status,
         recognition: firstDetail.recognition,
         content: firstDetail.content,
+        llm_meta: firstDetail.llm_meta,
       });
 
       // Pre-fetch audio cho món đầu tiên
@@ -783,13 +797,15 @@ export const FoodScan = () => {
     // Multi-detect flow: derive from detectedObjects + cached details
     if (detectedObjects.length > 0) {
       return detectedObjects.map((obj, idx) => {
-        const baseLabel = objectDetailsCache[idx]?.recognition?.food_label || obj.food_label;
+        // Luôn sử dụng nhãn và độ tự tin từ detect_multi (chính xác hơn vì quét từ ảnh gốc)
+        // thay vì lấy từ objectDetailsCache (bị quét lại từ ảnh crop nhỏ dễ sai lệch)
+        const baseLabel = obj.food_label;
         const displayLabel = obj.quantity && obj.quantity > 1 ? `${baseLabel} (${obj.quantity})` : baseLabel;
 
         return {
           recognition: {
             food_label: displayLabel,
-            confidence: objectDetailsCache[idx]?.recognition?.confidence || obj.clip_sim,
+            confidence: obj.clip_sim,
           },
           content: objectDetailsCache[idx]?.content ?? '',
         };

@@ -39,12 +39,6 @@ export default defineConfig(({ mode }) => {
             proxyTimeout: 180000,
             rewrite: (pathValue) => pathValue.replace(/^\/scan-api/, ''),
           },
-          '/api-deepseek': {
-            target: 'https://api.deepseek.com',
-            changeOrigin: true,
-            secure: true,
-            rewrite: (path) => path.replace(/^\/api-deepseek/, ''),
-          },
         }
         : undefined,
     },

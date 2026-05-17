@@ -34,9 +34,8 @@ export const Chatbot = () => {
   const { isLoggedIn, user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // DeepSeek API Config (Sử dụng proxy qua Vite để tránh CORS)
-  const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
-  const DEEPSEEK_URL = '/api-deepseek/chat/completions';
+  // API Config — gọi qua NestJS backend (API Key được giữ an toàn ở server)
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   // ─── Load Chat History from Firestore ───────────────────────────────────
   useEffect(() => {
@@ -90,45 +89,33 @@ export const Chatbot = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // ─── AI Response Logic (DeepSeek) ────────────────────────────────────────
+  // ─── AI Response Logic (Qua NestJS Backend) ───────────────────────────────
   const getAIResponse = async (userText: string) => {
-    if (!DEEPSEEK_API_KEY) {
-      console.error('DeepSeek API Key is missing!');
-      return 'Cấu hình AI chưa hoàn tất. Vui lòng kiểm tra API Key trong file .env';
-    }
-
     try {
-      const systemPrompt = `Bạn là trợ lý ẩm thực thông minh của TasteTrekker. 
-      Bạn chuyên về ẩm thực Việt Nam, đặc sản vùng miền và tư vấn quán ăn.
-      Thông tin người dùng: Tên: ${user?.name || 'Khách'}, Dị ứng: ${user?.allergies?.join(', ') || 'Không'}.
-      Hãy trả lời thân thiện, ngắn gọn và hữu ích.`;
-
       const response = await axios.post(
-        DEEPSEEK_URL,
+        `${API_URL}/chatbot/send`,
         {
-          model: 'deepseek-chat',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages.slice(-5).map(m => ({
-              role: m.type === 'user' ? 'user' : 'assistant',
-              content: m.text
-            })),
-            { role: 'user', content: userText }
-          ],
-          stream: false
+          message: userText,
+          history: messages.slice(-5).map(m => ({
+            role: m.type === 'user' ? 'user' : 'assistant',
+            content: m.text
+          })),
+          userName: user?.name,
+          userAllergies: user?.allergies?.join(', '),
         },
         {
           headers: {
-            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
         }
       );
 
-      return response.data.choices[0].message.content;
-    } catch (error) {
-      console.error('DeepSeek Error:', error);
-      return 'Xin lỗi, tôi đang gặp chút vấn đề kỹ thuật. Bạn thử lại sau nhé!';
+      return response.data.data.reply;
+    } catch (error: any) {
+      console.error('Chatbot Backend Error:', error);
+      const serverMsg = error.response?.data?.message;
+      return serverMsg || 'Xin lỗi, tôi đang gặp chút vấn đề kỹ thuật. Bạn thử lại sau nhé!';
     }
   };
 
