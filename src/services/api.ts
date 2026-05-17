@@ -340,13 +340,21 @@ export const scanService = {
      */
     getObjectDetail: async (
         cropB64: string,
+        foodLabel?: string,
+        story?: string,
+        ingredients?: string,
         signal?: AbortSignal
     ): Promise<ScanObjectDetailResponse> => {
         ensureScanApiConfigured();
 
         const response = await scanClient.post<ScanObjectDetailResponse>(
             '/predict_object',
-            { crop_b64: cropB64 },
+            { 
+                crop_b64: cropB64,
+                food_label: foodLabel,
+                story: story,
+                ingredients: ingredients
+            },
             { signal }
         );
 
