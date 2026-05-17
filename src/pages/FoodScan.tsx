@@ -20,7 +20,8 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { FileUpload } from '../common/components/FileUpload';
 import { LoadingModal } from '../common/components/LoadingModal';
-import { scanService, menuScanService } from '../services/api';
+import { scanService, menuScanService, apiClient } from '../services/api';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import type { ScanMultiPredictResult, ScanFoodItem, ScanDetectedObject, ScanObjectDetailResponse } from '../modules/scanning/types/scan.types';
 import {
   parseCommaList,
@@ -258,6 +259,7 @@ const isPredictSuccess = (result: ScanMultiPredictResult) => {
 
 export const FoodScan = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isMenuScanning, setIsMenuScanning] = useState(false);
   const [captureMode, setCaptureMode] = useState<CaptureMode>('camera');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -616,6 +618,15 @@ export const FoodScan = () => {
           ? `Nhận diện được ${totalFoods} loại món ăn! Bấm vào tab để xem chi tiết.`
           : 'Nhận diện thành công. Bạn có thể nghe thuyết minh ngay.'
       );
+
+      // Fire FOOD_SCANNED achievement event (fire-and-forget)
+      if (user?.id) {
+        apiClient.post('/achievements/activity', {
+          userId: user.id,
+          type: 'FOOD_SCANNED',
+          occurredAt: new Date().toISOString(),
+        }).catch(() => { /* silent — achievement failure must not block scan UX */ });
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.code === 'ERR_CANCELED') {
         return;

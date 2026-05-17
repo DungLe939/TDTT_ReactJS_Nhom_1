@@ -60,7 +60,7 @@ export const SEED_REWARDS: Reward[] = [
   { id: 'reward-4', type: 'points', value: 50, description: '50 điểm thưởng ⭐' },
   {
     id: 'reward-5', type: 'voucher', value: 10, description: 'Voucher giảm 10% 🎫',
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    validForDays: 30
   },
   { id: 'reward-6', type: 'badge', value: 0, description: 'Huy hiệu: Tín Đồ Ramen 🍜' },
   { id: 'reward-7', type: 'points', value: 75, description: '75 điểm thưởng ⭐' },
