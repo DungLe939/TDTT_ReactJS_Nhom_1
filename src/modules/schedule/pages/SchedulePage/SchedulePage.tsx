@@ -6,6 +6,7 @@ import DailyPlanView from '../../components/DailyPlanView/DailyPlanView';
 import { scheduleService } from '../../../../services/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './SchedulePage.css';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
 /**
  * Component SchedulePage - Trang quản lý Lịch trình Food Tour.
@@ -15,7 +16,7 @@ import './SchedulePage.css';
 const SchedulePage = () => {
     // Trạng thái đóng/mở Modal bộ lọc
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     // Trạng thái đóng/mở Modal chọn bản đồ và vị trí vừa chọn
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
     const [pickedLocation, setPickedLocation] = useState<string>('');
@@ -45,6 +46,7 @@ const SchedulePage = () => {
         suggestedMealBudget: null
     });
 
+    const { user } = useAuth();
 
 
     // 1. LIFECYCLE - MOUNTING (Khôi phục dữ liệu từ LocalStorage)
@@ -175,7 +177,7 @@ const SchedulePage = () => {
                 let dayRes = null;
                 for (let retryCount = 0; retryCount < 3; retryCount++) {
                     try {
-                        dayRes = await scheduleService.generateDayPlan(dayIdx);
+                        dayRes = await scheduleService.generateDayPlan(dayIdx, user?.id);
                         if (dayRes?.success) break;
                     } catch (dayError) {
                         console.warn(`[Retry] Ngày ${dayIdx + 1}, lần ${retryCount + 1}/3 thất bại`);
@@ -295,10 +297,10 @@ const SchedulePage = () => {
                                             onClick={() => isScheduled && setSelectedDayISO(iso)}
                                             disabled={!isScheduled}
                                             className={`flex flex-col items-center min-w-[3.5rem] p-2 rounded-2xl transition-all ${isActive
-                                                    ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-                                                    : isScheduled
-                                                        ? 'bg-neutral-50 text-neutral-500 hover:bg-orange-50'
-                                                        : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
+                                                ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
+                                                : isScheduled
+                                                    ? 'bg-neutral-50 text-neutral-500 hover:bg-orange-50'
+                                                    : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
                                                 }`}
                                         >
                                             <span className="text-xs font-semibold mb-1">{daysOfWeekNames[dateObj.getDay()]}</span>

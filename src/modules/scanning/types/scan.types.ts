@@ -66,6 +66,8 @@ export interface ScanDetectedObject {
     food_label: string;
     clip_sim: string;
     quantity?: number;
+    story?: string;
+    ingredients?: string;
 }
 
 /**
@@ -85,5 +87,6 @@ export interface ScanObjectDetailResponse {
     status: string;
     recognition: ScanRecognition;
     content: string;
+    llm_meta?: ScanLlmMeta;
 }
 

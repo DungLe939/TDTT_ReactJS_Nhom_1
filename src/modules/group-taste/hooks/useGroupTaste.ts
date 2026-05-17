@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { groupTasteApiService } from '../../../services/groupTaste.service';
 import type { GroupUserPayload } from '../../../services/groupTaste.service';
 import type { GroupRecommendationResponse, GeoLocation } from '../types';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 
 export interface GroupUser {
   id: string;
@@ -67,6 +68,8 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
   const [hasSearchedLocation, setHasSearchedLocation] = useState(false);
   /** Toạ độ khu vực đã quét nhà hàng — dùng làm tâm cho recommendation */
   const [searchCoords, setSearchCoords] = useState<GeoLocation | null>(null);
+
+  const { user } = useAuth();
 
   const addUser = useCallback((user: GroupUser) => {
     setUsers((prev) => [...prev, user]);
@@ -157,6 +160,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
         payload,
         effectiveCoords ?? undefined,
         userLocation ?? undefined,
+        user?.id ?? undefined,
       );
 
 
@@ -193,7 +197,7 @@ export const useGroupTaste = (): UseGroupTasteReturn => {
     } finally {
       setLoading(false);
     }
-  }, [users, hasSearchedLocation, locationKeyword, searchCoords]);
+  }, [users, hasSearchedLocation, locationKeyword, searchCoords, user]);
 
 
   const resetAll = useCallback(() => {

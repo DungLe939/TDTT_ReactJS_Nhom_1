@@ -13,6 +13,8 @@ import type { DishInfo, DishDetailResponse } from '../modules/group-taste/types'
 
 import bgImage from '../modules/group-taste/assets/background.jpg';
 
+import { useAuth } from '@/modules/auth/context/AuthContext';
+
 /**
  * GroupTastePage — Trang chính cho feature "Ăn gì nhóm?"
  *
@@ -44,6 +46,8 @@ export const GroupTaste: React.FC = () => {
     resetAll,
     setUsers,
   } = useGroupTaste();
+
+  const { user } = useAuth();
 
   // ── State ──
 
@@ -133,7 +137,7 @@ export const GroupTaste: React.FC = () => {
         {/* Content */}
         <div className="relative z-10">
 
-        <HeroBanner />
+          <HeroBanner />
         </div>
       </div>
 
