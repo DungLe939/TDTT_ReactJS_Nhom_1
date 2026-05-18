@@ -11,7 +11,7 @@ import { Admin } from './pages/Admin';
 import { AdminLogin } from './pages/AdminLogin';
 import { FileUploadDemo } from './pages/FileUploadDemo';
 import { LoadingModalDemo } from './pages/LoadingModalDemo';
-import { Auth } from './modules/auth/pages/Auth';
+import { Auth } from './pages/Auth';
 import { Profile } from './modules/auth/pages/Profile';
 import { TestDataConnect } from './pages/TestDataConnect';
 import { FoodMarket } from './pages/FoodMarket';
