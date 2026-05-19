@@ -1,4 +1,4 @@
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { motion } from 'motion/react';
 import {
   User,
@@ -145,7 +145,7 @@ export function Profile() {
                   className="w-20 h-20 rounded-full object-cover ring-4 ring-orange-100 dark:ring-orange-500/20"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center ring-4 ring-orange-100 dark:ring-orange-500/20">
+                <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-400 to-amber-500 flex items-center justify-center ring-4 ring-orange-100 dark:ring-orange-500/20">
                   <span className="text-white text-2xl font-bold">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
